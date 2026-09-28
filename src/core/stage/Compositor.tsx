@@ -109,6 +109,9 @@ export function Compositor() {
 
   useEffect(() => {
     gl.setClearColor(VOID, 1)
+    // harness/perf-audit hook: per-frame renderer stats (info auto-resets each frame render call; we reset manually)
+    gl.info.autoReset = false
+    ;(window as unknown as { __gl: THREE.WebGLRenderer }).__gl = gl
     return () => {
       rtA.dispose()
       rtB.dispose()
@@ -123,6 +126,7 @@ export function Compositor() {
   const readyFrames = useMemo(() => ({ n: 0, idle: 0, allocated: false }), [])
 
   useFrame(() => {
+    gl.info.reset()
     const cs = journey.chapters
     let ia = -1
     let ib = -1
