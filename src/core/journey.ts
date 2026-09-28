@@ -40,6 +40,10 @@ export const journey = {
   blend: 0,
   /** 0..1 through the whole document. */
   global: 0,
+  /** Index of the section whose top has passed the viewport top. */
+  section: 0,
+  /** During a long programmatic jump: the target chapter index (mounting follows it). */
+  travelTo: null as number | null,
   docHeight: 1,
 }
 
@@ -81,6 +85,9 @@ export function bindChapterEl(id: string, el: HTMLElement | null) {
 export function bindStep(chapterId: string, stepId: string, el: HTMLElement, fade: boolean) {
   const c = journey.byId.get(chapterId)
   if (!c) return () => {}
+  const prev = c.steps.get(stepId)
+  if (import.meta.env.DEV && prev && prev.el !== el && prev.el.isConnected)
+    console.error(`[journey] duplicate <Step id="${stepId}"> in chapter ${chapterId}; ids must be unique per chapter ('title' and 'lab' are used by <ChapterTitle> and <Lab>)`)
   const s: StepRuntime = { id: stepId, el, top: 0, height: 1, progress: 0, vis: -1, fade }
   c.steps.set(stepId, s)
   scheduleMeasure()
@@ -99,8 +106,21 @@ export function scheduleMeasure() {
   })
 }
 
+// journey.vh must equal the layout's 100svh (steps are len × 100svh). On phones innerHeight
+// changes as the toolbar collapses; svh does not — so measure a 100svh probe.
+let probe: HTMLElement | null = null
+function svh() {
+  if (!probe) {
+    probe = document.createElement('div')
+    probe.setAttribute('aria-hidden', 'true')
+    probe.style.cssText = 'position:absolute;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none'
+    document.body.appendChild(probe)
+  }
+  return probe.getBoundingClientRect().height || window.innerHeight
+}
+
 export function measure() {
-  journey.vh = window.innerHeight
+  journey.vh = svh()
   journey.vw = window.innerWidth
   const sy = window.scrollY
   for (const c of journey.chapters) {
@@ -112,6 +132,15 @@ export function measure() {
       const sr = s.el.getBoundingClientRect()
       s.top = sr.top + sy
       s.height = Math.max(1, sr.height)
+    }
+  }
+  if (import.meta.env.DEV) {
+    for (const c of journey.chapters) {
+      if (!c.el || !c.steps.size) continue
+      let sum = 0
+      for (const st of c.steps.values()) sum += st.height
+      if (Math.abs(c.height - sum) > 2)
+        console.warn(`[journey] chapter ${c.id}: ${Math.round(c.height - sum)}px of content outside <Step> — wrap everything in a Step (or the Lab footer)`)
     }
   }
   journey.docHeight = document.documentElement.scrollHeight
@@ -154,8 +183,8 @@ export function update(y: number) {
   }
 
   // presence: dissolve across the last viewport of each chapter
+  let k = 0
   if (!params.solo) {
-    let k = 0
     for (let i = 0; i < cs.length; i++) if (cs[i].el && cs[i].top <= y + 1) k = i
     const cur = cs[k]
     const next = cs[k + 1]
@@ -170,12 +199,19 @@ export function update(y: number) {
     const solo = journey.byId.get(params.solo)
     for (const c of cs) c.presence = c === solo ? 1 : 0
   }
+  journey.section = k
 
   const st = useJourney.getState()
-  if (st.active !== journey.active) {
-    const a = journey.active
-    const mounted = params.solo ? st.mounted : [a - 1, a, a + 1].filter((i) => i >= 0 && i < cs.length)
-    useJourney.setState({ active: a, mounted })
+  if (!params.solo) {
+    // Mount set follows the *section* index (it only changes where one scene is drawn alone),
+    // with ±2 hysteresis so hovering around a boundary never thrashes mounts. While a long
+    // programmatic jump is in flight, the target's neighbourhood is mounted instead.
+    const centre = journey.travelTo ?? k
+    const want = [centre - 1, centre, centre + 1]
+    const keep = journey.travelTo != null ? [] : st.mounted.filter((i) => i >= centre - 2 && i <= centre + 2)
+    const set = [...new Set([...keep, ...want])].filter((i) => i >= 0 && i < cs.length).sort((a, b) => a - b)
+    const mountedChanged = set.join() !== st.mounted.join()
+    if (mountedChanged || st.active !== journey.active) useJourney.setState({ active: journey.active, mounted: mountedChanged ? set : st.mounted })
   }
   for (const fn of listeners) fn()
 }

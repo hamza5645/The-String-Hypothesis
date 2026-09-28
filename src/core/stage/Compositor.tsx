@@ -16,9 +16,10 @@ const vert = /* glsl */ `
   }
 `
 
-// Zoom-dissolve: the outgoing scene drifts slightly forward as it fades, the incoming
-// one settles in from slightly behind; a soft noise field staggers the dissolve and
-// bright features of the incoming scene surface first.
+// Dissolve: both scenes are sampled with ONE shared transform (so identical handoff objects
+// coincide exactly) that gently "breathes" (s = 1 − 0.03·sin πt, exactly 1 at both ends); a soft
+// noise field staggers the dissolve and bright features of the incoming scene surface first.
+// k is exactly 0 at t = 0 and exactly 1 at t = 1, so there is no pop entering/leaving the RT path.
 const mixFrag = /* glsl */ `
   uniform sampler2D tA;
   uniform sampler2D tB;
@@ -36,14 +37,14 @@ const mixFrag = /* glsl */ `
 
   void main() {
     float t = uMix;
-    vec2 c = vUv - 0.5;
-    vec2 uvA = 0.5 + c * (1.0 - 0.04 * t);
-    vec2 uvB = 0.5 + c * (1.0 + 0.04 * (1.0 - t));
-    vec3 a = texture2D(tA, uvA).rgb;
-    vec3 b = texture2D(tB, uvB).rgb;
+    float s = 1.0 - 0.03 * sin(3.14159265 * t);
+    vec2 uv = 0.5 + (vUv - 0.5) * s;
+    vec3 a = texture2D(tA, uv).rgb;
+    vec3 b = texture2D(tB, uv).rgb;
     float n = noise(vec2(vUv.x * uAspect, vUv.y) * 2.6 + uTime * 0.03);
     float lb = dot(b, vec3(0.299, 0.587, 0.114));
-    float k = clamp(t * 1.5 - 0.25 + (n - 0.5) * 0.4 + lb * 0.2, 0.0, 1.0);
+    float jitter = ((n - 0.5) * 0.4 + lb * 0.2) * 4.0 * t * (1.0 - t);
+    float k = clamp(t * 1.5 - 0.25 + jitter, 0.0, 1.0);
     k = k * k * (3.0 - 2.0 * k);
     gl_FragColor = vec4(mix(a, b, k), 1.0);
   }
@@ -97,6 +98,7 @@ export function Compositor() {
       samples: 4,
       depthBuffer: true,
       stencilBuffer: false,
+      resolveDepthBuffer: false,
       type: THREE.UnsignedByteType,
       format: THREE.RGBAFormat,
     }
@@ -106,7 +108,6 @@ export function Compositor() {
   }, [])
 
   useEffect(() => {
-    gl.autoClear = false
     gl.setClearColor(VOID, 1)
     return () => {
       rtA.dispose()
@@ -119,7 +120,7 @@ export function Compositor() {
   const buf = useMemo(() => new THREE.Vector2(), [])
   const quad = quadScene.children[0] as THREE.Mesh
 
-  const readyFrames = useMemo(() => ({ n: 0 }), [])
+  const readyFrames = useMemo(() => ({ n: 0, idle: 0, allocated: false }), [])
 
   useFrame(() => {
     const cs = journey.chapters
@@ -142,31 +143,48 @@ export function Compositor() {
       if (readyFrames.n === 8) (window as unknown as { __stageReady: boolean }).__stageReady = true
     }
 
+    // Scene renders use three's default autoClear (so a chapter's own background clears correctly
+    // and chapter-level offscreen passes behave normally); only the overlay quad passes disable it.
     gl.setRenderTarget(null)
     gl.setClearColor(VOID, 1)
 
     if (ea && eb && !low) {
       gl.getDrawingBufferSize(buf)
+      // MSAA only where it matters: at high pixel ratios the dissolve is antialiased enough without it
+      const samples = gl.getPixelRatio() >= 1.5 ? 0 : 4
+      if (rtA.samples !== samples) {
+        rtA.dispose()
+        rtB.dispose()
+        rtA.samples = rtB.samples = samples
+      }
       if (rtA.width !== buf.x || rtA.height !== buf.y) {
         rtA.setSize(buf.x, buf.y)
         rtB.setSize(buf.x, buf.y)
       }
+      readyFrames.idle = 0
+      readyFrames.allocated = true
       gl.setRenderTarget(rtA)
-      gl.clear()
       gl.render(ea.scene, ea.getCamera())
       gl.setRenderTarget(rtB)
-      gl.clear()
       gl.render(eb.scene, eb.getCamera())
       gl.setRenderTarget(null)
-      gl.clear()
       quad.material = mixMat
       mixMat.uniforms.tA.value = rtA.texture
       mixMat.uniforms.tB.value = rtB.texture
       mixMat.uniforms.uMix.value = pb / Math.max(1e-4, pa + pb)
       mixMat.uniforms.uAspect.value = buf.x / Math.max(1, buf.y)
       mixMat.uniforms.uTime.value = clock.t
+      gl.autoClear = false
       gl.render(quadScene, quadCam)
+      gl.autoClear = true
       return
+    }
+
+    // free the dissolve targets once we've been on the cheap path for a while (three re-allocates lazily)
+    if (readyFrames.allocated && (++readyFrames.idle > 180 || low)) {
+      rtA.dispose()
+      rtB.dispose()
+      readyFrames.allocated = false
     }
 
     // Single scene (or low tier): draw the dominant one, dip towards black by (1 - presence).
@@ -176,14 +194,16 @@ export function Compositor() {
       entry = eb
       presence = pb
     }
-    gl.clear()
     if (entry) gl.render(entry.scene, entry.getCamera())
+    else gl.clear()
     const dip = low && ea && eb ? Math.abs(pa - pb) : presence
     const alpha = 1 - Math.min(1, dip)
     if (alpha > 0.002) {
       quad.material = fadeMat
       fadeMat.uniforms.uAlpha.value = alpha
+      gl.autoClear = false
       gl.render(quadScene, quadCam)
+      gl.autoClear = true
     }
   }, 1)
 

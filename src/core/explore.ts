@@ -2,10 +2,14 @@
 // - Drags that start on empty stage (not on text/panels/controls) accumulate into
 //   `explore.dx/dy`, which <OrbitRig> consumes to rotate the camera.
 // - R3F object handlers that want the drag for themselves (e.g. plucking a string)
-//   call `claimPointer()` in onPointerDown; the stage then won't orbit.
-// - `explore.nx/ny` is the pointer position in NDC (-1..1) for hover-reactive scenes.
-// The canvas uses `touch-action: pan-y`, so on phones vertical swipes still scroll
-// and horizontal drags rotate.
+//   call `claimPointer()` in onPointerDown; the stage then won't orbit, and on touch
+//   screens the page won't scroll while the claim lasts.
+// - `explore.nx/ny` is the pointer position in NDC (-1..1) for hover-reactive scenes;
+//   gate hover effects on `explore.hovering` (false after a finger lifts / mouse leaves).
+// The .stage element uses `touch-action: pan-y pinch-zoom`, so on phones vertical swipes
+// still scroll and horizontal drags rotate.
+
+import { journey } from './journey'
 
 export const explore = {
   dx: 0,
@@ -13,11 +17,13 @@ export const explore = {
   dragging: false,
   claimed: false,
   pointerId: -1,
-  /** Pointer in normalized device coords (x right, y up), last known. */
+  /** Pointer in normalized device coords of the stage (x right, y up), last known. */
   nx: 0,
   ny: 0,
   /** True once the pointer has moved over the page at least once. */
   seen: false,
+  /** True while a mouse/pen hovers the page or a finger is down. Gate hover effects on this. */
+  hovering: false,
   /** Seconds since the last drag movement (for idle auto-rotation etc.). */
   idle: 999,
 }
@@ -26,16 +32,23 @@ let lastX = 0
 let lastY = 0
 let inited = false
 
-const isUI = (t: EventTarget | null) => {
+/** True for DOM targets that belong to the UI (controls, panels, text chrome) rather than the stage. */
+export const isUI = (t: EventTarget | null) => {
   const el = t as Element | null
   if (!el || !el.closest) return false
   return !!el.closest('[data-ui], a, button, input, select, textarea, label, summary, [role="slider"], [role="button"]')
 }
 
-/** Call from an R3F onPointerDown to take this pointer away from camera orbiting. */
+/** Call from an R3F onPointerDown to take this pointer away from camera orbiting / page panning. */
 export function claimPointer() {
   explore.claimed = true
   explore.dragging = false
+}
+
+const setNdc = (e: PointerEvent) => {
+  const de = document.documentElement
+  explore.nx = (e.clientX / Math.max(1, de.clientWidth)) * 2 - 1
+  explore.ny = -((e.clientY / Math.max(1, de.clientHeight)) * 2 - 1)
 }
 
 export function initExplore() {
@@ -44,6 +57,8 @@ export function initExplore() {
   window.addEventListener(
     'pointerdown',
     (e) => {
+      setNdc(e)
+      explore.hovering = true
       if (explore.claimed || isUI(e.target)) return
       if (e.pointerType === 'mouse' && e.button !== 0) return
       explore.dragging = true
@@ -57,8 +72,8 @@ export function initExplore() {
     'pointermove',
     (e) => {
       explore.seen = true
-      explore.nx = (e.clientX / window.innerWidth) * 2 - 1
-      explore.ny = -((e.clientY / window.innerHeight) * 2 - 1)
+      setNdc(e)
+      if (e.pointerType !== 'touch' || e.buttons) explore.hovering = true
       if (explore.dragging && e.pointerId === explore.pointerId) {
         explore.dx += e.clientX - lastX
         explore.dy += e.clientY - lastY
@@ -70,6 +85,7 @@ export function initExplore() {
     { passive: true },
   )
   const end = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') explore.hovering = false
     if (e.pointerId === explore.pointerId || explore.claimed) {
       explore.dragging = false
       explore.claimed = false
@@ -78,10 +94,26 @@ export function initExplore() {
   }
   window.addEventListener('pointerup', end, { passive: true })
   window.addEventListener('pointercancel', end, { passive: true })
+  document.documentElement.addEventListener('pointerleave', () => {
+    explore.hovering = false
+  })
   window.addEventListener('blur', () => {
     explore.dragging = false
     explore.claimed = false
+    explore.hovering = false
   })
+}
+
+/**
+ * Must be attached (non-passive) to the .stage element before any touchstart: while an object
+ * has claimed the pointer, stop the browser from turning the drag into a page pan.
+ */
+export function guardTouchPan(stageEl: HTMLElement) {
+  const onMove = (e: TouchEvent) => {
+    if (explore.claimed) e.preventDefault()
+  }
+  stageEl.addEventListener('touchmove', onMove, { passive: false })
+  return () => stageEl.removeEventListener('touchmove', onMove)
 }
 
 /** Called once per frame after scenes ran: drops unconsumed drag deltas. */
@@ -91,7 +123,18 @@ export function tickExplore() {
   explore.idle += 1 / 60
 }
 
-/** Set the page cursor while hovering interactive 3D things ('' resets). */
+let cursorOwner: string | null = null
+
+/** Set the page cursor while hovering interactive 3D things ('' resets). Owned by the active chapter. */
 export function setStageCursor(cursor: '' | 'grab' | 'grabbing' | 'pointer' | 'crosshair' | 'ew-resize' | 'ns-resize') {
   document.documentElement.style.cursor = cursor
+  cursorOwner = cursor ? (journey.chapters[journey.active]?.id ?? null) : null
+}
+
+/** Engine: reset the cursor if the given chapter set it (called when a chapter deactivates/unmounts). */
+export function releaseStageCursor(chapterId: string) {
+  if (cursorOwner === chapterId) {
+    document.documentElement.style.cursor = ''
+    cursorOwner = null
+  }
 }

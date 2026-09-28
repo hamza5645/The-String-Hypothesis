@@ -22,7 +22,7 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip; /* clip, not hidden: hidden would make body a scroll container and break position:sticky */
 }
 
 img,
@@ -71,7 +71,7 @@ html.lenis body {
 .lenis:not(.lenis-autoToggle).lenis-stopped {
   overflow: clip;
 }
-.lenis [data-lenis-prevent] {
+.lenis .drawer[data-lenis-prevent] {
   overscroll-behavior: contain;
 }
 

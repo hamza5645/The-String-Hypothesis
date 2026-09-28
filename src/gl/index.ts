@@ -6,7 +6,7 @@ export { createIsoGridMaterial, useIsoGridMaterial, type IsoGridOptions, type Is
 export { Backdrop } from './Backdrop'
 export { SceneLabel } from './SceneLabel'
 export { OrbitRig, type OrbitPose } from './OrbitRig'
-export { HandoffPoint, HandoffOpenString, HandoffLoop, openStringFn, loopFn } from './handoff'
+export { HandoffPoint, HandoffOpenString, HandoffLoop, openStringFn, loopFn, useHandoffFit } from './handoff'
 export { useChapterFrame, type FrameInfo } from './useChapterFrame'
 export { useViewShift } from './useViewShift'
 export { COLORS } from './palette'

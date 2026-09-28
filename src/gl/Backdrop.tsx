@@ -49,11 +49,13 @@ export function Backdrop({
       colors[i * 3 + 2] = c.b * b
     }
     return { positions, sizes, colors }
-  }, [n, seed, radius])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [n, seed, radius[0], radius[1]])
 
   const group = useRef<THREE.Group>(null!)
-  useChapterFrame(({ dt }) => {
-    group.current.rotation.y += dt * drift * ambient()
+  // one shared sky: the angle is a pure function of the stage clock, so every chapter's copy is in phase
+  useChapterFrame(({ t }) => {
+    group.current.rotation.y = t * drift * ambient()
   })
 
   return (

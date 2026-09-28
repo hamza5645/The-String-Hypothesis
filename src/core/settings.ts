@@ -55,7 +55,7 @@ function detectWebGL(): boolean {
   if (params.nowebgl) return false
   try {
     const c = document.createElement('canvas')
-    return !!(c.getContext('webgl2') || c.getContext('webgl'))
+    return !!c.getContext('webgl2') // three r186 is WebGL2-only
   } catch {
     return false
   }

@@ -19,6 +19,11 @@ export interface FrameInfo {
 /**
  * useFrame for chapter scenes: skipped while the chapter is invisible (presence 0),
  * and hands you the stage clock + scroll state. Never allocate inside the callback.
+ *
+ * Default priority −1: runs after the clock (−100) and aspect keeper (−50) but BEFORE library
+ * frame work at 0 (drei <Html> projection, Filament fn evaluation) — so camera moves made here are
+ * seen by labels in the same frame. Use this, not raw useFrame, in chapters.
+ * Exceptions are caught (logged once) so one chapter's bug can't freeze the compositor.
  */
 export function useChapterFrame(cb: (f: FrameInfo) => void, opts?: { always?: boolean; priority?: number }) {
   const h = useChapter()
@@ -26,6 +31,7 @@ export function useChapterFrame(cb: (f: FrameInfo) => void, opts?: { always?: bo
   ref.current = cb
   const info = useMemo(() => ({ h }) as FrameInfo, [h])
   const always = !!opts?.always
+  const errored = useRef(false)
   useFrame((state) => {
     const presence = h.presence()
     if (presence <= 0 && !always) return
@@ -34,6 +40,13 @@ export function useChapterFrame(cb: (f: FrameInfo) => void, opts?: { always?: bo
     info.progress = h.progress()
     info.presence = presence
     info.state = state
-    ref.current(info)
-  }, opts?.priority ?? 0)
+    try {
+      ref.current(info)
+    } catch (e) {
+      if (!errored.current) {
+        errored.current = true
+        console.error(`[${h.id}] frame callback threw`, e)
+      }
+    }
+  }, opts?.priority ?? -1)
 }

@@ -5,6 +5,22 @@
   inset: 0;
   z-index: var(--z-stage);
   background: var(--void);
+  /* the element touches actually land on: vertical swipes scroll, horizontal drags orbit, pinch still zooms */
+  touch-action: pan-y pinch-zoom;
+}
+
+/* long rail/menu jumps dip to black instead of flying through every scene */
+.jump-cover {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-chrome) - 1);
+  background: var(--void);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease-inout);
+}
+.is-jumping .jump-cover {
+  opacity: 1;
 }
 .stage canvas {
   display: block;
@@ -356,7 +372,6 @@
   width: min(360px, 100%);
   max-height: calc(100svh - 140px);
   overflow: auto;
-  overscroll-behavior: contain;
   padding: 18px 18px 16px;
   background: var(--glass);
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
@@ -367,6 +382,7 @@
   pointer-events: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--ink-3) transparent;
+  overscroll-behavior: auto;
 }
 .lab::before {
   /* corner registration marks — a detail from instrument faceplates */
@@ -1016,7 +1032,6 @@
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--ink-2);
-  transition: opacity 0.2s linear;
 }
 .scene-label--md {
   font-size: 0.78rem;

@@ -39,7 +39,7 @@ export function Lab({
           {hint}
         </div>
       )}
-      <aside className={`lab lab--${side}`} data-ui data-lenis-prevent aria-label={typeof title === 'string' ? title : 'Lab'}>
+      <aside className={`lab lab--${side}`} data-ui aria-label={typeof title === 'string' ? title : 'Lab'}>
         <header className="lab__head">
           <span className="t-label lab__eyebrow">Lab</span>
           <h3 className="lab__title">{title}</h3>

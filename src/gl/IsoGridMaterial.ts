@@ -1,6 +1,5 @@
 import { useLayoutEffect, useMemo } from 'react'
 import * as THREE from 'three'
-import { useThree } from '@react-three/fiber'
 import { COLORS } from './palette'
 
 /**
@@ -55,8 +54,14 @@ const vert = /* glsl */ `
   varying vec3 vV;
   void main() {
     vUv = uv;
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    vN = normalMatrix * normal;
+    vec4 p = vec4(position, 1.0);
+    vec3 nrm = normal;
+    #ifdef USE_INSTANCING
+      p = instanceMatrix * p;
+      nrm = mat3(instanceMatrix) * nrm;
+    #endif
+    vec4 mv = modelViewMatrix * p;
+    vN = normalMatrix * nrm;
     vV = -mv.xyz;
     gl_Position = projectionMatrix * mv;
   }
@@ -119,12 +124,15 @@ export function createIsoGridMaterial(o: IsoGridOptions = {}) {
     blending: THREE.AdditiveBlending,
     side: o.side ?? THREE.DoubleSide,
   })
+  // keep line widths correct at any pixel ratio, for factory-made materials too
+  m.onBeforeRender = (renderer) => {
+    m.uniforms.uDpr.value = renderer.getPixelRatio()
+  }
   return m as THREE.ShaderMaterial & { uniforms: IsoGridUniforms }
 }
 
 /** Memoized IsoGrid material; options are applied on change. Mutate uniforms per-frame for animation. */
 export function useIsoGridMaterial(o: IsoGridOptions = {}) {
-  const dpr = useThree((s) => s.viewport.dpr)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const m = useMemo(() => createIsoGridMaterial(o), [])
   useLayoutEffect(() => {
@@ -138,9 +146,12 @@ export function useIsoGridMaterial(o: IsoGridOptions = {}) {
     if (o.fresnel !== undefined) u.uFresnel.value = o.fresnel
     if (o.opacity !== undefined) u.uOpacity.value = o.opacity
     if (o.edge !== undefined) u.uEdge.value = o.edge
-    u.uDpr.value = dpr
+    if (o.reveal !== undefined) u.uReveal.value = o.reveal
+    if (o.revealAxis) u.uRevealAxis.value = o.revealAxis === 'u' ? 1 : 0
+    if (o.side !== undefined) m.side = o.side
+    if (o.depthTest !== undefined) m.depthTest = o.depthTest
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [m, dpr, o.color, o.lineColor, o.edgeColor, o.grid?.[0], o.grid?.[1], o.lineWidth, o.fill, o.fresnel, o.opacity, o.edge])
+  }, [m, o.color, o.lineColor, o.edgeColor, o.grid?.[0], o.grid?.[1], o.lineWidth, o.fill, o.fresnel, o.opacity, o.edge, o.reveal, o.revealAxis, o.side, o.depthTest])
   useLayoutEffect(() => () => m.dispose(), [m])
   return m
 }

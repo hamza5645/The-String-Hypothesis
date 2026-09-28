@@ -128,6 +128,8 @@ export default function Scene() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const currentT = useRef(0)
+  // visible=false does NOT stop R3F raycasts — gate the grab band's handlers explicitly
+  const interactiveRef = useRef(true)
 
   useChapterFrame((f) => {
     const { t, dt, progress, h } = f
@@ -156,7 +158,8 @@ export default function Scene() {
 
     // pointer
     const interactive = h.active() && k < 0.05
-    const pw = interactive && explore.seen ? pointerWorld() : null
+    interactiveRef.current = interactive
+    const pw = interactive && (explore.hovering || st.drag) ? pointerWorld() : null
     if (st.drag && pw) {
       st.h = clamp(pw.y - st.y0, -0.12 * st.L, 0.12 * st.L)
       st.sigma0 = clamp(pw.x / st.L + 0.5, 0.02, 0.98)
@@ -215,6 +218,9 @@ export default function Scene() {
     const cool = smoothstep(0.35, 0.85, k)
     const mat = thread.current?.material
     if (mat) {
+      // width scales with the parent group; hold it constant while the Thread shrinks, so it
+      // reads as a blur-limited glow once unresolved
+      mat.uniforms.uWidth.value = WIDTH / Math.max(shrink, 1e-4)
       tmpC.copy(warm).lerp(inkC, cool)
       mat.uniforms.uGlow.value.copy(tmpC)
       tmpC.copy(warmCore).lerp(inkC, cool * 0.6)
@@ -232,7 +238,7 @@ export default function Scene() {
     }
 
     // camera: ±3° pointer parallax, fading out as we recede (handoff frame is exactly HANDOFF.camera)
-    const par = (1 - k) * (explore.seen ? 1 : 0) * amb
+    const par = (1 - k) * (explore.hovering ? 1 : 0) * amb
     st.parX = damp(st.parX, explore.nx * 0.052 * par, 3, dt || 1 / 60)
     st.parY = damp(st.parY, explore.ny * 0.035 * par, 3, dt || 1 / 60)
     const d = HANDOFF.camera.position[2]
@@ -248,6 +254,7 @@ export default function Scene() {
         <mesh
           ref={hit}
           onPointerDown={(e) => {
+            if (!interactiveRef.current) return
             e.stopPropagation()
             claimPointer()
             st.drag = true
@@ -255,7 +262,7 @@ export default function Scene() {
             st.sigma0 = clamp(e.point.x / st.L + 0.5, 0.02, 0.98)
             setStageCursor('grabbing')
           }}
-          onPointerOver={() => !st.drag && setStageCursor('grab')}
+          onPointerOver={() => interactiveRef.current && !st.drag && setStageCursor('grab')}
           onPointerOut={() => !st.drag && setStageCursor('')}
         >
           <planeGeometry args={[1, 1]} />

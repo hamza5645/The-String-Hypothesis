@@ -6,6 +6,7 @@ import { params } from './core/params'
 import { applyInitialPosition, initScroller } from './core/scroller'
 import { useSettings } from './core/settings'
 import { Stage } from './core/stage/Stage'
+import { StageBoundary } from './core/stage/StageBoundary'
 import { ChapterSection } from './ui/Chapter'
 import { ChapterMenu, ChapterRail, GlossaryDrawer, ScaleGauge, TopBar } from './ui/Chrome'
 
@@ -31,7 +32,12 @@ export function App() {
 
   return (
     <>
-      {webgl && <Stage chapters={CHAPTERS} />}
+      {webgl && (
+        <StageBoundary label="stage" onError={() => useSettings.setState({ webgl: false })}>
+          <Stage chapters={CHAPTERS} />
+        </StageBoundary>
+      )}
+      <div className="jump-cover" aria-hidden="true" />
       <div id="scene-labels" className="scene-labels" aria-hidden="true" />
       <div className="fx" aria-hidden="true">
         <div className="fx__vignette" />

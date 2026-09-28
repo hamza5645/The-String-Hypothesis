@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { HANDOFF } from '../core/handoff'
+import { useThree } from '@react-three/fiber'
+import { HANDOFF, handoffFit } from '../core/handoff'
 import { TAU } from '../core/math'
 import { Filament, type FilamentFn, type FilamentProps } from './Filament'
 import { GlowPoint, type GlowPointProps } from './GlowPoint'
@@ -42,12 +43,19 @@ export function openStringFn(amp: number = HANDOFF.H1.amplitude, length: number 
   }
 }
 
+/** handoffFit() for the current viewport — scale H1 length / H2 radius by this when you morph them yourself. */
+export function useHandoffFit() {
+  const size = useThree((s) => s.size)
+  return handoffFit(size.width / Math.max(1, size.height))
+}
+
 export function HandoffOpenString({ amp, ...props }: Partial<FilamentProps> & { amp?: number }) {
+  const fit = useHandoffFit()
   return (
     <Filament
       count={HANDOFF.H1.count}
       width={HANDOFF.H1.width}
-      fn={openStringFn(amp ?? HANDOFF.H1.amplitude)}
+      fn={openStringFn((amp ?? HANDOFF.H1.amplitude) * fit, HANDOFF.H1.length * fit)}
       beads
       {...props}
     />
@@ -65,7 +73,8 @@ export function loopFn(wobble: number = HANDOFF.H2.wobble, radius: number = HAND
 }
 
 export function HandoffLoop({ wobble, ...props }: Partial<FilamentProps> & { wobble?: number }) {
-  return <Filament count={HANDOFF.H2.count} width={HANDOFF.H2.width} closed fn={loopFn(wobble ?? HANDOFF.H2.wobble)} {...props} />
+  const fit = useHandoffFit()
+  return <Filament count={HANDOFF.H2.count} width={HANDOFF.H2.width} closed fn={loopFn(wobble ?? HANDOFF.H2.wobble, HANDOFF.H2.radius * fit)} {...props} />
 }
 
 /** Reusable scratch objects for scenes that want them (never share across simultaneous uses). */

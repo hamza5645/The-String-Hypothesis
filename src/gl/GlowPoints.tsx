@@ -38,7 +38,8 @@ const vert = /* glsl */ `
   void main() {
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    float px = aSize * projectionMatrix[1][1] * uResY * 0.5 / max(-mv.z, 1e-4);
+    float ws = length(vec3(modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2])); // parent scale
+    float px = aSize * ws * projectionMatrix[1][1] * uResY * 0.5 / max(-mv.z, 1e-4);
     float clamped = clamp(px, uMinPx, uMaxPx);
     // points smaller than the min size fade instead of shrinking (keeps density honest)
     vAlpha = aAlpha * min(1.0, px / max(uMinPx, 1e-4) + 0.25);
@@ -111,6 +112,14 @@ export const GlowPoints = forwardRef<GlowPointsApi, GlowPointsProps>(function Gl
     u.uIntensity.value = intensity
     u.uSharp.value = sharpness
   }, [material, gsize, dpr, minPixels, maxPixels, color, intensity, sharpness])
+
+  // `size` (when no per-point `sizes`) stays live
+  useLayoutEffect(() => {
+    if (sizes) return
+    const a = geometry.getAttribute('aSize') as THREE.BufferAttribute
+    ;(a.array as Float32Array).fill(size)
+    a.needsUpdate = true
+  }, [geometry, sizes, size])
 
   useLayoutEffect(() => () => geometry.dispose(), [geometry])
   useLayoutEffect(() => () => material.dispose(), [material])

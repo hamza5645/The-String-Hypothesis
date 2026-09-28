@@ -5,7 +5,8 @@ import { COLORS } from './palette'
 
 /**
  * GlowPoint — a single point particle of light (camera-facing billboard).
- * Size is in world units with a minimum pixel radius, so a point stays visible when far away.
+ * Size is in world units (scales with perspective and parent scale) with a minimum pixel radius,
+ * so a point stays visible when far away.
  */
 export interface GlowPointProps extends Omit<ThreeElements['mesh'], 'ref' | 'args'> {
   size?: number
@@ -27,11 +28,11 @@ const vert = /* glsl */ `
   void main() {
     vec4 mv = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
     vec4 clip = projectionMatrix * mv;
-    float halfPx = 0.5 * uSize * projectionMatrix[1][1] / max(clip.w, 1e-5) * uResolution.y * 0.5;
+    float ws = length(vec3(modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2])); // parent scale
+    float worldSize = uSize * ws;
+    float halfPx = 0.5 * worldSize * projectionMatrix[1][1] / max(clip.w, 1e-5) * uResolution.y * 0.5;
     float s = max(halfPx, uMinPx) / max(halfPx, 1e-5);
-    // scale from the object's world scale too
-    float ws = length(vec3(modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2]));
-    mv.xy += position.xy * uSize * s * ws;
+    mv.xy += position.xy * worldSize * s;
     gl_Position = projectionMatrix * mv;
     vUv = position.xy * 2.0;
   }

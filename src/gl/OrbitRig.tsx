@@ -61,12 +61,13 @@ export function OrbitRig({
     const p = typeof poseRef.current === 'function' ? poseRef.current(f) : poseRef.current
     const it = interRef.current
     const on = (typeof it === 'function' ? it(f.h) : it) && f.h.active()
+    const frozen = f.dt === 0 // screenshot harness freezes the clock: snap, don't integrate
     const dt = Math.max(f.dt, 1e-4)
     const tx = p.target?.[0] ?? 0
     const ty = p.target?.[1] ?? 0
     const tz = p.target?.[2] ?? 0
 
-    if (!s.init || smoothing <= 0) {
+    if (!s.init || smoothing <= 0 || frozen) {
       s.baz = p.azimuth
       s.bpol = p.polar
       s.bdist = p.distance
@@ -83,7 +84,9 @@ export function OrbitRig({
       s.bz = damp(s.bz, tz, smoothing, dt)
     }
 
-    if (on) {
+    if (frozen) {
+      // keep the user's offset as-is; no inertia/relax integration without time
+    } else if (on) {
       if (explore.dragging && (explore.dx !== 0 || explore.dy !== 0)) {
         const daz = -explore.dx * sensitivity
         const dpol = -explore.dy * sensitivity
@@ -100,6 +103,7 @@ export function OrbitRig({
         if (autoRotate && explore.idle > 2.5) s.az += autoRotate * dt * ambient()
       }
     } else {
+      s.az = Math.atan2(Math.sin(s.az), Math.cos(s.az)) // unwind whole turns: take the short way back
       s.az = damp(s.az, 0, relax, dt)
       s.pol = damp(s.pol, 0, relax, dt)
       s.vaz = s.vpol = 0

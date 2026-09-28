@@ -20,3 +20,14 @@ export const HANDOFF = {
   /** H2 — one closed loop centred at the origin, facing the camera, gently wobbling (modes 2+3). */
   H2: { radius: 1.3, wobble: 0.07, omega: 1.6, width: 0.085, count: 260 },
 } as const
+
+/**
+ * Portrait safety: on narrow screens the canonical H1/H2 would overflow the frame (the camera's
+ * vertical fov is fixed). Both neighbours of a handoff evaluate this same pure function of the
+ * viewport aspect, so scaling H1's length / H2's radius by it keeps the dissolve seamless.
+ * 1 on landscape screens; ~0.6 on a portrait phone.
+ */
+export function handoffFit(aspect: number) {
+  const halfW = HANDOFF.camera.position[2] * Math.tan(((HANDOFF.camera.fov * Math.PI) / 180) / 2) * aspect
+  return Math.min(1, halfW / (0.5 * HANDOFF.H1.length + 0.35))
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { lockScroll } from '../core/scroller'
 
@@ -20,6 +20,11 @@ export function Drawer({
 }) {
   const panel = useRef<HTMLDivElement>(null)
   const returnFocus = useRef<HTMLElement | null>(null)
+  // callers pass inline arrows; keep the effect keyed on `open` only so re-renders don't bounce focus/scroll-lock
+  const onCloseRef = useRef(onClose)
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   useEffect(() => {
     if (!open) return
@@ -27,7 +32,7 @@ export function Drawer({
     lockScroll(true)
     const t = window.setTimeout(() => panel.current?.querySelector<HTMLElement>('.drawer__close')?.focus(), 30)
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') onCloseRef.current()
       if (e.key === 'Tab' && panel.current) {
         const f = panel.current.querySelectorAll<HTMLElement>('button, a[href], input, [tabindex]:not([tabindex="-1"])')
         if (!f.length) return
@@ -49,7 +54,7 @@ export function Drawer({
       lockScroll(false)
       returnFocus.current?.focus?.()
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
   return createPortal(

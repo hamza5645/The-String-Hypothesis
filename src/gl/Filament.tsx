@@ -14,8 +14,10 @@ import { GlowPoint, type GlowPointApi } from './GlowPoint'
  *   fn(u, t, out, i)  → evaluated every frame for u in [0,1] (closed: u=1 wraps to u=0), or
  *   points (Float32Array, count*3) that you mutate yourself, then call api.update().
  *
- * Width is in world units (so it scales with perspective), with a minimum pixel width so it
- * never disappears. Additive, no depth write: filaments read as light.
+ * Width is in world units (it scales with perspective AND with parent scale, like any 3D object),
+ * with a minimum pixel width so it never disappears. Additive, no depth write: filaments read as light.
+ * Animate per frame by mutating api.material.uniforms (uOpacity, uIntensity, uGlow, uCore, uWidth);
+ * the end beads follow those uniforms automatically.
  */
 
 export type FilamentFn = (u: number, t: number, out: THREE.Vector3, i: number) => void
@@ -89,7 +91,8 @@ const vertexShader = /* glsl */ `
     else if (l2 < 1e-7) dir = d1 / l1;
     else dir = normalize(d1 / l1 + d2 / l2);
     vec2 normal = vec2(-dir.y, dir.x);
-    float halfNdc = 0.5 * uWidth * projectionMatrix[1][1] / max(c.w, 1e-5);
+    float ws = length(vec3(modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2])); // parent scale
+    float halfNdc = 0.5 * uWidth * ws * projectionMatrix[1][1] / max(c.w, 1e-5);
     float minNdc = uMinPx * 2.0 / uResolution.y;
     float tp = uTaper > 0.0 ? smoothstep(0.0, uTaper, aU) * smoothstep(0.0, uTaper, 1.0 - aU) : 1.0;
     vTaper = tp;
@@ -302,24 +305,53 @@ export const Filament = forwardRef<FilamentApi, FilamentProps>(function Filament
   }, [geometry])
 
   const chapter = useContext(ChapterContext)
+  const errored = useRef(false)
   useFrame(() => {
     if (chapter && chapter.presence() <= 0) return
     material.uniforms.uTime.value = clock.t
-    if (fnRef.current && groupRef.current?.visible !== false) evaluate(clock.t)
+    if (fnRef.current && groupRef.current?.visible !== false) {
+      try {
+        evaluate(clock.t)
+      } catch (e) {
+        if (!errored.current) {
+          errored.current = true
+          console.error(`[${chapter?.id ?? 'filament'}] Filament fn threw`, e)
+        }
+      }
+    }
   })
 
+  const uploadRef = useRef(upload)
+  uploadRef.current = upload
   useImperativeHandle(
     ref,
     () => ({
       points,
-      update: upload,
+      update: () => uploadRef.current(),
       material,
-      mesh: meshRef.current,
-      group: groupRef.current,
+      get mesh() {
+        return meshRef.current
+      },
+      get group() {
+        return groupRef.current
+      },
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [points, material],
   )
+
+  // beads mirror the filament's live uniforms (opacity/intensity/colour) at draw time
+  useLayoutEffect(() => {
+    for (const b of [beadA.current, beadB.current]) {
+      if (!b) continue
+      b.onBeforeRender = () => {
+        const bu = b.material.uniforms
+        const u = material.uniforms
+        bu.uIntensity.value = u.uIntensity.value * u.uOpacity.value
+        bu.uColor.value.copy(u.uGlow.value)
+        bu.uCore.value.copy(u.uCore.value)
+      }
+    }
+  }, [beads, closed, material])
 
   const bead = beadSize ?? width * 1.9
   return (
