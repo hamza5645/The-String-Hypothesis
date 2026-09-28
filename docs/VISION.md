@@ -35,7 +35,7 @@ Each beat, lab and claim carries a small status chip. The chip encodes status in
 | Chip | Meaning | Form |
 |---|---|---|
 | `OBSERVED` | Experimentally established physics (QM, GR, Standard Model, measured numbers) | solid dot ● |
-| `DERIVED` | Mathematically established *within string theory*: follows from its equations, but untested in nature | half dot ◑ |
+| `DERIVED` | Mathematically established from theory (usually *within string theory*; occasionally semi-classical GR+QFT results such as Bekenstein–Hawking entropy): follows from the equations, but untested in nature | half dot ◑ |
 | `CONJECTURED` | Strong theoretical evidence, not proven (e.g. AdS/CFT, M-theory's existence, S-duality in general) | dashed ring ◌ |
 | `SPECULATIVE` | A possible scenario or interpretation (braneworlds, landscape/multiverse, low string scale) | hollow ring ○ |
 | `ANALOGY` | The visual is a metaphor or cartoon, not literal. Always flag cartoons (e.g. "not to scale", "a 3D shadow of a 6D shape") | tilde ~ |

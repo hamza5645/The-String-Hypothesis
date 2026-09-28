@@ -7,7 +7,7 @@ export const STATUS_INFO: Record<StatusKind, { label: string; meaning: string }>
   },
   derived: {
     label: 'Derived in theory',
-    meaning: 'A mathematical result within string theory. It follows from the equations but has not been tested in nature.',
+    meaning: 'A mathematical result derived from theory (usually string theory). It follows from the equations but has not been tested in nature.',
   },
   conjectured: {
     label: 'Conjectured',

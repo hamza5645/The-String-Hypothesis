@@ -13,7 +13,7 @@
 - **Materials.** Only the string *at the current moment* glows warm: a `--filament` line (#FFC98A, core #FFF6E8). A worldsheet is history, which is geometry, so it uses `--field` (#86A8D8). It is a translucent film (opacity 0.10–0.18, fresnel rim 0.35) with hairline iso-lines: constant-time rings every 0.5 units and along-string lines every 1/16 of the string. This follows VISION: the grid *becomes* the worldsheet. Worldlines are 1px Field hairlines. Point particles are the point-of-light sprite (#FFF6E8). Markers are Field hairline crosshair-rings with IBM Plex Mono labels.
 - **Floor.** Field grid, 10×10 units, 1-unit cells, opacity 0.12, radial fade. **Time axis:** a hairline arrow at world (−5, 0→10, −5) with ticks every unit and the mono label `ct [ℓ] ↑`.
 - **Light-cone glyph.** A hairline double cone with a 45° half-angle, 1.2 units tall, labelled `LIGHT · 45°`. It is reused in several beats.
-- **Scale gauge (left edge).** Reads `≈ ℓs · STRING LENGTH (UNKNOWN)`, with a secondary line `~10⁻³⁵ m if near the Planck length` and a SPECULATIVE ○ chip.
+- **Scale gauge (left edge).** Reads `≈ ℓs · STRING LENGTH (UNKNOWN)`, with a secondary line `~10⁻³⁴ m if traditional estimates hold` (the value Chapters 1, 2 and 10 draw) and a SPECULATIVE ○ chip.
 - **Budget.** The pants mesh is ≤ 60k triangles and the helicoid ≤ 32k. The loupes in Beat 3 are **scissored second viewports**, not render targets (VISION §6 allows render targets only during transitions). Total draw calls ≈ 30.
 - **Reduced motion.** Every auto-animation below becomes a 3-step cross-fade between key states. Nothing loops on its own.
 - **Mobile.** Where a beat shows two histories side by side, show one at a time with a two-state toggle `PARTICLES | STRINGS` pinned under the beat text.
@@ -27,8 +27,8 @@ Suggested scroll lengths: Opening 100vh · B1 150vh · B2 120vh · B3 150vh · *
 - **Text:** Draw time pointing up and hide one direction of space. A point particle moving through time then traces a line, its [[worldline]]. No worldline can lean past 45°, the tilt of light. So what does a string trace?
 - **Status:** `OBSERVED` ● · `ANALOGY` ~ *(tooltip: "Worldlines are standard relativity. One space dimension is hidden so that time can be drawn upward.")*
 - **Stage:**
-  - **First frame = H1.** The Thread lies horizontal at screen center, gently vibrating in its fundamental mode against the void. The side-on camera matches Chapter 2's last frame. *Fallback:* if Chapter 2 ends on H0, spend progress 0–0.1 unfolding the point into H1.
-  - **0 → 0.4.** The camera dollies back 2× and pitches down 20°. A Field floor grid fades in beneath the Thread, which settles onto the floor: it now lies *in space*. The vertical time axis draws itself upward from the back-left corner, ticks appearing one by one.
+  - **First frame = H0**, Chapter 2's last frame: `<HandoffPoint/>` at the origin, camera at `HANDOFF.camera`, no view shift. It is the string seen from far away. **0 → 0.1:** the point unfolds back into **H1** (`<HandoffOpenString/>`), the reverse of Chapter 2's pull-back: it is drawn with Chapter 1's capsule renderer, so warm light returns only once the string is resolved (warmth = smoothstep(1, 3, ℓ/δ)). From 0.1 on, the Thread lies horizontal at screen center, gently vibrating against the void.
+  - **0.1 → 0.4.** The camera dollies back 2× and pitches down 20°. A Field floor grid fades in beneath the Thread, which settles onto the floor: it now lies *in space*. The vertical time axis draws itself upward from the back-left corner, ticks appearing one by one.
   - **0.4 → 0.75.** A point of light (the H0 echo) appears at world X = −3.5 and drifts toward +X at 0.3c. As it moves, 12 translucent "film-frame" copies of it stack upward at equal time steps. They then fuse into one continuous Field hairline: its worldline, slanted about 17° from vertical (arctan 0.3). A second point at rest beside it draws a vertical line.
   - **0.75 → 1.** The light-cone glyph fades in at the moving particle's current event. Its worldline sits visibly inside the cone. Throughout, the Thread keeps vibrating at right, dimmed to 60%, and has not yet moved in time.
 
@@ -70,7 +70,7 @@ Suggested scroll lengths: Opening 100vh · B1 150vh · B2 120vh · B3 150vh · *
 
 ### Beat 4 — ★ "No single moment of splitting" *(the chapter's biggest aha)*
 
-- **Text:** So where did it split? Slice the pants with a flat "now": one loop, then two. Tilt the slice, as motion tilts [[simultaneity]], and the pinch slides elsewhere. No point on the surface is special: the split is spread out.
+- **Text:** So where did it split? Slice the pants with a flat "now": one loop, then two. Tilt the slice, as motion tilts [[simultaneity]], and the pinch slides elsewhere. No point on the surface is special, so no single event is "the" split.
 - **Status:** `ANALOGY` ~ · `DERIVED` ◑ *(tooltip: "Drawn with time treated like space, as in string calculations. There, tilting the slicing moves the pinch exactly. For real observers it is a heuristic (see Go deeper).")*
 - **Stage:**
   - **p 0 → 0.3, flat NOW.** Each history gets its own translucent **NOW plane**: a 7×4-unit rectangle in its own local coordinates, with a hairline border, a faint 0.5-unit grid, opacity 0.08 and the mono label `NOW`. Both planes rise together from ct = 3.5 to ct = 7.
@@ -89,20 +89,22 @@ Suggested scroll lengths: Opening 100vh · B1 150vh · B2 120vh · B3 150vh · *
 
 ### Beat 5 — "Why it matters"
 
-- **Text:** Why it matters: particle calculations blow up where interaction points crowd together, the [[UV divergence]]s that defeat the standard approach to quantum gravity. String loops can't be squeezed to a point. Explicit calculations, through two loops, come out finite; arguments extend this to every order.
-- **Status:** `DERIVED` ◑ *(tooltip: "Finite at one and two loops by explicit calculation. The all-order case is argued strongly, most recently via string field theory, but is not a complete theorem. It holds order by order; the full series doesn't converge.")*
+- **Text:** Particle calculations blow up where interaction points crowd together. For gravity, these [[UV divergence]]s can't be tamed at high energies. String loops can't be squeezed to a point. Explicit [[superstring]] calculations through two loops have no such infinities; arguments extend this to every order.
+- **Status:** `DERIVED` ◑ · `ANALOGY` ~ *(tooltip: "Superstring amplitudes have no ultraviolet infinities at one and two loops, by explicit calculation. To all orders, string field theory gives a general argument its authors consider settled; it is not a mathematical theorem, and some standard notes call it unproven. Each order is finite, but the full series doesn't converge. At low energies, ordinary quantum gravity works fine. The squeeze animation is a cartoon.")*
 - **Stage:**
   - **Left, a particle loop.** A worldline splits at event x and rejoins at event y, forming a lens-shaped "bubble" of two arcs. Scroll squeezes the bubble: x and y slide together until the loop collapses to a point. A hairline readout climbs `LOOP SIZE → 0 · CONTRIBUTION → ∞` (schematic, with an ANALOGY chip).
-  - **Right, a string loop.** A tube splits and rejoins, leaving a hole (a "handle"). It uses the Lab's implicit Φ with `c(t) = 1.7·exp(−((t−5)/w)²)`, which opens a hole because 1.7 > 1.442. The squeeze drives `w` from 2.4 down to 1.5, where it **stops**: hairline clamp brackets press but the tubes keep their thickness (the hole stays ≈ 1.2 ℓ tall), and a mono tag reads `TUBES KEEP A STRING'S WIDTH`. With w ≥ 1.5 the legs separate at ≤ 0.97c, so nothing visibly outruns the light-cone glyph.
-  - The scroll then drives `w` from 1.5 → 4.0: the loop stretches *long* instead. Caption: `THE ONLY WAY OUT: LONG TUBES, WHICH MEANS LONG-DISTANCE PHYSICS, WHICH IS WELL UNDERSTOOD.` This is a cartoon of the precise result, in which every degeneration of a string surface is a long tube (Sen & Zwiebach 2024, §9.7).
+  - **Right, a string loop.** A tube splits and rejoins, leaving a hole (a "handle"). It uses the Lab's implicit Φ with `c(t) = 1.7·exp(−((t−5)/w)²)`, which opens a hole because 1.7 > 1.442. The squeeze drives `w` from 2.4 down to 1.5, where it **stops**: hairline clamp brackets press, but the hole stops shrinking at ≈ 1.2 ℓ tall (it is 1.95 ℓ at w = 2.4), and a mono tag reads `NO SHRINKING TO A POINT`. With w ≥ 1.5 each leg moves at ≤ 0.97c. Only the two small crotch patches are flatter than 45°, the same caveat as the pants (Lab › Model 6).
+  - The scroll then drives `w` from 1.5 → 4.0: the loop stretches *long* instead. Caption: `THE ONLY ESCAPE IS A LONG TUBE: LONG-DISTANCE PHYSICS, NOT A SHORT-DISTANCE INFINITY.` This is a cartoon of the precise result, in which every degeneration of a string surface is an infinitely long tube, i.e. infrared (Sen & Zwiebach 2024, §9.7). The fixed "width" there is a circumference in the worldsheet's own geometry, not a physical thickness in space, so no caption may say strings have a fixed width.
+  - **Implementation (exact and cheap).** Φ depends on t only through c(t), and `c_w(t) = c_1.5(5 + (t−5)·1.5/w)`. So bake **one** marching-cubes mesh at w = 1.5 (x ∈ [−3, 3], y ∈ [−1.8, 1.8], t ∈ [0, 10], cell 0.08, ≈ 48k triangles). For any w, scale each vertex's t about t = 5 by `w/1.5` in the vertex shader, multiply the normal's t-component by `1.5/w` (then renormalize), and discard fragments outside t ∈ [0, 10]. No re-meshing during scroll.
 
 ### Beat 6 — "Open strings can close" *(handoff out)*
 
-- **Text:** Open strings can also close. If an open string's two ends meet, they can fuse into a loop. So any theory with open strings also contains [[closed string]]s. That matters: one vibration of a closed loop behaves like the graviton.
+- **Text:** Open strings can also close. If an open string's two ends meet, they can fuse into a loop. So any theory with open strings also contains [[closed string]]s. That matters: one vibration of a closed loop behaves like the [[graviton]].
 - **Status:** `DERIVED` ◑ · `ANALOGY` ~ *(tooltip: "Open implies closed, but not always the reverse: heterotic theories seem to have no open strings. The joining shape drawn is a cartoon.")*
 - **Stage:**
   - A single history at center. An open string, a C-shaped arc of radius 1.2, rises. Its angular gap narrows as `g(t) = 2.4·√max(0, 1 − t/5)` rad, and the arc spans angles `[g/2, 2π − g/2]`.
-  - Its two edge hairlines (the endpoint worldlines) curve toward each other and meet smoothly at ct = 5, like a zipper closing. Above that, the surface continues as a plain tube up to ct = 9. This is a cartoon: just before the join the drawn ends lean flatter than 45°, the same caveat as the pants' crotch (see Lab › Model 6). Real free ends move at exactly c. The warm current slice goes from a "C" arc to a closed ring. A mono tag at the meeting point reads `ENDS JOIN`.
+  - Its two edge hairlines (the endpoint worldlines) curve toward each other and meet smoothly at ct = 5, like a zipper closing. Above that, the surface continues as a plain tube up to ct = 9. The warm current slice goes from a "C" arc to a closed ring. A mono tag at the meeting point reads `ENDS JOIN`.
+  - **This is a cartoon, and it contradicts Beat 1 unless flagged.** Each drawn end slides along the arc at speed `0.144c/√(1 − t/5)`: 0.14c at ct = 0, 0.46c at ct = 4.5, reaching c only at ct ≈ 4.90 and exceeding it in the last ≈ 0.1 ℓ before the join (so the edges lean steeper than 45° almost all the way, then flatter). Real free ends always move at exactly c, perpendicular to the string. Show a small mono caption beside the edges: `CARTOON · REAL FREE ENDS MOVE AT c`.
   - **OUT (p 0.6 → 1).** The camera cranes up the tube and pitches until it looks straight down the time axis. The ring, which lies in the space plane, now faces the camera. Presence ramps fade the floor grid, the time axis and the worldsheet film to 0, leaving only the warm loop at screen center, gently wobbling. **Last frame = H2.**
 
 ---
@@ -159,7 +161,7 @@ $$c(t)=1.2\,\big[1+\tanh\big((t-5)/1.6\big)\big],\qquad t\in[0,10]$$
   |---|---|
   | Waist radius (c → 0) | √ln 8 = **1.442** |
   | Late leg radius | ≈ √ln 4 = **1.18** |
-  | Leg-center separation speed | ≤ **0.75c** |
+  | Speed of each leg center, \|c′(t)\| | ≤ **0.75c** (the gap between the centers grows at up to 1.5c; that is a closing rate, not a velocity) |
   | Leg centers at t = 10 | ±2.395 |
   | Untilted pinch | exactly at **(0, 0, t\* = 5.327)**, where c(t\*) = √ln 8 |
   | c′(t\*) | 0.7195 |
@@ -174,7 +176,7 @@ $$h(x,y,t)=t-t_0-\tan\theta\,(x\cos\varphi+y\sin\varphi)$$
 
 The slice is the set of surface points where h = 0.
 - **Shader glow:** `I = exp(−(h/0.025)²)`, mixed toward Filament.
-- **CPU:** run marching triangles on the mesh when a control changes (not per frame). This gives the polylines for the inset and the loop count (the number of connected components).
+- **CPU:** when a control changes (not per frame), sample Φ − L **analytically on the plane itself**, at (x, y, t₀ + tanθ(x cosφ + y sinφ)) on a 0.04-ℓ grid over x ∈ [−4, 4], y ∈ [−1.8, 1.8], and run marching squares. This gives the polylines for the inset and the loop count (the number of connected components). Do **not** slice the baked mesh: at large tilts the plane leaves the mesh's t ∈ [0, 10] (for example, at t₀ = 9 and θ = 35° the right leg's slice reaches ct ≈ 11.5), and slicing the mesh would give broken arcs. The analytic slice gives exactly one 1 → 2 change as t₀ sweeps 1 → 9 (checked on a grid of θ ≤ 35° and φ). The on-mesh glow may fade where the mesh fades; that is fine.
 - **Physics tie-in:** in a real spacetime diagram, a moving observer's line of simultaneity has slope `v/c`. Hence the readout `v/c = tan θ`, capped at 35° → 0.70c, safely below 45°.
 
 **3. The split point for a given slicing (the key computation).** Topology changes only where the plane is tangent to the surface: a critical point of h restricted to the surface (Morse theory). Near the crotch the surface is a graph `t = T(x, y)`. Obtain T by bisection of Φ(x, y, T) = L on T ∈ [3, 8] (40 iterations); Φ decreases monotonically in t there. The tangency condition is then:
@@ -184,7 +186,7 @@ $$\partial_x T = \tan\theta\cos\varphi,\qquad \partial_y T=\tan\theta\sin\varphi
 - **Solve.** Use 2D Newton with central differences (h = 10⁻³), starting at (0, 0). 8 iterations converge for θ ≤ 35°.
 - **Precompute.** Build a lookup table for θ ∈ {0°, 0.5°, …, 35°} × φ ∈ {0°, 5°, …, 355°} at load and interpolate bilinearly.
 - **Outputs.** The split event is `(x*, y*, T(x*, y*))`. The plane offset at which it happens is `t₀* = T(x*, y*) − tanθ·(x* cosφ + y* sinφ)`.
-- **Small-tilt closed form** (≤ 8% error at 35°): `x* ≈ tanθ·cosφ / 3.045`, `y* ≈ −tanθ·sinφ / 0.964`.
+- **Small-tilt closed form** (per-component error up to ≈ 11% at 35°: e.g. y* ≈ −0.726 vs exact −0.668 at φ = 90°; use it only as a sanity check, never for display): `x* ≈ tanθ·cosφ / 3.045`, `y* ≈ −tanθ·sinφ / 0.964`.
 - **Verified values:**
 
   | θ | φ | split event (x, y, ct) | t₀* |
@@ -196,7 +198,7 @@ $$\partial_x T = \tan\theta\cos\varphi,\qquad \partial_y T=\tan\theta\sin\varphi
   | 35° | 90° | (0, −0.668, 5.104) | 5.572 |
   | 35° | 45° | (+0.183, −0.473, 5.263) | 5.407 |
 
-- **Uniqueness.** Away from the crotch, the leg walls are never flatter than slope 1/0.75 = 1.33. So for tan θ ≤ 0.70 the crotch is the *only* place the plane can be tangent, and each slicing sees exactly one split. A numerical scan of t₀ ∈ [1.5, 8.5] confirmed a single 1→2 change for every tilt tested.
+- **Uniqueness.** Away from the crotch patch, the walls are never flatter than slope ≈ 1.3 (numerical minimum 1.31; the naive bound 1/0.75 = 1.33 from the leg speed alone is slightly too optimistic). So for tan θ ≤ 0.70 the plane can be tangent only near the crotch: every tangency candidate lies within |x| ≤ 0.22, |y| ≤ 0.68, ct ∈ [5.1, 5.4]. Each slicing therefore sees exactly one split. A numerical scan of t₀ ∈ [1.5, 8.5] confirmed a single 1→2 change for every tilt tested.
 
 **4. The particle "Y".** The incoming worldline is (0, 0, t) for t ≤ t_v = 5.327. The outgoing worldlines are (±0.45·(t − t_v), 0, t) for t ≥ t_v. For each plane, intersect each segment analytically. The split occurs exactly when the plane passes through the vertex event, which is **the same event for every θ, φ**. The readout is frozen at `SPLIT SEEN AT x = 0.00 · y = 0.00 · ct = 5.33`. Its t₀* is 5.327 for every tilt, because the vertex sits at the plane's pivot.
 
@@ -208,7 +210,7 @@ $$\partial_x T = \tan\theta\cos\varphi,\qquad \partial_y T=\tan\theta\sin\varphi
 |---|---|
 | A slice changes topology (1 loop → 2) only at a tangency; where that tangency sits depends on the slicing | **Faithful** mathematics (Morse theory) for any smooth surface |
 | A smooth pants surface with a smooth saddle, sliced at any tilt | **Faithful for the worldsheets string amplitudes are computed on**, in "imaginary time", where tilting a slice is just a rotation |
-| Reading the tilt as "a moving observer" | **Heuristic / ANALOGY.** In strictly real-time classical geometry, a splitting worldsheet cannot be smooth and timelike everywhere. It must have one degenerate "crotch" point (Louko & Sorkin 1997), and a real observer's slices would all find it. Our drawn crotch is flatter than 45° within about ±0.34 ℓ in x and ±0.86 ℓ in y, which is the tell. The robust lesson ("no point on the surface is special; the interaction is not put in at a point") does not depend on this |
+| Reading the tilt as "a moving observer" | **Heuristic / ANALOGY.** In strictly real-time classical geometry, a splitting worldsheet cannot be smooth and timelike everywhere (for topological reasons, since the pants have Euler number −1). It must fail to be timelike somewhere; in the simplest case that is a single degenerate "crotch" point (Louko & Sorkin 1997). A spacelike "now" can be tangent to the surface only where the surface is not timelike, so every real observer's slicing would find the split at that same point. Our drawn crotch is flatter than 45° (spacelike) within about ±0.34 ℓ in x and ±0.86 ℓ in y. That patch is exactly where the moving pinch lives, and it is the tell. The robust lesson ("no point on the surface is special; the interaction is not put in at a point") does not depend on this |
 | The specific shape Φ | **Cartoon.** It is not a solution of any equation. The quantum amplitude sums over all smooth surfaces of this topology |
 | 2+1 dimensions, ℓ-scale units | **Cartoon** (hidden dimension; not to scale) |
 
@@ -222,7 +224,7 @@ $$\partial_x T = \tan\theta\cos\varphi,\qquad \partial_y T=\tan\theta\sin\varphi
 - Loop readouts: `1 LOOP` · `PINCHING` · `2 LOOPS` / `1 PARTICLE` · `2 PARTICLES`
 - Particle caption: "Every tilt agrees: the particles split at one event, the vertex."
 - String caption: "Each tilt finds a different split point. The surface itself never changes."
-- After *Try every direction*: "No single point. The split is smeared across this patch."
+- After *Try every direction*: "No single point. Different tilts put the split anywhere in this patch."
 - Limit hint: "Tilts stop below 45°: no observer outruns light."
 - Inset title: `THIS OBSERVER'S MOVIE`
 - ANALOGY chip text: "Time drawn like space, as in string calculations. One dimension hidden; not to scale."
@@ -234,7 +236,7 @@ A soft sustained tone for the single loop. At the pinch it divides into two tone
 
 #### Fallback (no WebGL)
 
-A static SVG with the Y and the pants side by side, each crossed by three hairline slice lines (0° and ±30°). The Y's three split marks coincide; the pants' three marks sit visibly apart.
+A static SVG with the Y and the pants side by side (x–ct side view), each crossed by three hairline slice lines (0° and ±30°). The Y's three split marks coincide. The pants' three marks sit at x = −0.19, 0 and +0.19 ℓ (ct 5.38, 5.33, 5.38). Because 0.19 ℓ is small at full-figure scale, add a ×4 magnified crotch inset so the separation reads clearly.
 
 ---
 
@@ -253,22 +255,26 @@ Nambu (1970) and Goto (1971) lifted this rule one dimension:
 $$S_{\text{NG}} = -\frac{T}{c}\int dA \;=\; -\frac{T}{c}\int d\tau\,d\sigma\,\sqrt{(\dot X\!\cdot\! X')^{2}-\dot X^{2}\,X'^{2}}$$
 
 - `T` is the tension, an energy per unit length. In units where ħ = c = 1 it is written 1/2πα′.
-- `X(τ, σ)` places each point of the worldsheet in spacetime: `σ` runs along the string and `τ` runs forward in time.
+- `X(τ, σ)` places each point of the worldsheet in spacetime: `σ` runs along the string and `τ` runs forward in time. (Here τ is just a label, not the particle's proper time above, so highlight-sync `dτ` only in the particle formula.)
 - `Ẋ` and `X′` are the two edges of a tiny patch, and the square root is that patch's area, measured by relativity's rules.
 
 The real history makes S *stationary*: nudge it slightly and S changes only at second order. The area doesn't depend on how you label or slice the sheet into moments, so no slicing of the pants is preferred.
 
-Interactions need no new ingredient. Each history is weighted by its shape class:
+Interactions need almost no new ingredient. There is no vertex rule, only one weight per shape class. (Tong says the free theory already contains all the information about interactions, and adds that this is "almost true".)
 
 $$\text{weight}\;\propto\; g_s^{-\chi},\qquad \chi = 2-2h-b$$
 
 - `χ` is the Euler number of the surface.
-- For closed strings, `b` counts the openings where strings enter or leave, and `h` counts handles (loops).
+- Here `b` counts the openings where strings enter or leave, and `h` counts handles (loops). This uses Tong's normalization, in which each incoming or outgoing string carries one factor of g_s.
 - A tube has χ = 0: free travel.
 - The pants have χ = −1: one factor of the string coupling `g_s`.
 - Each extra handle costs another factor of g_s².
 
-And g_s is not a free dial: its value is set by a field of the theory itself, the dilaton.
+And g_s is not a free dial: it is the value of a field of the theory itself, the dilaton. What fixes that value in our universe is an open question.
+
+**Do moving observers really disagree about where it split?**
+
+String amplitudes are computed on worldsheets in "imaginary time". There, a tilt is just a rotation and every patch of the pants is locally alike, so the moving pinch is exact geometry. A strictly real-time classical splitting surface is different. It cannot be timelike everywhere; in the simplest case it has one degenerate "crotch" point, and every observer's slicing would find the split there. The lesson that survives in both pictures: no vertex is put in by hand.
 
 *(Highlight sync: `dτ` ↔ the tick marks from Beat 2; `T` ↔ the ribbon's glowing edges; `dA` ↔ the area fill; `b` and `h` ↔ counters beside the tube, the pants and Beat 5's handle.)*
 
@@ -278,14 +284,16 @@ And g_s is not a free dial: its value is set by a field of the theory itself, th
 
 - `worldline` — The line a point particle traces through spacetime: every place it has been, at every moment, drawn as one line.
 - `worldsheet` — The surface a string traces through spacetime. An open string's is a ribbon; a closed string's is a tube.
-- `open string` — A string with two free ends. Free ends move at light speed. Later chapters show they can attach to membranes called branes.
+- `open string` — A string with two free ends; classically they move at light speed. Later chapters show the ends can stick to objects called D-branes.
 - `closed string` — A string that forms a loop with no ends. Its worldsheet is a tube. Any theory with open strings contains closed strings too.
 - `proper time` — The time a clock carried along a worldline actually ticks. Between two events, the straight, unaccelerated worldline ticks the most.
 - `Nambu–Goto action` — String theory's starting rule: a history's action is minus the string tension times the worldsheet's area, measured by relativity's rules.
 - `pair of pants` — The worldsheet of one closed string splitting into two, or two joining into one. It is smooth everywhere, with no corner.
 - `vertex` — In a particle (Feynman) diagram, the sharp point where worldlines meet. Particle theories attach a separate rule and strength to each kind of vertex.
-- `simultaneity` — Which events count as happening "now". Observers moving relative to each other slice spacetime into "nows" at different tilts (an observed effect of relativity).
+- `simultaneity` — Which events count as happening "now". Observers moving relative to each other slice spacetime into "nows" at different tilts (a well-tested consequence of special relativity).
 - `UV divergence` — An infinity in a quantum calculation that comes from extremely short distances (very high energies), for example interaction points squeezed together.
+
+Referenced from other chapters, not redefined: `superstring` (Ch. 2), `graviton` (Ch. 4, a forward link from Beat 6), `D-brane` (Ch. 7, named in `open string`).
 
 ---
 
@@ -303,45 +311,45 @@ And g_s is not a free dial: its value is set by a field of the theory itself, th
 - **"Action proportional to worldline length → worldsheet area" as the generalization.** Source: Tong §1.2.
 
 **Open strings**
-- **Free open-string endpoints move at the speed of light** (Neumann boundary conditions). Source: Tong §3, discussion after eq. (3.1); Zwiebach ch. 6–7.
-- **Rigidly rotating open string** (Beat 1's helicoid) is an exact classical solution. In energy-parametrized static gauge it reads `x(σ,t) = (L/π)·cos(πσ/L)·(cos(πct/L), sin(πct/L))`, with endpoints at speed c. This pack checked the constraints and the wave equation directly. Source: Zwiebach, 2nd ed. (rotating open string, ch. 7–8).
-- **"Theories of open strings necessarily contain closed strings"** (the ends can join). Heterotic theories appear to have no open strings or D-branes. Source: Tong §3 (before §3.1.1).
-- **History.** Closed strings first surfaced uninvited, as extra singularities (the "Pomeron") in *nonplanar* open-string loop amplitudes. Lovelace noticed that they behave properly in 26 dimensions. Source: C. Lovelace, *Phys. Lett. B* **34**, 500 (1971), https://doi.org/10.1016/0370-2693(71)90665-4
+- **Free open-string endpoints move at the speed of light** (Neumann boundary conditions), with velocity perpendicular to the string. Source: Tong §3, just after eq. (3.1) ("the end point of the string moves at the speed of light"); Zwiebach 2nd ed. §6.9 ("Motion of open string endpoints").
+- **Rigidly rotating open string** (Beat 1's helicoid) is an exact classical solution. In energy-parametrized static gauge it reads `x(σ,t) = (L/π)·cos(πσ/L)·(cos(πct/L), sin(πct/L))`, σ ∈ [0, L], with endpoints at speed c. The referee re-checked the constraints (Ẋ·X′ = 0, X′² + Ẋ²/c² = 1) and the wave equation. Beat 1's `P(s,t)` is the same straight rotating line, with s = (L/π)cos(πσ/L) and r₀ = L/π. Source: Zwiebach, 2nd ed., ch. 7 ("String parameterization and classical motion") and ch. 8 (section "The slope parameter α′", where the rotating string gives J = α′E²). Section numbers are not quoted.
+- **"Theories of open strings necessarily contain closed strings"** (the ends can join). "For heterotic superstrings, there appear to be no open strings and no D-branes." Source: Tong §3.1, just before §3.1.1 (verbatim).
+- **History.** In the early open-string (dual resonance) models, closed strings turned up uninvited. *Nonplanar* one-loop open-string amplitudes showed unexpected extra singularities, later identified with the "Pomeron", i.e. closed-string states (J. Shapiro; Clavelli & Shapiro 1973). A closed-string amplitude had also been proposed independently (Virasoro 1969; Shapiro 1970), so these were not literally the *first* closed strings. Lovelace (1971) noticed that the nonplanar loop is consistent with unitarity (poles rather than cuts) only in 26 spacetime dimensions. Sources: C. Lovelace, *Phys. Lett. B* **34**, 500 (1971), https://doi.org/10.1016/0370-2693(71)90665-4; J. A. Shapiro, "Reminiscence on the Birth of String Theory", https://arxiv.org/abs/0711.3448; https://en.wikipedia.org/wiki/Claud_Lovelace
 
 **Interactions**
 - **"The worldsheet is smooth… Here there are no such points. Locally, every part of the diagram looks like a free propagating string. Only globally do we see that the diagram describes interactions."** Source: Tong, opening of §6.
-- **Topology weighting.** Weight ∝ g_s^{−χ} with χ = 2 − 2h − b. Sphere: χ = 2; torus: χ = 0; genus g weighted by (g_s²)^{g−1}. Source: Tong §6.1.1, eqs. (6.3)–(6.5), and χ = 2 − 2h − b in §6.3 (open-string scattering).
-- **Tube and pants.** Tube χ = 0; pants χ = −1 → one factor of g_s. This follows from the formula above.
+- **Topology weighting.** Weight ∝ g_s^{−χ} with χ = 2 − 2h − b. Sphere: χ = 2; torus: χ = 0; genus g weighted by (g_s²)^{g−1}. Source: Tong §6.1.1, eqs. (6.3)–(6.5), and χ = 2 − 2h − b in §6.3 (there b counts genuine open-string boundaries).
+- **Tube and pants.** Tong normalizes each closed-string vertex operator with one factor of g_s (eq. (6.7)), so an m-string sphere amplitude scales as g_s^{m−2}. This is the same as g_s^{−χ} if each external string is counted in b. Tube (m = 2): g_s⁰. Pants (m = 3): g_s¹. Torus with 2 external strings (Beat 5's handle): g_s². Other normalizations shift the overall power, but the relative factor g_s² per handle is convention-independent.
 - **g_s = e^{Φ₀}**, the asymptotic value of the dilaton. Source: Tong eq. (7.14).
-- **No invariant interaction point.** Witten: "There is no longer an invariant notion of when and where interactions occur." He also notes that for particles, "Everyone can agree… that x, y, z and w were the spacetime events at which interactions occurred." Source: E. Witten, "Reflections on the Fate of Spacetime", *Physics Today* **49**(4), 24–30 (April 1996), https://doi.org/10.1063/1.881493 (scan: https://www.sns.ias.edu/~witten/papers/Reflections.pdf).
+- **No invariant interaction point.** Witten: "There is no longer an invariant notion of when and where interactions occur." Witten says this of smooth world-tubes in the sum over histories. He does not use the tilted-observer argument; that dramatization is Greene's (below). He also notes that for particles, "Everyone can agree… that x, y, z and w were the spacetime events at which interactions occurred." Source: E. Witten, "Reflections on the Fate of Spacetime", *Physics Today* **49**(4), 24–30 (April 1996), https://doi.org/10.1063/1.881493 (scan: https://www.sns.ias.edu/~witten/papers/Reflections.pdf).
 - **Where particle infinities come from.** Same article: potential infinities come from the integration region "where the spacetime events x, y, z and w all nearly coincide", and "for gravity, renormalization theory fails".
 - **Popular "tilted slices" version:** B. Greene, *The Elegant Universe* (1999), ch. 6. https://en.wikipedia.org/wiki/The_Elegant_Universe
 - **Lorentzian caveat.** A 2D Lorentzian "trousers" must have a degenerate *crotch* point; Louko & Sorkin note that this is "also the fundamental vertex of string theory, if one makes that interpretation". Sources: J. Louko & R. Sorkin, *Class. Quantum Grav.* **14**, 179 (1997), https://arxiv.org/abs/gr-qc/9511023; A. Anderson & B. DeWitt, *Found. Phys.* **16**, 91 (1986), https://doi.org/10.1007/BF01889374
 - **String amplitudes use asymptotic states** (the S-matrix), not finite-time "movies". Source: Tong §6.1.
 
 **Ultraviolet behaviour**
-- **Gravity as an ordinary quantum field theory is non-renormalizable.** With matter it fails at one loop ('t Hooft & Veltman, *Ann. Inst. H. Poincaré A* **20**, 69 (1974), https://www.numdam.org/item/AIHPA_1974__20_1_69_0/). Pure gravity fails at two loops (Goroff & Sagnotti, *Nucl. Phys. B* **266**, 709 (1986), https://doi.org/10.1016/0550-3213(86)90193-8).
+- **Gravity as an ordinary quantum field theory is non-renormalizable.** With matter it fails at one loop ('t Hooft & Veltman, *Ann. Inst. H. Poincaré A* **20**, 69 (1974), https://www.numdam.org/item/AIHPA_1974__20_1_69_0/). Pure gravity fails at two loops (Goroff & Sagnotti, *Nucl. Phys. B* **266**, 709 (1986), https://doi.org/10.1016/0550-3213(86)90193-8). This is a high-energy failure. At low energies, quantum general relativity works well as an effective field theory (J. Donoghue, *Phys. Rev. D* **50**, 3874 (1994), https://arxiv.org/abs/gr-qc/9405057). "Totally incompatible" is an overstatement.
 - **One loop: UV finite** (the region of "thin" tori is excluded by modular invariance). Source: Tong §6.4.
 - **Two loops.** D'Hoker & Phong constructed the two-loop superstring measure and established its good behaviour: *Phys. Lett. B* **529**, 241 (2002), https://arxiv.org/abs/hep-th/0110247; *Nucl. Phys. B* **715**, 3 (2005), https://arxiv.org/abs/hep-th/0501197. Tong §6.4.4 also says that UV finiteness "continues to hold at the two-loops".
 - **Higher loops.** Tong §6.4.4: "The honest answer is that we don't know… no general statement of finiteness has been proven"; with pure-spinor methods, "certain objects remain finite up to five-loops".
-- **All orders.** "String field theory puts the claim of perturbative ultraviolet finiteness of string theory in a solid footing." In that picture, surfaces are built from tubes of fixed finite circumference, and every degeneration is an infinitely long tube, i.e. infrared. Source: A. Sen & B. Zwiebach, "String Field Theory: A Review" (2024), §9.7, https://arxiv.org/abs/2405.19421. See also E. Witten, "Superstring Perturbation Theory Revisited" (2012), https://arxiv.org/abs/1209.5461
+- **All orders.** "String field theory puts the claim of perturbative ultraviolet finiteness of string theory in a solid footing" (Sen & Zwiebach, Introduction). §9.7 ("UV finiteness") concludes that string field theory "shows the absence of UV divergences". In the minimal-area picture, surfaces are built from "cylinders of fixed finite circumference" (a circumference in the worldsheet's own metric, not a width in space), and "all degenerations appear from infinitely long cylinders", i.e. infrared. Source: A. Sen & B. Zwiebach, "String Field Theory: A Review" (2024), https://arxiv.org/abs/2405.19421 (Introduction; §7.8; §9.7). See also E. Witten, "Superstring Perturbation Theory Revisited" (2012), https://arxiv.org/abs/1209.5461. **Balance used on the site:** explicit at one and two loops (DERIVED); all orders argued generally and accepted by SFT experts, but not a mathematical theorem, and Tong's notes (older than this work) call it unproven. Superstring statements only: the bosonic string has a tachyon and its own divergences.
 - **The perturbation series itself is asymptotic** (it does not converge). Source: Tong §6.4.5. For the bosonic string: D. Gross & V. Periwal, *PRL* **60**, 2105 (1988), https://doi.org/10.1103/PhysRevLett.60.2105
 - **High-energy softness.** At high energy and fixed angle, string amplitudes fall off exponentially, where field theory gives power laws. Sources: D. Gross & P. Mende, *Phys. Lett. B* **197**, 129 (1987), https://doi.org/10.1016/0370-2693(87)90355-8; Tong eq. (6.14).
 
 **Scale**
-- **Planck length** = 1.616255 × 10⁻³⁵ m (CODATA 2018), https://physics.nist.gov/cgi-bin/cuu/Value?plkl. The string length is unknown; tying it to "~10⁻³⁵ m" is SPECULATIVE.
+- **Planck length** = 1.616255 × 10⁻³⁵ m (CODATA 2018), https://physics.nist.gov/cgi-bin/cuu/Value?plkl. The string length is unknown; any value on the gauge (the site draws ~10⁻³⁴ m, a traditional estimate) is SPECULATIVE.
 
 **Lab-model numbers** (this pack's own construction, verified with a numpy script)
 - **Constants:** L = 0.25, C = 2.4, t_m = 5, w = 1.6.
-- **Radii:** waist 1.442; legs ≈ 1.18; leg-separation speed ≤ 0.75c.
+- **Radii:** waist 1.442; legs ≈ 1.18; each leg center moves at ≤ 0.75c. Away from the crotch the walls are timelike, with slope ≥ 1.31.
 - **Pinch:** t\* = 5.327, c′(t\*) = 0.7195.
 - **Local curvatures:** T_xx = 3.045, T_yy = −0.964.
-- **Split positions and one-change check:** see the table in Lab › Model 3. A t₀ scan confirmed a single topology change per tilt.
+- **Split positions and one-change check:** see the table in Lab › Model 3; the referee independently reproduced every row to 3 decimals. A t₀ scan (analytic slice, no mesh clipping) confirmed a single topology change per tilt. Newton (8 iterations, 40-step bisection, h = 10⁻³) converges to a residual < 10⁻⁸ for all θ ≤ 35°.
 - **Flat patch:** |∇T| < 1 within about ±0.34 in x and ±0.86 in y.
 - **Particle Y:** branches move apart at ±0.45c.
 - **Beat 1 helicoid:** r₀ = 1, endpoint speed = c.
-- **Beat 5 handle:** c_max = 1.7. Its hole is 1.22 ℓ tall at w = 1.5 and 1.95 ℓ at w = 2.4. Leg speed ≤ 0.97c at w = 1.5.
-- **Beat 6 gap law:** g₀ = 2.4 rad, joining at ct = 5.
+- **Beat 5 handle:** c_max = 1.7. The hole height is 2w·√ln(1.7/1.442) = 0.811·w: 1.22 ℓ at w = 1.5, 1.95 ℓ at w = 2.4 and 3.25 ℓ at w = 4. Maximum leg speed is 1.458/w: 0.97c at w = 1.5, 0.61c at w = 2.4 and 0.36c at w = 4. The spacelike (flatter than 45°) patches are only at the two crotches (|x| ≤ 0.34 at w = 1.5). One mesh serves every w by rescaling t about 5 by w/1.5 (exact).
+- **Beat 6 gap law:** g₀ = 2.4 rad, joining at ct = 5. Drawn end speed is 0.144c/√(1 − t/5): below c until ct ≈ 4.90, then above it (a cartoon; see Beat 6).
 - **Mesh estimate:** ≈ 54k triangles at a cell size of 0.08.
 
 ---
@@ -352,21 +360,21 @@ And g_s is not a free dial: its value is set by a field of the theory itself, th
    A worldsheet is a *history*: the whole life of a string, drawn at once. The string at any moment is a slice through it. **Avoided by:** the flipbook-to-surface build in the Opening and Beat 1, the Field (geometry) colour for sheets, and warm light only on the *current* slice.
 
 2. **"Strings, like soap films, minimize their area."**
-   The classical worldsheet makes the area *stationary*, not minimal. In spacetime, some nudges increase the proper area and others decrease it (for a straight free *particle*, proper time is truly maximal). The soap-film picture is exact only in imaginary time. **Avoided by:** Beat 2's wording ("picks", "stationary"), the `ORDER ε²` nudge caption, and the Go deeper text.
+   The classical worldsheet makes the area *stationary*, not minimal. In spacetime, some nudges increase the proper area and others decrease it (for a straight free *particle*, proper time is truly maximal). The soap-film picture fits only in imaginary time, where solutions are "minimal surfaces" in the geometer's sense (stationary, zero mean curvature). **Avoided by:** Beat 2's wording ("picks", "stationary"), the `ORDER ε²` nudge caption, and the Go deeper text.
 
 3. **"Different observers literally disagree about the event where a string split."**
-   This is the popular form (Greene 1999; Witten 1996 phrases it as "no longer an invariant notion of when and where interactions occur"). Its lesson is right: no point on a smooth worldsheet is special, and the interaction is not inserted at a point. The literal observer story needs care. It is exact for the smooth "imaginary-time" worldsheets on which amplitudes are computed. A strictly real-time classical splitting surface must, for topological reasons, contain one degenerate crotch point that every observer's slicing would find (Louko & Sorkin 1997). **Avoided by:**
+   This is the popular form (Greene 1999; Witten 1996 phrases it as "no longer an invariant notion of when and where interactions occur"). Its lesson is right: no point on a smooth worldsheet is special, and the interaction is not inserted at a point. The literal observer story needs care. It is exact for the smooth "imaginary-time" worldsheets on which amplitudes are computed. A strictly real-time classical splitting surface cannot, for topological reasons, be timelike everywhere. In the simplest case it has a single degenerate crotch point, and every observer's slicing would find that same point (Louko & Sorkin 1997; Anderson & DeWitt 1986). Witten's own statement concerns the smooth world-tubes of the amplitude, where it holds; the moving-observer dramatization is Greene's. **Avoided by:**
    - the ANALOGY · DERIVED chip on Beat 4;
-   - the tooltip ("for real observers it is a heuristic");
+   - the tooltip ("for real observers it is a heuristic"), which points to the Go deeper paragraph "Do moving observers really disagree…";
    - the Model's faithful-vs-cartoon table;
    - the tilt capped below 45°;
    - framing the takeaway as "no point on the surface is special" rather than "physics is observer-dependent".
 
 4. **"String theory has been proven finite" / "string theory has no infinities."**
-   Perturbative UV finiteness is explicit at one and two loops. All-order arguments exist (string field theory, Sen & Zwiebach 2024), but Tong's widely used notes still say no general proof exists. The perturbation series itself is asymptotic, and the full non-perturbative theory isn't known. Finiteness is a theoretical virtue, not experimental evidence. **Avoided by:** Beat 5's "through two loops … arguments extend this", the tooltip, and the Numbers list. We never use "proves".
+   Perturbative UV finiteness of the *superstring* is explicit at one and two loops. All-order arguments exist: string field theory, which Sen & Zwiebach (2024) say "shows the absence of UV divergences". It is not a mathematical theorem, and Tong's widely used (older) notes say no general proof exists. The perturbation series itself is asymptotic, the full non-perturbative theory isn't known, and IR (long-distance) divergences remain, just as in ordinary field theory. Finiteness is a theoretical virtue, not experimental evidence. **Avoided by:** Beat 5's "superstring … through two loops … arguments extend this", the tooltip, and the Numbers list. We never use "proves".
 
 5. **"Strings interact by bumping into each other; the interaction happens where they touch."**
-   Nothing extra happens at a contact point. The interaction *is* the surface's shape (its topology). Its strength g_s is fixed by the dilaton's value, not chosen per vertex. **Avoided by:** Beat 3's loupe showing a crotch patch identical to a free patch, and Go deeper's "interactions need no new ingredient".
+   Nothing extra happens at a contact point. The interaction *is* the surface's shape (its topology). Its strength g_s is the dilaton's value, one number for every shape rather than a rule chosen per vertex; what fixes that value is not known. **Avoided by:** Beat 3's loupe showing a crotch patch identical to a free patch, and Go deeper's "interactions need almost no new ingredient".
 
 6. **"The pants diagram is a movie of what actually happens."**
    A quantum amplitude sums over *all* surfaces of a given shape class. String theory computes scattering between far-apart incoming and outgoing strings (the S-matrix), not finite-time movies (Tong §6.1). **Avoided by:** the "cartoon shape" note in the Beat 3 tooltip and the Model table.
@@ -378,7 +386,7 @@ And g_s is not a free dial: its value is set by a field of the theory itself, th
    They are pictures of terms in a calculation. Their worldline reading is itself a heuristic. **Avoided by:** calling them "particle diagrams" and using the ANALOGY chip on the Y and bubble visuals; the "CONTRIBUTION → ∞" readout is marked schematic.
 
 9. **"The pictures show real sizes and real dimensions."**
-   String length is unknown, and the diagrams hide one space dimension (superstrings need 9 space dimensions; Chapter 5). **Avoided by:** the "not to scale" and "one dimension hidden" notes in the conventions, chips and lab copy, and the SPECULATIVE scale gauge.
+   String length is unknown. The diagrams hide one of our three space dimensions, and also any extra dimensions (superstring theory needs 9 space dimensions for consistency; Chapter 5). **Avoided by:** the "not to scale" and "one dimension hidden" notes in the conventions, chips and lab copy, and the SPECULATIVE scale gauge.
 
 10. **"Tilting 'now' means an observer can see the split before it happens" or "faster-than-light slicing."**
     Tilts are capped at 35° (v ≤ 0.70c), with the explicit hint "no observer outruns light".
@@ -390,6 +398,44 @@ And g_s is not a free dial: its value is set by a field of the theory itself, th
 
 ## Handoff
 
-**IN:** **H1**, one horizontal open string centered and gently vibrating in its fundamental mode, seen side-on in the void, matching Chapter 2's last frame. During the Opening, the camera pulls back and pitches down so that this same Thread comes to lie on the space floor of a spacetime diagram, and time is drawn upward. If Chapter 2 ends on H0 instead, the point unfolds into H1 in the first 10% of the Opening.
+**IN:** **H0**, a single Ink-white point at screen center (`<HandoffPoint/>`, `HANDOFF.camera`, no view shift), matching Chapter 2's last frame (checked against `02-vibration.md` Handoff OUT). In the first 10% of the Opening the point unfolds into **H1**, one horizontal open string gently vibrating, seen side-on in the void. The camera then pulls back and pitches down so that this same Thread comes to lie on the space floor of a spacetime diagram, and time is drawn upward.
 
 **OUT:** **H2**, one closed string loop centered, facing the camera and gently wobbling. In Beat 6, an open string's ends join into a loop. The camera cranes up the resulting tube and pitches to look straight down the time axis, so the loop faces the viewer, and the diagram (grid, axis, worldsheet film) fades out, leaving only the warm loop. This hands Chapter 4 (`gravity`) a closed string, the object whose massless spin-2 vibration it will show behaves like the graviton.
+
+---
+
+## Referee notes
+
+Refereed 2026-09-28. Every lab-model number was recomputed independently with numpy: t\* = 5.3272, c′(t\*) = 0.71949, T_xx = 3.0446, T_yy = −0.96383, every row of the split table, the flat patch ±0.34/±0.86, ≈ 27.0k crossed cells ≈ 54k triangles, and the Beat 2 γ and ticks and Beat 5 hole heights and speeds. All of them reproduce. Tong's notes were checked against the PDF: §3 endpoint speed and the open⇒closed and heterotic quotes; the §6 opening quote; eqs. (1.2), (6.3)–(6.5), (6.7), (6.14), (7.14); χ = 2 − 2h − b in §6.3; and the §6.4.4 and §6.4.5 quotes. Witten 1996 was checked against the scan: all three quotes are verbatim. The Louko & Sorkin abstract, the Sen & Zwiebach text, the D'Hoker & Phong abstracts and the Lovelace history were checked against arXiv and primary sources.
+
+**Corrections made**
+
+1. **Beat 4 text.** "the split is spread out" became "no single event is 'the' split". The old wording echoed the pop "smeared interaction" and suggested a physically fuzzy event. The post-sweep micro-copy got the same fix: "smeared" became "Different tilts put the split anywhere in this patch."
+2. **Beat 4 tooltip pointed to a Go deeper that didn't exist.** Added the Go deeper paragraph "Do moving observers really disagree…" with the imaginary-time vs real-time caveat.
+3. **Flagged claim 1 (Lorentzian crotch) was confirmed but sharpened.** The trousers have χ = −1, so no everywhere-Lorentzian metric exists with spacelike ends. A spacelike slice can be tangent only at non-timelike points, so with a single degenerate point every slicing finds it. "Must have one degenerate point" became "cannot be timelike everywhere; in the simplest case a single degenerate point" (Model 6, Pitfall 3, Go deeper). Witten's quote is about smooth world-tubes in the amplitude, and he never uses the tilted-observer picture (checked in the scan), so the notes now attribute the observer dramatization to Greene. That framing is fair to both.
+4. **Beat 5 text** ("defeat the standard approach to quantum gravity") overstated the QM–GR clash. It now reads "For gravity, these UV divergences can't be tamed at high energies". The tooltip notes that low-energy quantum gravity works, and Numbers adds Donoghue 1994 (EFT) plus a "totally incompatible is an overstatement" line.
+5. **Beat 5 finiteness (flagged claim 2).** It is now explicitly *superstring* (the bosonic string has a tachyon), and "come out finite" became "have no such infinities" (UV only; IR divergences remain, as in QFT). The balance was re-weighted slightly toward Sen & Zwiebach, whose §9.7 says SFT "shows the absence of UV divergences", while keeping "not a mathematical theorem" and Tong's older "unproven". The chip stays DERIVED; ANALOGY was added for the squeeze cartoon.
+6. **Beat 5 tag `TUBES KEEP A STRING'S WIDTH`** implied a fixed physical thickness in space. It became `NO SHRINKING TO A POINT`, with a note that the fixed circumference in Sen & Zwiebach is in the worldsheet's own metric. The closing caption became "…NOT A SHORT-DISTANCE INFINITY" instead of "WHICH IS WELL UNDERSTOOD".
+7. **Sen & Zwiebach quote location.** "…in a solid footing" is in the Introduction, not §9.7. §9.7 holds the minimal-area / long-cylinder argument (with §7.8). Citations fixed.
+8. **Beat 6 caveat was factually wrong.** The drawn ends move at 0.14c–0.46c for most of the rise and pass c only at ct ≈ 4.90, so the edges are *steeper* than 45° almost throughout, not just flatter near the join. They also slide along the string instead of moving perpendicular to it. Rewrote the caveat with the numbers and added the on-stage caption `CARTOON · REAL FREE ENDS MOVE AT c`, so the beat no longer silently contradicts Beat 1.
+9. **"Leg-center separation speed ≤ 0.75c"** was mislabeled. Each center moves at ≤ 0.75c, and the gap grows at up to 1.5c, which is a closing rate. The same fix was applied in Beat 5 ("legs separate at ≤ 0.97c" became "each leg moves at ≤ 0.97c") and in the Numbers list.
+10. **Uniqueness bound.** The wall slope minimum away from the crotch is 1.31 numerically, not 1.33 (the leg-speed bound ignores radius change). The conclusion still holds. Added the verified tangency region (|x| ≤ 0.22, |y| ≤ 0.68, ct ∈ [5.1, 5.4]).
+11. **Small-tilt closed-form error.** It is ≈ 11% per component at 35° (y\*: −0.726 vs −0.668 at φ = 90°), not "≤ 8%". Marked as sanity-check only.
+12. **Lab implementation bug.** Slicing the baked mesh (t ∈ [0, 10]) with a tilted plane gives broken arcs at slider extremes (t₀ = 9, θ = 35° reaches ct ≈ 11.5). Specified an analytic marching-squares slice of Φ on the plane for the inset and the loop count.
+13. **Beat 5 implementability.** There was no spec for re-meshing as w scrolls. Added the exact trick: c_w(t) = c_1.5(5 + (t − 5)·1.5/w), so one baked mesh (≈ 48k triangles) plus a vertex-shader t-rescale serves every w.
+14. **Lovelace history (flagged claim 4).** "Closed strings first surfaced uninvited" was inaccurate: the Virasoro–Shapiro closed-string amplitude (1969–70) came independently. The nonplanar-loop singularities were found by others; Lovelace (1971) noticed that unitarity (poles, not cuts) needs D = 26. Rewritten, with Shapiro's reminiscence cited.
+15. **Go deeper: "Interactions need no new ingredient".** The λχ term *is* a (topological) ingredient, and Tong calls the claim "almost true". Changed to "almost no new ingredient". Also, "g_s … set by … the dilaton" could read as "predicted", so added that what fixes the dilaton's value is open.
+16. **g_s^{−χ} with b = external closed strings (flagged claim 6).** Confirmed against Tong eq. (6.7), where each vertex operator carries g_s, giving g_s^{m−2}. Noted that in Tong's §6.3, b means genuine boundaries, and that the per-handle g_s² is convention-independent.
+17. **Zwiebach sections (flagged claim 5).** Endpoint speed pinned to §6.9 "Motion of open string endpoints". The rotating string is cited to ch. 7 and to ch. 8's section "The slope parameter α′", without a section number. The formula was re-verified (constraints and wave equation).
+18. **Minor fixes.** Glossary "membranes called branes" became "objects called D-branes" (D-branes need not be 2-dimensional). "Observed effect" became "well-tested consequence" (simultaneity). Pitfall 2 now says soap films fit imaginary time as "minimal surfaces" (stationary), not "exact". Pitfall 9 now clarifies which dimensions are hidden. Go deeper now disambiguates the worldsheet label τ from proper time for highlight-sync. The fallback SVG gets a ×4 crotch inset, since the ±0.19 ℓ offsets are tiny at full scale.
+
+**Checked and left unchanged:** flagged claims 3 (squeeze cartoon, now tagged ANALOGY) and 7 (the heterotic hedge matches Tong verbatim). All beat texts are ≤ 45 words (38–45) and all lab micro-copy ≤ 20 words. No beat implies string theory is confirmed, gravitons detected, or string length = Planck length as fact; the scale gauge carries SPECULATIVE. Remaining judgment call: whether all-order UV finiteness deserves DERIVED or CONJECTURED. It is kept DERIVED because the tooltip states its non-theorem status explicitly.
+
+## Editor notes (cross-chapter pass, 2026-09-28)
+
+Referee corrections are untouched. These edits only connect this pack to its neighbours.
+
+1. **Broken handoff fixed.** Chapter 2 ends on **H0**, the string seen from far away, which is its aha. This pack had expected H1, with H0 only as a fallback. The fallback is now the spec: the Opening starts on `<HandoffPoint/>` and unfolds it into H1 over progress 0–0.1 with Chapter 1's capsule renderer, so warmth returns only once the string is resolved. Narratively this is better too. The Opening's text is about a point tracing a worldline, and the visitor has just watched a string become a point.
+2. **Gauge fiducial.** The secondary line `~10⁻³⁵ m if near the Planck length` implied a value ten times smaller than Chapters 1, 2 and 10 draw. It now reads `~10⁻³⁴ m if traditional estimates hold`. The primary reading `≈ ℓs · STRING LENGTH (UNKNOWN)` and its SPECULATIVE chip are unchanged. Chapter 4 continues the same wording across the H2 dissolve.
+3. **Jargon before introduction.** "superstring" (Beat 5) and "graviton" (Beat 6) are now glossary links. `superstring` is defined in Chapter 2; `graviton` is a forward link to Chapter 4, where it is explained. Word counts are unchanged.
+4. **`open string` glossary** now says free ends move at light speed *classically*, matching Chapter 2's refereed wording (Nambu–Goto result).
