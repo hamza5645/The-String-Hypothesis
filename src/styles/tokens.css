@@ -1,0 +1,60 @@
+/* The String Hypothesis — design tokens.
+   A single, deliberate dark world (deep space + mathematical light). */
+:root {
+  color-scheme: dark;
+
+  /* Ground & surfaces */
+  --void: #05070b;
+  --abyss: #0b0f17;
+  --glass: rgba(12, 16, 25, 0.62);
+  --glass-strong: rgba(10, 13, 21, 0.86);
+
+  /* Ink */
+  --ink: #ece6d9;
+  --ink-2: #9aa0ae;
+  --ink-3: #5c6270;
+  --hairline: rgba(154, 160, 174, 0.18);
+  --hairline-strong: rgba(154, 160, 174, 0.34);
+
+  /* Light */
+  --filament: #ffc98a;
+  --filament-core: #fff6e8;
+  --field: #86a8d8;
+  --field-dim: rgba(134, 168, 216, 0.35);
+
+  /* Epistemic status */
+  --st-observed: #ece6d9;
+  --st-derived: #86a8d8;
+  --st-conjectured: #a99bd6;
+  --st-speculative: #7d8190;
+  --st-analogy: #c9b48f;
+
+  /* Type */
+  --font-display: 'Bodoni Moda', 'Didot', 'Bodoni 72', 'Times New Roman', serif;
+  --font-body: 'Hanken Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+
+  /* Type scale (fluid) */
+  --fs-hero: clamp(3.2rem, 9.2vw, 9.5rem);
+  --fs-question: clamp(2.3rem, 5.6vw, 5.4rem);
+  --fs-h3: clamp(1.35rem, 2vw, 1.75rem);
+  --fs-lead: clamp(1.12rem, 1.35vw, 1.32rem);
+  --fs-body: 1.0625rem;
+  --fs-small: 0.9rem;
+  --fs-label: 0.7rem;
+
+  /* Space & shape */
+  --gutter: clamp(16px, 4vw, 56px);
+  --col: 34ch;
+  --radius: 3px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Layers */
+  --z-stage: 0;
+  --z-fx: 1;
+  --z-content: 2;
+  --z-chrome: 10;
+  --z-drawer: 20;
+  --z-tooltip: 30;
+}

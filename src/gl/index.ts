@@ -1,0 +1,12 @@
+// Shared 3D primitives — import from '@/gl'.
+export { Filament, type FilamentApi, type FilamentFn, type FilamentProps } from './Filament'
+export { GlowPoint, type GlowPointApi, type GlowPointProps } from './GlowPoint'
+export { GlowPoints, type GlowPointsApi, type GlowPointsProps } from './GlowPoints'
+export { createIsoGridMaterial, useIsoGridMaterial, type IsoGridOptions, type IsoGridUniforms } from './IsoGridMaterial'
+export { Backdrop } from './Backdrop'
+export { SceneLabel } from './SceneLabel'
+export { OrbitRig, type OrbitPose } from './OrbitRig'
+export { HandoffPoint, HandoffOpenString, HandoffLoop, openStringFn, loopFn } from './handoff'
+export { useChapterFrame, type FrameInfo } from './useChapterFrame'
+export { useViewShift } from './useViewShift'
+export { COLORS } from './palette'

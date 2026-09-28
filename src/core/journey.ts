@@ -1,0 +1,195 @@
+// The scroll engine. Measures chapter sections and <Step> blocks, and on every
+// scroll computes (without React) each chapter's progress/presence and each
+// step's local progress. Coarse changes (active chapter, mounted set) are
+// published to a tiny zustand store for React.
+
+import { create } from 'zustand'
+import { clamp01, smoothstep } from './math'
+import { params } from './params'
+
+export interface StepRuntime {
+  id: string
+  el: HTMLElement
+  top: number
+  height: number
+  progress: number
+  vis: number
+  fade: boolean
+}
+
+export interface ChapterRuntime {
+  id: string
+  index: number
+  el: HTMLElement | null
+  top: number
+  height: number
+  progress: number
+  presence: number
+  steps: Map<string, StepRuntime>
+}
+
+export const journey = {
+  scrollY: 0,
+  vh: typeof window !== 'undefined' ? window.innerHeight : 800,
+  vw: typeof window !== 'undefined' ? window.innerWidth : 1200,
+  chapters: [] as ChapterRuntime[],
+  byId: new Map<string, ChapterRuntime>(),
+  /** Index of the dominant chapter. */
+  active: 0,
+  /** 0..1 blend from the current chapter towards the next one. */
+  blend: 0,
+  /** 0..1 through the whole document. */
+  global: 0,
+  docHeight: 1,
+}
+
+interface JourneyStore {
+  active: number
+  mounted: number[]
+}
+
+export const useJourney = create<JourneyStore>(() => ({ active: 0, mounted: [0, 1] }))
+
+export function registerChapters(list: { id: string; index: number }[]) {
+  journey.chapters = list.map((c) => ({
+    id: c.id,
+    index: c.index,
+    el: null,
+    top: 0,
+    height: 1,
+    progress: 0,
+    presence: c.index === 0 ? 1 : 0,
+    steps: new Map(),
+  }))
+  journey.byId = new Map(journey.chapters.map((c) => [c.id, c]))
+  if (params.solo) {
+    const solo = journey.byId.get(params.solo)
+    if (solo) {
+      journey.active = solo.index
+      useJourney.setState({ active: solo.index, mounted: [solo.index] })
+    }
+  }
+}
+
+export function bindChapterEl(id: string, el: HTMLElement | null) {
+  const c = journey.byId.get(id)
+  if (!c) return
+  c.el = el
+  scheduleMeasure()
+}
+
+export function bindStep(chapterId: string, stepId: string, el: HTMLElement, fade: boolean) {
+  const c = journey.byId.get(chapterId)
+  if (!c) return () => {}
+  const s: StepRuntime = { id: stepId, el, top: 0, height: 1, progress: 0, vis: -1, fade }
+  c.steps.set(stepId, s)
+  scheduleMeasure()
+  return () => {
+    if (c.steps.get(stepId) === s) c.steps.delete(stepId)
+  }
+}
+
+let measureQueued = false
+export function scheduleMeasure() {
+  if (measureQueued || typeof window === 'undefined') return
+  measureQueued = true
+  requestAnimationFrame(() => {
+    measureQueued = false
+    measure()
+  })
+}
+
+export function measure() {
+  journey.vh = window.innerHeight
+  journey.vw = window.innerWidth
+  const sy = window.scrollY
+  for (const c of journey.chapters) {
+    if (!c.el) continue
+    const r = c.el.getBoundingClientRect()
+    c.top = r.top + sy
+    c.height = Math.max(1, r.height)
+    for (const s of c.steps.values()) {
+      const sr = s.el.getBoundingClientRect()
+      s.top = sr.top + sy
+      s.height = Math.max(1, sr.height)
+    }
+  }
+  journey.docHeight = document.documentElement.scrollHeight
+  update(window.scrollY)
+}
+
+const listeners = new Set<() => void>()
+/** Subscribe to every scroll update (non-React). Returns an unsubscribe fn. */
+export function onJourney(fn: () => void): () => void {
+  listeners.add(fn)
+  return () => {
+    listeners.delete(fn)
+  }
+}
+
+export function update(y: number) {
+  journey.scrollY = y
+  const vh = journey.vh
+  const cs = journey.chapters
+  journey.global = clamp01(y / Math.max(1, journey.docHeight - vh))
+
+  // chapter progress + step progress
+  for (const c of cs) {
+    if (!c.el) continue
+    c.progress = clamp01((y - c.top) / Math.max(1, c.height - vh))
+    for (const s of c.steps.values()) {
+      const p = clamp01((y + vh * 0.5 - s.top) / s.height)
+      s.progress = p
+      // fade over ~22% of a viewport of scroll at each end
+      const f = Math.min(0.45, (0.22 * vh) / s.height)
+      const vis = s.fade ? smoothstep(0, f, p) * (1 - smoothstep(1 - f, 1, p)) : 1
+      if (Math.abs(vis - s.vis) > 0.002) {
+        const wasHidden = s.vis < 0.01
+        s.vis = vis
+        s.el.style.setProperty('--sv', vis.toFixed(3))
+        const hidden = vis < 0.01
+        if (hidden !== wasHidden || s.el.dataset.hidden === undefined) s.el.dataset.hidden = hidden ? '1' : '0'
+      }
+    }
+  }
+
+  // presence: dissolve across the last viewport of each chapter
+  if (!params.solo) {
+    let k = 0
+    for (let i = 0; i < cs.length; i++) if (cs[i].el && cs[i].top <= y + 1) k = i
+    const cur = cs[k]
+    const next = cs[k + 1]
+    let t = 0
+    if (next && next.el) t = smoothstep(0.1, 0.9, (y - (next.top - vh)) / vh)
+    for (const c of cs) c.presence = 0
+    if (cur) cur.presence = 1 - t
+    if (next) next.presence = t
+    journey.blend = t
+    journey.active = next && t > 0.5 ? k + 1 : k
+  } else {
+    const solo = journey.byId.get(params.solo)
+    for (const c of cs) c.presence = c === solo ? 1 : 0
+  }
+
+  const st = useJourney.getState()
+  if (st.active !== journey.active) {
+    const a = journey.active
+    const mounted = params.solo ? st.mounted : [a - 1, a, a + 1].filter((i) => i >= 0 && i < cs.length)
+    useJourney.setState({ active: a, mounted })
+  }
+  for (const fn of listeners) fn()
+}
+
+/** Scroll position (px) at which a chapter reaches the given progress. */
+export function chapterScrollY(id: string, progress = 0) {
+  const c = journey.byId.get(id)
+  if (!c) return 0
+  return c.top + progress * Math.max(0, c.height - journey.vh)
+}
+
+/** Scroll position (px) that centers a step at the given local progress. */
+export function stepScrollY(chapterId: string, stepId: string, sp = 0.5) {
+  const s = journey.byId.get(chapterId)?.steps.get(stepId)
+  if (!s) return null
+  return s.top + sp * s.height - journey.vh * 0.5
+}

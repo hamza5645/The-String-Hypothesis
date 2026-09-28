@@ -1,0 +1,17 @@
+import { lazy } from 'react'
+import { defineChapter } from '@/core/chapter'
+import Overlay from './Overlay'
+
+const load = () => import('./Scene')
+
+export default defineChapter({
+  id: 'dimensions',
+  index: 5,
+  title: 'Dimensions',
+  question: 'Where would extra dimensions hide?',
+  Scene: lazy(load),
+  preload: load,
+  Overlay,
+  Fallback: lazy(() => import('./Fallback')),
+  scale: () => null,
+})
