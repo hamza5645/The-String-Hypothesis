@@ -1,3 +1,5 @@
+// colorspace MUST be the first import of the stage chunk (disables colour management before any THREE.Color exists)
+import '../colorspace'
 import { useEffect, useRef } from 'react'
 import { Canvas, useFrame, events as createPointerEvents } from '@react-three/fiber'
 import type { EventManager, RootState } from '@react-three/fiber'
@@ -11,7 +13,7 @@ import { ChapterPortal } from './ChapterPortal'
 import { Compositor } from './Compositor'
 import { explore, guardTouchPan, isUI, tickExplore } from '../explore'
 
-// Color management is disabled in core/colorspace.ts (imported first by main.tsx):
+// Color management is disabled in core/colorspace.ts (imported first, above):
 // hex colors pass straight through, no tone mapping, display-space blending.
 
 const DPR: Record<QualityTier, [number, number]> = { high: [1, 2], medium: [1, 1.5], low: [1, 1] }
@@ -53,7 +55,7 @@ const stageEvents = (store: Parameters<typeof createPointerEvents>[0]): EventMan
   } as EventManager<HTMLElement>
 }
 
-export function Stage({ chapters }: { chapters: ChapterMeta[] }) {
+export default function Stage({ chapters }: { chapters: ChapterMeta[] }) {
   const quality = useSettings((s) => s.quality)
   const root = document.getElementById('root')!
   const stageRef = useRef<HTMLDivElement>(null)

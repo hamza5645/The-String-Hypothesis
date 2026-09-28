@@ -41,6 +41,8 @@ src/chapters/NN-id/
 
 **You may only create or edit files inside your own chapter folder.** Never edit `src/core`, `src/gl`, `src/ui`, `src/styles`, other chapters, configs, or package.json. Other agents are building other chapters at the same time. If you need a primitive that doesn't exist, build it inside your folder. If you find a bug in shared code, work around it locally and report it in your final summary.
 
+**Bundle rule:** `index.ts` and `Overlay.tsx` (and anything they import, such as `store.ts` or `styles.css`) are in the first-paint bundle. They must **not** import `three`, `@react-three/*`, or `@/gl`. Only `Scene.tsx` and its sub-modules may. This keeps three.js out of the first paint. It also matters for correctness: colour management is disabled when the stage chunk loads, so a `THREE.Color` created earlier would come out wrong.
+
 `scale(h)` in index.ts returns the characteristic length (meters) of what's on screen for the left scale gauge, or `null`. It is evaluated every frame, so keep it pure and cheap.
 
 ## 3. Overlay API (`@/ui`)

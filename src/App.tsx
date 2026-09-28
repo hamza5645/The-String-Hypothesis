@@ -1,14 +1,16 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { CHAPTERS } from './chapters'
 import { initExplore } from './core/explore'
 import { journey } from './core/journey'
 import { params } from './core/params'
 import { applyInitialPosition, initScroller } from './core/scroller'
 import { useSettings } from './core/settings'
-import { Stage } from './core/stage/Stage'
 import { StageBoundary } from './core/stage/StageBoundary'
 import { ChapterSection } from './ui/Chapter'
 import { ChapterMenu, ChapterRail, GlossaryDrawer, ScaleGauge, TopBar } from './ui/Chrome'
+
+// three.js + R3F load in their own chunk: the hero text paints immediately, WebGL follows.
+const Stage = lazy(() => import('./core/stage/Stage'))
 
 export function App() {
   const webgl = useSettings((s) => s.webgl)
@@ -34,7 +36,9 @@ export function App() {
     <>
       {webgl && (
         <StageBoundary label="stage" onError={() => useSettings.setState({ webgl: false })}>
-          <Stage chapters={CHAPTERS} />
+          <Suspense fallback={<div className="stage" aria-hidden="true" />}>
+            <Stage chapters={CHAPTERS} />
+          </Suspense>
         </StageBoundary>
       )}
       <div className="jump-cover" aria-hidden="true" />
