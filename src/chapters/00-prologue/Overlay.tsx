@@ -31,10 +31,13 @@ export default function Overlay() {
           <div className="pro-hero__foot">
             <div className="pro-beats">
               <Beat status="speculative">
-                String theory proposes that the particles of our world are tiny vibrating strings, far smaller than anything we can measure.
+                String theory proposes that the particles of our world are tiny vibrating strings, too small for any experiment so far to resolve.
                 Developed for more than fifty years, it is mathematically rich and still untested by experiment.
               </Beat>
               <p className="pro-p2">
+                <span className="pro-p2__chip">
+                  <Status kind="analogy" compact />
+                </span>
                 Every claim here wears a mark showing how sure we are.{' '}
                 <button type="button" className="pro-pluck" onClick={requestPluck}>
                   Touch the thread
@@ -60,7 +63,7 @@ export default function Overlay() {
       </Step>
 
       <Step id="recede" length={1.5} align="center" valign="lower">
-        <Beat status={['derived', 'analogy']}>Step back far enough, and a string would look exactly like a point. Hold that thought.</Beat>
+        <Beat status={['derived', 'analogy']}>Step back far enough, and a string would look just like a point. Hold that thought.</Beat>
       </Step>
     </>
   )

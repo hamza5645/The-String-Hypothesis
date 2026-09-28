@@ -89,6 +89,11 @@
   line-height: 1.55;
   color: var(--ink-2);
 }
+.pro-p2__chip {
+  display: inline-block;
+  margin-right: 0.55rem;
+  vertical-align: 0.1em;
+}
 .pro-pluck {
   padding: 0;
   border: 0;
