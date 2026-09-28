@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { CHAPTERS } from './chapters'
 import { initExplore } from './core/explore'
+import { journey } from './core/journey'
 import { params } from './core/params'
 import { applyInitialPosition, initScroller } from './core/scroller'
 import { useSettings } from './core/settings'
@@ -13,6 +14,8 @@ export function App() {
   const sections = params.solo ? CHAPTERS.filter((c) => c.id === params.solo) : CHAPTERS
 
   useEffect(() => {
+    // exposed for the screenshot harness (read-only use)
+    ;(window as unknown as { __journey: typeof journey }).__journey = journey
     initScroller()
     initExplore()
     // let fonts + first layout settle, then honour deep links

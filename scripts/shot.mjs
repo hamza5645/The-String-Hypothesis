@@ -4,6 +4,7 @@
 //   node scripts/shot.mjs --chapter vibration --p 0,0.5,1          (solo chapter at progress values)
 //   node scripts/shot.mjs --chapter vibration --step lab --sp 0.5  (center a named step)
 //   node scripts/shot.mjs --y 0.1,0.12,0.14                        (full journey at document fractions)
+//   node scripts/shot.mjs --boundaries all --bt 0,0.5,1             (every chapter boundary: dissolve start/mid/end)
 //   options: --w 1440 --h 900 --mobile (390x844 @2x, touch) --freeze 2.5 --quality high|medium|low
 //            --out shots --wait 600 --deeper --base http://127.0.0.1:5173 --label name
 //
@@ -25,6 +26,8 @@ const ps = String(opt('p', '')).split(',').filter(Boolean)
 const step = opt('step', null)
 const sps = String(opt('sp', '0.5')).split(',').filter(Boolean)
 const ys = String(opt('y', '')).split(',').filter(Boolean)
+const boundaries = opt('boundaries', null) // e.g. --boundaries all | --boundaries 3,4 (index of the INCOMING chapter)
+const bt = String(opt('bt', '0.5')).split(',').filter(Boolean) // dissolve fractions to capture
 const mobile = !!opt('mobile', false)
 const W = Number(opt('w', mobile ? 390 : 1440))
 const H = Number(opt('h', mobile ? 844 : 900))
@@ -73,6 +76,24 @@ if (chapter) {
     const file = path.join(out, name)
     await page.screenshot({ path: file })
     shots.push(file)
+  }
+} else if (boundaries) {
+  await page.goto(`${base}/?${q({ freeze, quality, shot: 1, deeper: deeper ? 1 : null })}`, { waitUntil: 'load' })
+  await settle()
+  const info = await page.evaluate(() => window.__journey.chapters.map((c) => ({ id: c.id, top: c.top })))
+  const idx = boundaries === true || boundaries === 'all' ? info.map((_, i) => i).slice(1) : String(boundaries).split(',').map(Number)
+  const vh = H
+  for (const i of idx) {
+    const c = info[i]
+    if (!c) continue
+    for (const f of bt) {
+      const y = c.top - vh + Number(f) * vh
+      await page.evaluate((yy) => window.scrollTo(0, yy), y)
+      await page.waitForTimeout(wait + 900)
+      const file = path.join(out, `boundary-${String(i).padStart(2, '0')}-${info[i - 1]?.id}-to-${c.id}-t${f}-${tag}.png`)
+      await page.screenshot({ path: file })
+      shots.push(file)
+    }
   }
 } else if (ys.length) {
   await page.goto(`${base}/?${q({ freeze, quality, shot: 1, deeper: deeper ? 1 : null })}`, { waitUntil: 'load' })

@@ -1,6 +1,5 @@
 import { Canvas, useFrame } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
-import * as THREE from 'three'
 import type { ChapterMeta } from '../chapter'
 import { useJourney } from '../journey'
 import { useSettings, type QualityTier } from '../settings'
@@ -10,9 +9,8 @@ import { ChapterPortal } from './ChapterPortal'
 import { Compositor } from './Compositor'
 import { tickExplore } from '../explore'
 
-// "What you write is what you see": hex colors pass straight through, no tone mapping,
-// blending in display space. Every custom shader in this project assumes this.
-THREE.ColorManagement.enabled = false
+// Color management is disabled in core/colorspace.ts (imported first by main.tsx):
+// hex colors pass straight through, no tone mapping, display-space blending.
 
 const DPR: Record<QualityTier, [number, number]> = { high: [1, 2], medium: [1, 1.5], low: [1, 1] }
 const DOWN: Record<QualityTier, QualityTier> = { high: 'medium', medium: 'low', low: 'low' }
