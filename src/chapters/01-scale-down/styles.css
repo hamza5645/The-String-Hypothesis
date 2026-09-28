@@ -1,0 +1,792 @@
+/* Chapter 01 · Smaller — all classes prefixed sd- */
+
+/* ───────── beats ───────── */
+/* content fades out as soon as it starts to scroll away (Exit.tsx sets --sd-out), never under the header */
+.sd-step .step__content,
+section[data-chapter='scale-down'] .step--lab .step__content {
+  opacity: calc(var(--sv, 1) * var(--sd-out, 1));
+}
+/* SI units and symbols are case-sensitive: never upper-case them inside mono labels */
+.sd-unit {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+/* the reveal carries three marks; keep them on one row */
+.sd-step--reveal .beat__meta .status-row {
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+}
+.sd-step--reveal .beat__meta .status {
+  letter-spacing: 0.08em;
+  padding-inline: 0.5em 0.6em;
+}
+.sd-deeper-chip {
+  display: inline-flex;
+  margin-right: 0.5rem;
+  vertical-align: 0.08em;
+}
+.sd-step .caption {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  max-width: 46ch;
+  line-height: 1.55;
+}
+.sd-step .caption .status {
+  flex: none;
+  margin-top: -0.1em;
+}
+.sd-quiet {
+  display: block;
+  font-size: 0.98em;
+  color: var(--ink-2);
+  max-width: 30ch;
+}
+
+/* the bridge line, pinned under the H1 string (a fixed layer: it never crosses the handoff object) */
+.sd-bridge {
+  position: fixed;
+  left: 50%;
+  top: calc(50% + 17svh);
+  z-index: var(--z-content);
+  width: min(36rem, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+  text-align: center;
+}
+.sd-bridge .beat {
+  justify-items: center;
+}
+.sd-bridge .beat::before {
+  inset: -30% -8%;
+}
+.sd-bridge .beat__meta,
+.sd-bridge .status-row {
+  justify-content: center;
+}
+.sd-bridge .beat__text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.3rem, 1.9vw, 1.7rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.sd-bridge .caption {
+  justify-content: center;
+  max-width: 40ch;
+  margin: 0.7rem auto 0;
+}
+
+/* ───────── Beat 5: the question, then the brackets ───────── */
+.sd-gap {
+  display: grid;
+  gap: 0.2rem;
+}
+.sd-gap__slot {
+  position: relative;
+}
+.sd-gap__q {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.8rem, 2.9vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  transform-origin: 50% 50%;
+  white-space: nowrap;
+  text-shadow: 0 0 40px rgba(5, 7, 11, 0.9);
+  will-change: transform;
+}
+.sd-brackets {
+  margin: 1.1rem 0 0;
+  max-width: 380px;
+}
+.sd-brackets svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.sd-brackets__t {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  fill: var(--ink);
+}
+.sd-brackets__t--field {
+  fill: var(--field);
+}
+.sd-brackets__s {
+  font-family: var(--font-mono);
+  font-size: 8.6px;
+  letter-spacing: 0.04em;
+  fill: var(--ink-3);
+}
+.sd-brackets__s--field {
+  fill: var(--field);
+}
+.sd-brackets__cap {
+  font-family: var(--font-mono);
+  font-size: 8.2px;
+  letter-spacing: 0.12em;
+  fill: var(--ink-3);
+}
+
+/* ───────── scene annotations ───────── */
+.sd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+.sd-note {
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: 0.05em;
+  font-size: 0.66rem;
+}
+.sd-note--wrap {
+  display: block;
+  white-space: normal;
+  width: 34ch;
+  line-height: 1.55;
+  text-align: left;
+}
+.sd-note--wrap .status {
+  display: inline-flex;
+  margin: 0 0.5rem 0.1rem 0;
+  vertical-align: 0.05em;
+}
+.sd-note--offset {
+  margin-left: 34px;
+}
+.sd-sym {
+  text-transform: none;
+  font-size: 0.8rem;
+  letter-spacing: 0;
+  font-style: italic;
+  font-family: var(--font-display);
+}
+.sd-sym--q {
+  font-size: 0.9rem;
+}
+.sd-note--center {
+  text-align: center;
+  line-height: 1.5;
+}
+.sd-note--under {
+  margin-top: 30px;
+}
+.sd-note--nucleus {
+  position: relative;
+  display: block;
+  margin: 0 0 0 62px;
+  line-height: 1.5;
+  color: var(--field);
+  text-shadow:
+    0 0 6px var(--void),
+    0 0 14px var(--void);
+}
+/* a hairline leader from the (unresolvable) nucleus out past the bright 1s core */
+.sd-note--nucleus::before {
+  content: '';
+  position: absolute;
+  left: -58px;
+  top: 0.75em;
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0, currentColor 30%, currentColor);
+  opacity: 0.7;
+}
+.sd-note--nucleus em {
+  font-style: normal;
+  color: var(--ink-3);
+}
+.sd-ring {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+.sd-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-transform: none;
+}
+.sd-chips__row {
+  display: inline-flex;
+  gap: 0.45rem;
+}
+.sd-chips__txt {
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+
+/* ───────── the zoom instrument (tape) ───────── */
+.sd-tape {
+  --px: 66px;
+  position: fixed;
+  top: calc(58px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  width: min(600px, 46vw);
+  transform: translateX(calc(-50% + var(--dx, 0px)));
+  z-index: calc(var(--z-chrome) - 2);
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+.sd-tape__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 4px;
+}
+.sd-tape__label {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.sd-tape__read {
+  min-width: 7.5em;
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+.sd-tape__win {
+  position: relative;
+  height: 50px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 22%, #000 78%, transparent 100%);
+}
+.sd-tape__strip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: calc(var(--px) * 38);
+  will-change: transform;
+}
+.sd-tape__strip::before {
+  /* the axis */
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 27px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--hairline-strong) 0, var(--hairline-strong) calc(var(--px) * 19.5), transparent calc(var(--px) * 19.5));
+}
+.sd-tick {
+  position: absolute;
+  top: 27px;
+  width: 1px;
+  height: 4px;
+  background: var(--ink-3);
+  opacity: 0.7;
+}
+.sd-tick.is-major {
+  height: 8px;
+  background: var(--ink-2);
+  opacity: 1;
+}
+.sd-tick.is-dashed {
+  background: repeating-linear-gradient(to bottom, var(--ink-3) 0 2px, transparent 2px 3.5px);
+}
+.sd-tick.is-dashed.is-major {
+  background: repeating-linear-gradient(to bottom, var(--ink-2) 0 2px, transparent 2px 3.5px);
+}
+.sd-tick__label {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--ink-3);
+}
+.sd-tick.is-si .sd-tick__label {
+  color: var(--ink-2);
+}
+.sd-tape__band {
+  position: absolute;
+  top: 20px;
+  height: 14px;
+}
+.sd-tape__band > span {
+  position: absolute;
+  left: 0;
+  top: -9px;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sd-tape__band--light {
+  background: linear-gradient(90deg, rgba(236, 230, 217, 0), rgba(236, 230, 217, 0.22), rgba(236, 230, 217, 0));
+  color: var(--ink-2);
+}
+.sd-tape__band--light > span {
+  top: -9px;
+}
+.sd-tape__band--edge {
+  background: linear-gradient(90deg, rgba(134, 168, 216, 0), rgba(134, 168, 216, 0.3), rgba(134, 168, 216, 0));
+  color: var(--field);
+}
+.sd-tape__band--edge > span {
+  top: -20px;
+}
+.sd-mark {
+  position: absolute;
+  top: 0;
+}
+.sd-mark > i {
+  position: absolute;
+  left: -2.5px;
+  top: 24.5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.sd-mark > span {
+  position: absolute;
+  left: -2px;
+  top: 0;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.sd-mark > span em {
+  font-style: normal;
+  text-transform: none;
+  color: var(--ink-3);
+}
+.sd-mark--row1 > span {
+  top: 11px;
+}
+.sd-mark--hollow > i {
+  background: transparent;
+  border: 1px solid var(--st-speculative);
+}
+.sd-mark--hollow > span {
+  color: var(--ink-2);
+}
+.sd-mark--string {
+  transition: opacity 0.6s var(--ease-out);
+}
+.sd-tape[data-revealed='0'] .sd-mark--string {
+  opacity: 0;
+}
+.sd-tape__index {
+  position: absolute;
+  left: 50%;
+  top: 17px;
+  width: 1px;
+  height: 22px;
+  background: var(--ink);
+  box-shadow: 0 0 8px rgba(236, 230, 217, 0.5);
+}
+.sd-tape__index::after {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--void);
+  border: 1px solid var(--ink);
+  transform: scale(0);
+  transition: transform 0.4s var(--ease-out);
+}
+.sd-tape[data-revealed='1'] .sd-tape__index::after {
+  transform: scale(1);
+}
+.sd-tape__foot {
+  margin-top: 2px;
+  text-align: center;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out);
+}
+.sd-tape[data-sci='1'] .sd-tape__foot {
+  opacity: 1;
+}
+
+/* ───────── lab ───────── */
+@media (min-width: 721px) {
+  section[data-chapter='scale-down'] .step--lab .step__inner {
+    padding-right: calc(var(--gutter) + 118px);
+    padding-bottom: 22px;
+  }
+  section[data-chapter='scale-down'] .lab {
+    max-height: calc(100svh - 88px);
+    padding: 16px 16px 14px;
+  }
+  section[data-chapter='scale-down'] .lab__foot {
+    margin-top: 0.5rem;
+    padding-top: 0.55rem;
+    gap: 0.4rem;
+  }
+  section[data-chapter='scale-down'] .lab__head {
+    gap: 0.3rem;
+    margin-bottom: 0.55rem;
+  }
+  section[data-chapter='scale-down'] .lab__intro {
+    margin-bottom: 0.6rem;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+  section[data-chapter='scale-down'] .lab__body {
+    gap: 0.64rem;
+  }
+}
+.sd-slider__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sd-slider__btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.25s,
+    border-color 0.25s;
+}
+.sd-slider__btn:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: rgba(255, 201, 138, 0.55);
+}
+.sd-slider__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.sd-slider__track {
+  position: relative;
+  flex: 1;
+  height: 28px;
+  cursor: ew-resize;
+  touch-action: pan-y;
+  outline: none;
+}
+.sd-slider__track:focus-visible {
+  outline: 1px solid var(--filament);
+  outline-offset: 3px;
+}
+.sd-slider__rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--hairline-strong);
+}
+.sd-slider__fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 1px;
+  width: calc(var(--pos) * 100%);
+  background: linear-gradient(90deg, rgba(255, 201, 138, 0.15), var(--filament));
+}
+.sd-slider__thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--pos) * 100%);
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  border-radius: 50%;
+  background: var(--filament-core);
+  box-shadow:
+    0 0 0 3px rgba(255, 201, 138, 0.12),
+    0 0 14px rgba(255, 201, 138, 0.75);
+  transition: transform 0.2s var(--ease-out);
+}
+.sd-slider__track:active .sd-slider__thumb,
+.sd-slider__track:focus-visible .sd-slider__thumb {
+  transform: scale(1.3);
+}
+.sd-slider.is-disabled {
+  opacity: 0.5;
+}
+.sd-slider.is-disabled .sd-slider__track {
+  cursor: not-allowed;
+}
+.sd-slider.is-disabled .sd-slider__thumb {
+  background: var(--ink-3);
+  box-shadow: none;
+}
+.sd-slider.is-disabled .sd-slider__fill {
+  opacity: 0;
+}
+.sd-zone {
+  position: absolute;
+  top: calc(50% - 5px);
+  height: 10px;
+}
+.sd-zone__label {
+  display: none;
+}
+.sd-zone--excluded {
+  background: repeating-linear-gradient(135deg, rgba(154, 160, 174, 0.55) 0 1px, transparent 1px 4px);
+}
+.sd-zone--probed {
+  background: linear-gradient(90deg, rgba(134, 168, 216, 0.4), rgba(134, 168, 216, 0.05));
+}
+.sd-zone--open {
+  border-top: 1px dashed rgba(134, 168, 216, 0.25);
+  border-bottom: 1px dashed rgba(134, 168, 216, 0.25);
+}
+.sd-zones-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin-top: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.sd-zones-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.sd-zones-legend i {
+  display: inline-block;
+  width: 14px;
+  height: 7px;
+}
+.sd-jumps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: -0.35rem;
+}
+.sd-jump {
+  padding: 0.24rem 0.42rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    color 0.25s,
+    border-color 0.25s,
+    background 0.25s;
+}
+.sd-jump:hover {
+  color: var(--ink);
+  border-color: var(--hairline-strong);
+}
+.sd-jump.is-on {
+  color: var(--ink);
+  border-color: rgba(255, 201, 138, 0.5);
+  background: rgba(255, 201, 138, 0.06);
+}
+.sd-opt {
+  display: grid;
+  gap: 0.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.sd-opt small {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  opacity: 0.75;
+}
+.sd-readouts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 14px;
+}
+.sd-readouts .readout {
+  display: grid;
+  justify-content: start;
+  gap: 0;
+  padding: 0.22rem 0 0.26rem;
+}
+.sd-readouts .readout:first-child {
+  grid-column: 1 / -1;
+}
+.sd-readouts .readout__label {
+  font-size: 0.62rem;
+}
+.sd-readouts .readout__value {
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+/* the lesson: right under the toggle it drives */
+.sd-lab__cap {
+  margin: -0.35rem 0 0;
+  min-height: 2.9em;
+  padding-left: 0.7rem;
+  border-left: 1px solid rgba(255, 201, 138, 0.45);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.sd-slider__note {
+  margin: 0;
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--st-analogy);
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.sd-lab__energy {
+  grid-column: 1 / -1;
+  margin: 0.35rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--ink-3);
+}
+.sd-lab__intro {
+  margin: 0;
+}
+.sd-lab__note {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1 1 100%;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  line-height: 1.45;
+  letter-spacing: 0.03em;
+  color: var(--ink-3);
+}
+.sd-lab__note .status {
+  flex: none;
+}
+.sd-live {
+  padding: 0.5rem 0 0.5rem 0.8rem;
+  border-left: 1px solid rgba(134, 168, 216, 0.5);
+  font-size: 0.78rem;
+  color: var(--field);
+}
+
+/* ───────── phones ───────── */
+@media (max-width: 720px) {
+  .sd-tape {
+    --px: 44px;
+    top: calc(50px + env(safe-area-inset-top, 0px));
+    width: calc(100vw - 32px);
+  }
+  .sd-tape__read {
+    font-size: 0.78rem;
+  }
+  .sd-tape__win {
+    height: 46px;
+  }
+  .sd-gap__q {
+    font-size: 1.7rem;
+  }
+  .sd-brackets {
+    max-width: 100%;
+  }
+  .sd-bridge {
+    top: calc(50% + 12svh);
+  }
+  .sd-bridge .beat__text {
+    font-size: 1.2rem;
+  }
+  .sd-bridge .caption {
+    max-width: 32ch;
+  }
+  .sd-note--wrap {
+    width: 20ch;
+  }
+  /* over a haze on phones: a quiet dark plate keeps the note legible */
+  .sd-note--plate {
+    width: 30ch;
+    padding: 6px 9px 7px;
+    border-radius: 8px;
+    background: rgba(5, 7, 11, 0.74);
+  }
+  /* the pinned SPECULATIVE / ANALOGY chips stay on phones: chips on one row, the note under them */
+  .sd-chips {
+    display: inline-grid;
+    justify-items: center;
+    gap: 0.4rem;
+    white-space: normal;
+  }
+  .sd-chips__row {
+    display: inline-flex;
+    gap: 0.4rem;
+  }
+  .sd-chips__txt {
+    max-width: 24ch;
+    text-align: center;
+    line-height: 1.45;
+  }
+  .sd-mark > span em,
+  .sd-tape__band--light > span {
+    display: none;
+  }
+  /* …but the string's HYPOTHETICAL never hides: its label centres on the mark to stay in the window */
+  .sd-mark--string > span em {
+    display: inline;
+  }
+  .sd-mark--string > span {
+    left: 0;
+    transform: translateX(-50%);
+  }
+  .sd-note--nucleus {
+    margin: 0 0 0 46px;
+    width: 19ch;
+    white-space: normal;
+  }
+  .sd-note--nucleus::before {
+    left: -42px;
+    width: 36px;
+  }
+  /* lab as a bottom sheet: the lesson (caption) must sit above the fold */
+  section[data-chapter='scale-down'] .lab__head {
+    gap: 0.25rem;
+    margin-bottom: 0.7rem;
+  }
+  section[data-chapter='scale-down'] .lab__intro {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  section[data-chapter='scale-down'] .lab__body {
+    gap: 0.85rem;
+  }
+}

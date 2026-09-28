@@ -6,7 +6,7 @@
 //   node scripts/shot.mjs --y 0.1,0.12,0.14                        (full journey at document fractions)
 //   node scripts/shot.mjs --boundaries all --bt 0,0.5,1             (every chapter boundary: dissolve start/mid/end)
 //   options: --w 1440 --h 900 --mobile (390x844 @2x, touch) --freeze 2.5 --quality high|medium|low
-//            --out shots --wait 600 --deeper --base http://127.0.0.1:5173 --label name
+//            --out shots --wait 600 --deeper --reduced --base http://127.0.0.1:5173 --label name
 //
 // Prints the PNG paths plus any console errors / page errors. Exit code 1 if errors occurred.
 import { chromium } from 'playwright'
@@ -37,6 +37,7 @@ const out = opt('out', 'shots')
 const wait = Number(opt('wait', 700))
 const deeper = !!opt('deeper', false)
 const label = opt('label', '')
+const reduced = !!opt('reduced', false)
 fs.mkdirSync(out, { recursive: true })
 
 const browser = await chromium.launch({
@@ -49,6 +50,7 @@ const ctx = await browser.newContext({
   deviceScaleFactor: mobile ? 2 : 1,
   isMobile: mobile,
   hasTouch: mobile,
+  reducedMotion: reduced ? 'reduce' : 'no-preference',
 })
 const page = await ctx.newPage()
 const errors = []

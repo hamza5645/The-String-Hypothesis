@@ -40,6 +40,7 @@ export function Lab({
         </div>
       )}
       <aside className={`lab lab--${side}`} data-ui aria-label={typeof title === 'string' ? title : 'Lab'}>
+        <div className="lab__scroll">
         <header className="lab__head">
           <span className="t-label lab__eyebrow">Lab</span>
           <h3 className="lab__title">{title}</h3>
@@ -54,6 +55,7 @@ export function Lab({
         {intro && <div className="lab__intro">{intro}</div>}
         <div className="lab__body">{children}</div>
         {footer && <footer className="lab__foot">{footer}</footer>}
+        </div>
       </aside>
     </Step>
   )

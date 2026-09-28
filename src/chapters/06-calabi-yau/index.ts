@@ -13,5 +13,7 @@ export default defineChapter({
   preload: load,
   Overlay,
   Fallback: lazy(() => import('./Fallback')),
+  // The size of hidden dimensions is unknown (model-dependent): the gauge marker stays hidden and the
+  // scene pins its own "SIZE: UNKNOWN · DRAWN MAGNIFIED" caption (content pack, pitfall 9).
   scale: () => null,
 })

@@ -13,5 +13,6 @@ export default defineChapter({
   preload: load,
   Overlay,
   Fallback: lazy(() => import('./Fallback')),
+  // The map has no physical length scale (height = distance from experiment), so the gauge stays off.
   scale: () => null,
 })

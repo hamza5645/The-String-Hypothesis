@@ -15,6 +15,10 @@ export interface StepRuntime {
   progress: number
   vis: number
   fade: boolean
+  /** fade out as soon as the sticky content starts moving away (instead of in the last ~22% vh) */
+  early: boolean
+  /** this step is a <Lab> */
+  lab: boolean
 }
 
 export interface ChapterRuntime {
@@ -82,13 +86,13 @@ export function bindChapterEl(id: string, el: HTMLElement | null) {
   scheduleMeasure()
 }
 
-export function bindStep(chapterId: string, stepId: string, el: HTMLElement, fade: boolean) {
+export function bindStep(chapterId: string, stepId: string, el: HTMLElement, fade: boolean, early = false) {
   const c = journey.byId.get(chapterId)
   if (!c) return () => {}
   const prev = c.steps.get(stepId)
   if (import.meta.env.DEV && prev && prev.el !== el && prev.el.isConnected)
     console.error(`[journey] duplicate <Step id="${stepId}"> in chapter ${chapterId}; ids must be unique per chapter ('title' and 'lab' are used by <ChapterTitle> and <Lab>)`)
-  const s: StepRuntime = { id: stepId, el, top: 0, height: 1, progress: 0, vis: -1, fade }
+  const s: StepRuntime = { id: stepId, el, top: 0, height: 1, progress: 0, vis: -1, fade, early, lab: el.classList.contains('step--lab') }
   c.steps.set(stepId, s)
   scheduleMeasure()
   return () => {
@@ -147,6 +151,7 @@ export function measure() {
   update(window.scrollY)
 }
 
+let labOn = false
 const listeners = new Set<() => void>()
 /** Subscribe to every scroll update (non-React). Returns an unsubscribe fn. */
 export function onJourney(fn: () => void): () => void {
@@ -171,7 +176,14 @@ export function update(y: number) {
       s.progress = p
       // fade over ~22% of a viewport of scroll at each end
       const f = Math.min(0.45, (0.22 * vh) / s.height)
-      const vis = s.fade ? smoothstep(0, f, p) * (1 - smoothstep(1 - f, 1, p)) : 1
+      let vis = 1
+      if (s.fade) {
+        if (s.early) {
+          // out as soon as the sticky content releases and starts to rise
+          const release = Math.max(f, 1 - (0.5 * vh) / s.height)
+          vis = smoothstep(0, f, p) * (1 - smoothstep(release, Math.min(1, release + (0.24 * vh) / s.height), p))
+        } else vis = smoothstep(0, f, p) * (1 - smoothstep(1 - f, 1, p))
+      }
       if (Math.abs(vis - s.vis) > 0.002) {
         const wasHidden = s.vis < 0.01
         s.vis = vis
@@ -200,6 +212,15 @@ export function update(y: number) {
     for (const c of cs) c.presence = c === solo ? 1 : 0
   }
   journey.section = k
+
+  // is a lab on screen? (chrome such as the rail labels steps aside)
+  let lab = false
+  const act = cs[journey.active]
+  if (act) for (const st of act.steps.values()) if (st.lab && st.progress > 0 && st.progress < 1) lab = true
+  if (lab !== labOn) {
+    labOn = lab
+    document.documentElement.classList.toggle('is-lab', lab)
+  }
 
   const st = useJourney.getState()
   if (!params.solo) {

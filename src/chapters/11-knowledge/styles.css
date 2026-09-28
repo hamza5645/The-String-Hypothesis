@@ -1,0 +1,1135 @@
+/* Chapter 11 · What We Know. Prefix: kn- */
+
+/* ───────── status glyphs in DOM (shape = chip) ───────── */
+.kn-glyph {
+  --c: var(--st-observed);
+  display: inline-block;
+  flex: none;
+  width: 0.72em;
+  height: 0.72em;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.kn-glyph--observed {
+  --c: var(--st-observed);
+  background: var(--c);
+  box-shadow: 0 0 8px rgba(236, 230, 217, 0.35);
+}
+.kn-glyph--derived {
+  --c: var(--st-derived);
+  border: 1px solid var(--c);
+  background: linear-gradient(90deg, transparent 50%, var(--c) 50%);
+}
+.kn-glyph--conjectured {
+  --c: var(--st-conjectured);
+  border: 1px dashed var(--c);
+}
+.kn-glyph--speculative {
+  --c: var(--st-speculative);
+  border: 1px solid var(--c);
+}
+
+/* ───────── beat helpers ───────── */
+.kn-browse {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+  padding: 0.42rem 0.8rem 0.42rem 0.65rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: rgba(5, 7, 11, 0.55);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 0.25s,
+    border-color 0.25s;
+}
+.kn-browse:hover,
+.kn-browse:focus-visible {
+  color: var(--ink);
+  border-color: rgba(134, 168, 216, 0.5);
+}
+.kn-browse__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 8px rgba(236, 230, 217, 0.7);
+}
+.kn-browse__keys {
+  color: var(--ink-3);
+  letter-spacing: 0.2em;
+}
+.kn-browse--compact {
+  margin-top: 0;
+}
+.kn-deeper-row {
+  margin-top: 1rem;
+}
+
+/* ───────── E3: pluck ───────── */
+.kn-pluck-step .step__content {
+  max-width: 40rem;
+}
+/* sit low enough that the caption under the Thread keeps its own air */
+.kn-pluck-step.step--v-lower .step__inner {
+  padding-bottom: 6svh;
+}
+.kn-pluck-step .beat {
+  justify-items: center;
+}
+.kn-pluck-step .beat__text {
+  font-size: clamp(1.02rem, 1.2vw, 1.18rem);
+  color: var(--ink);
+}
+.kn-pluck {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255, 201, 138, 0.35);
+  border-radius: 999px;
+  background: rgba(5, 7, 11, 0.5);
+  color: var(--filament-core);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    background 0.25s;
+}
+.kn-pluck:hover {
+  border-color: var(--filament);
+  background: rgba(255, 201, 138, 0.06);
+}
+.kn-pluck__line {
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--filament), transparent);
+  box-shadow: 0 0 6px var(--filament);
+}
+
+/* ───────── Lab: Referee's Bench ───────── */
+.kn-bench {
+  display: grid;
+  gap: 0.85rem;
+}
+.kn-ceil {
+  display: grid;
+  gap: 0.2rem;
+}
+.kn-ceil .ctl-slider__ticklabel {
+  font-size: 0.72rem;
+  color: var(--ink-2);
+}
+.kn-ceil__copy {
+  margin: 0;
+  min-height: 2.9em;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.kn-readouts .readout {
+  padding: 0.14rem 0;
+}
+.kn-readouts .readout__label {
+  font-size: 0.6rem;
+}
+.kn-readouts .readout__value {
+  font-size: 0.74rem;
+}
+
+.kn-ref {
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--hairline);
+}
+.kn-ref__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.kn-ref__head .t-label:first-child {
+  color: var(--ink-2);
+}
+.kn-ref__count {
+  color: var(--ink-3);
+}
+.kn-ref__claim {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  line-height: 1.28;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.kn-ref__prompt {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--ink-3);
+}
+.kn-ref__chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.kn-chipbtn {
+  --c: var(--st-observed);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.2rem 0.45rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: rgba(5, 7, 11, 0.35);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    color 0.25s,
+    background 0.25s;
+}
+.kn-chipbtn .kn-glyph {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.kn-chipbtn .kn-glyph--derived,
+.kn-chipbtn .kn-glyph--conjectured,
+.kn-chipbtn .kn-glyph--speculative {
+  border-width: 1.5px;
+}
+.kn-chipbtn--derived {
+  --c: var(--st-derived);
+}
+.kn-chipbtn--conjectured {
+  --c: var(--st-conjectured);
+}
+.kn-chipbtn--speculative {
+  --c: var(--st-speculative);
+}
+.kn-chipbtn:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--c) 45%, transparent);
+}
+.kn-chipbtn.is-on {
+  color: var(--c);
+  border-color: color-mix(in srgb, var(--c) 70%, transparent);
+  background: color-mix(in srgb, var(--c) 9%, rgba(5, 7, 11, 0.4));
+}
+.kn-ref__out {
+  min-height: 1px;
+}
+.kn-ref__verdict {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+  animation: rise 0.45s var(--ease-out);
+}
+.kn-ref__verdict strong {
+  font-weight: 500;
+  color: var(--ink);
+}
+.kn-ref__verdict--agreed strong {
+  color: var(--filament-core);
+}
+.kn-ref__hidden {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--st-speculative);
+  font-style: italic;
+}
+.kn-ref__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.kn-ref__score {
+  font-size: 0.7rem;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+.kn-ref__closing {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.kn-bench__tools {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* ───────── claim card (portal) ───────── */
+.kn-card {
+  --c: var(--st-observed);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 12;
+  width: min(300px, calc(100vw - 24px));
+  padding: 0.8rem 0.95rem 0.85rem;
+  background: rgba(8, 11, 18, 0.9);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  transition: opacity 0.2s;
+  animation: rise 0.25s var(--ease-out);
+}
+.kn-card.is-pinned {
+  width: min(340px, calc(100vw - 24px));
+  pointer-events: auto;
+}
+.kn-card--derived {
+  --c: var(--st-derived);
+}
+.kn-card--conjectured {
+  --c: var(--st-conjectured);
+}
+.kn-card--speculative {
+  --c: var(--st-speculative);
+}
+.kn-card[data-dock='1'] {
+  left: 12px;
+  right: 12px;
+  top: calc(64px + env(safe-area-inset-top, 0px));
+  width: auto;
+  transform: none;
+}
+.kn-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+.kn-card__head .kn-glyph {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+.kn-card__st {
+  color: var(--ink-3);
+}
+.kn-card__st::before {
+  content: '· ';
+}
+.kn-card__close {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.kn-card__label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+.kn-card__sub {
+  margin-top: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+.kn-card__summary {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  line-height: 1.3;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.kn-card__detail {
+  margin: 0.55rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.kn-card__more {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.kn-card__note {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--field);
+}
+.kn-card__ghost {
+  display: none;
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--st-speculative);
+}
+.kn-card[data-ghost='1'] .kn-card__ghost {
+  display: block;
+}
+
+/* ───────── scene labels (Scene-owned DOM in #scene-labels) ───────── */
+.kn-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.kn-lbl {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  line-height: 1.25;
+  letter-spacing: 0.1em;
+  /* authored in capitals: never text-transform physics (µm, eV, η/s, α′, AdS, 1/4π keep their case) */
+  white-space: nowrap;
+  color: var(--ink-2);
+  opacity: 0;
+  visibility: hidden;
+  will-change: transform, opacity;
+  text-shadow:
+    0 0 6px rgba(5, 7, 11, 0.95),
+    0 0 14px rgba(5, 7, 11, 0.8);
+}
+.kn-lbl__sub {
+  font-size: 0.54rem;
+  color: var(--ink-3);
+}
+/* a node label's long sub-line wraps, so the label fits between neighbours */
+.kn-lbl--node .kn-lbl__sub {
+  white-space: normal;
+  max-width: 24em;
+}
+.kn-lbl__tag {
+  align-self: flex-start;
+  padding: 1px 5px;
+  border: 1px solid rgba(154, 160, 174, 0.3);
+  border-radius: 999px;
+  font-size: 0.5rem;
+  color: var(--ink-2);
+}
+.kn-lbl--t0 {
+  color: var(--ink);
+}
+.kn-lbl--t1 {
+  color: var(--st-derived);
+}
+.kn-lbl--t2 {
+  color: var(--st-conjectured);
+}
+.kn-lbl--t3 {
+  color: #9aa0ae;
+}
+.kn-lbl--crack {
+  color: var(--field);
+}
+.kn-lbl--dim {
+  color: var(--ink-3);
+}
+.kn-lbl--field {
+  color: var(--field);
+}
+.kn-lbl--warm {
+  color: var(--filament);
+}
+.kn-lbl--guide {
+  font-size: 0.56rem;
+  color: var(--ink-3);
+}
+.kn-lbl--md {
+  font-size: 0.68rem;
+}
+/* the map's legend: a ruler on the axis, each floor named by its own mark */
+.kn-lbl--rim {
+  letter-spacing: 0.14em;
+}
+.kn-lbl--ghost {
+  color: var(--ink-3);
+  gap: 3px;
+}
+.kn-lbl--ghost .kn-lbl__main {
+  color: var(--ink-2);
+}
+.kn-terrain {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  text-align: center;
+  font-size: 0.56rem;
+  color: var(--ink-3);
+}
+.kn-terrain b {
+  font-weight: 400;
+  color: #a3a7b4;
+}
+.kn-terrain__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--ink-2);
+}
+.kn-terrain .kn-tag__chip {
+  padding: 0.05em 0.5em;
+  border: 1px solid color-mix(in srgb, var(--st-analogy) 34%, transparent);
+  border-radius: 999px;
+  color: var(--st-analogy);
+}
+.kn-lbl--rival {
+  font-size: 0.54rem;
+  gap: 1px;
+}
+.kn-lbl--rival .kn-lbl__sub {
+  font-size: 0.54rem;
+  color: var(--field);
+}
+.kn-lbl--rival .kn-lbl__tag {
+  align-self: center;
+  margin-top: 2px;
+  font-size: 0.46rem;
+  color: var(--ink-3);
+}
+.kn-lbl--legend {
+  font-size: 0.6rem;
+  color: var(--ink-2);
+}
+.kn-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.kn-legend .kn-glyph {
+  width: 0.78em;
+  height: 0.78em;
+}
+.kn-legend__name {
+  font-weight: 500;
+  color: var(--ink);
+}
+.kn-legend__name--derived {
+  color: var(--st-derived);
+}
+.kn-legend__name--conjectured {
+  color: var(--st-conjectured);
+}
+.kn-legend__name--speculative {
+  color: #a3a7b4;
+}
+.kn-legend__rest {
+  color: var(--ink-3);
+}
+.kn-lbl--legend[data-long='0'] .kn-legend__rest {
+  display: none;
+}
+.kn-lbl--axis {
+  color: var(--ink-2);
+  letter-spacing: 0.14em;
+}
+.kn-lbl.is-hot {
+  color: var(--ink);
+}
+.kn-lbl--right {
+  align-items: flex-end;
+  text-align: right;
+}
+.kn-lbl--center {
+  align-items: center;
+  text-align: center;
+}
+
+/* HUD: fixed composition elements (readouts, captions, tags, arrows) */
+.kn-hud {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  visibility: hidden;
+  will-change: transform, opacity;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-2);
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(5, 7, 11, 0.95);
+}
+.kn-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.56rem;
+  color: var(--ink-3);
+}
+.kn-tag__chip {
+  padding: 0.18em 0.55em;
+  border: 1px solid color-mix(in srgb, var(--st-analogy) 34%, transparent);
+  border-radius: 999px;
+  color: var(--st-analogy);
+  letter-spacing: 0.12em;
+}
+.kn-eqrow {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  transform-origin: center;
+}
+.kn-eqrow__term {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+  min-width: 13rem;
+  transition: opacity 0.4s;
+}
+.kn-eqrow__cap {
+  font-size: 0.56rem;
+  color: var(--ink-3);
+}
+.kn-eqrow__formula {
+  font-size: 0.68rem;
+  color: var(--ink-2);
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+.kn-eqrow__val {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-transform: none;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.kn-eqrow__val small {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-2);
+  margin-left: 0.4rem;
+}
+.kn-eqrow__eq {
+  display: grid;
+  gap: 7px;
+  width: 26px;
+  flex: none;
+}
+.kn-eqrow__eq i {
+  display: block;
+  height: 1.5px;
+  background: var(--field);
+  box-shadow:
+    0 0 6px rgba(134, 168, 216, 0.9),
+    0 0 16px rgba(134, 168, 216, 0.5);
+}
+.kn-lc {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+.kn-lc sub {
+  font-size: 0.75em;
+  vertical-align: -0.25em;
+}
+.kn-nw {
+  white-space: nowrap;
+}
+.kn-eqrow__lo {
+  font-size: 0.52rem;
+  color: var(--ink-3);
+  border: 1px solid var(--hairline);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+.kn-dial {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+}
+.kn-dial__bar {
+  position: relative;
+  width: 15rem;
+  height: 9px;
+  border-bottom: 1px solid var(--hairline-strong);
+  background: repeating-linear-gradient(90deg, var(--ink-3) 0 1px, transparent 1px 10%) bottom / 100% 5px no-repeat;
+}
+.kn-dial__knob {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  border-radius: 50%;
+  background: var(--field);
+  box-shadow: 0 0 10px var(--field);
+}
+.kn-dial__ends {
+  display: flex;
+  justify-content: space-between;
+  width: 15rem;
+  font-size: 0.52rem;
+  color: var(--ink-3);
+}
+.kn-note {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.7rem 0.85rem;
+  border-left: 1px solid var(--hairline-strong);
+  background: linear-gradient(90deg, rgba(5, 7, 11, 0.7), transparent);
+  font-size: 0.56rem;
+  line-height: 1.5;
+  white-space: normal;
+  width: 17rem;
+}
+.kn-note b {
+  font-weight: 500;
+  color: var(--ink);
+}
+.kn-note em {
+  font-style: normal;
+  color: var(--ink-3);
+}
+.kn-readline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  justify-content: center;
+  font-size: 0.62rem;
+  color: var(--ink-2);
+}
+.kn-readline b {
+  font-weight: 500;
+  color: var(--ink);
+  margin-left: 0.6em;
+}
+.kn-readline__sep {
+  color: var(--ink-3);
+}
+/* B6's frame: the verdict as a figure (a dark pool keeps it off the grid) */
+.kn-demand {
+  position: relative;
+  display: grid;
+  gap: 0.8rem;
+  justify-items: center;
+  width: max-content;
+  max-width: min(calc(100vw - 32px), 44rem);
+  white-space: normal;
+  text-align: center;
+}
+.kn-demand::before {
+  content: '';
+  position: absolute;
+  inset: -26% -18%;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgba(5, 7, 11, 0.92), rgba(5, 7, 11, 0.72) 55%, transparent);
+}
+.kn-demand__k {
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  color: var(--ink-3);
+}
+.kn-demand__zeros {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1.6rem, 4vw, 3.4rem);
+}
+.kn-zero {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+}
+.kn-zero__n {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 4.4vw, 3.7rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  color: var(--ink);
+  font-variant-numeric: lining-nums;
+  text-shadow: 0 0 28px rgba(236, 230, 217, 0.18);
+}
+.kn-zero__k {
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  color: var(--ink-2);
+}
+.kn-demand__cap {
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+  text-wrap: balance;
+}
+.kn-closing {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+}
+.kn-svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+/* ───────── finale footer (rest) ───────── */
+.kn-rest .step__inner {
+  padding-bottom: max(22px, env(safe-area-inset-bottom, 0px));
+}
+.kn-rest .step__content {
+  width: 100%;
+}
+.kn-end {
+  position: relative;
+  display: grid;
+  gap: 0.95rem;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-left: clamp(0px, 5.5vw, 110px);
+  /* clear of the chapter rail's active label on the right edge */
+  padding-right: clamp(0px, 13vw, 210px);
+}
+.kn-end::before {
+  content: '';
+  position: absolute;
+  inset: -30px -10vw -40px;
+  z-index: -1;
+  background: linear-gradient(to bottom, transparent, rgba(5, 7, 11, 0.8) 30%, rgba(5, 7, 11, 0.94));
+  pointer-events: none;
+}
+.kn-end__rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hairline-strong) 12%, var(--hairline-strong) 88%, transparent);
+}
+.kn-end__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem 2rem;
+  flex-wrap: wrap;
+}
+.kn-end__kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  color: var(--ink-2);
+}
+.kn-end__num {
+  color: var(--filament);
+}
+.kn-end__dash {
+  width: 34px;
+  height: 1px;
+  background: var(--hairline-strong);
+}
+.kn-end__key {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.kn-end__key li {
+  display: inline-flex;
+  pointer-events: auto;
+}
+.kn-end__reading {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.8rem;
+}
+.kn-end__group {
+  margin: 0 0 0.6rem;
+  color: var(--ink-2);
+}
+.kn-end__col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.kn-end__col li {
+  display: grid;
+  gap: 0.05rem;
+  pointer-events: auto;
+}
+.kn-end__author {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.kn-end__title {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  line-height: 1.2;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.kn-end__title.is-italic {
+  font-style: italic;
+}
+a.kn-end__title {
+  pointer-events: auto;
+  text-decoration-color: rgba(134, 168, 216, 0.5);
+}
+.kn-end__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--hairline);
+}
+.kn-end__credit {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+.kn-end__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex: none;
+  pointer-events: auto;
+}
+.kn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex: none;
+  padding: 0.6rem 1.05rem 0.6rem 0.8rem;
+  border: 1px solid rgba(255, 201, 138, 0.4);
+  border-radius: 999px;
+  background: rgba(5, 7, 11, 0.6);
+  color: var(--filament-core);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    border-color 0.3s,
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.kn-back:hover,
+.kn-back:focus-visible {
+  border-color: var(--filament);
+  background: rgba(255, 201, 138, 0.07);
+  box-shadow: 0 0 24px rgba(255, 201, 138, 0.18);
+}
+.kn-back__arrow {
+  display: grid;
+  place-items: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 201, 138, 0.5);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+}
+
+@media (max-width: 1100px) {
+  .kn-end__reading {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem 1.6rem;
+  }
+  .kn-end__col li:nth-child(n + 3) {
+    display: none;
+  }
+}
+@media (max-height: 760px) and (min-width: 721px) {
+  .kn-end__col li:nth-child(n + 4) {
+    display: none;
+  }
+  .kn-end {
+    gap: 0.75rem;
+  }
+}
+@media (max-width: 720px) {
+  .kn-end {
+    gap: 0.7rem;
+  }
+  .kn-end__top {
+    gap: 0.6rem;
+  }
+  .kn-end__key {
+    gap: 5px;
+  }
+  /* phones: the reading list lives in the drawer */
+  .kn-end__reading {
+    display: none;
+  }
+  .kn-end__kicker {
+    font-size: 0.6rem;
+    gap: 0.5rem;
+  }
+  .kn-end__dash {
+    width: 18px;
+  }
+  .kn-end__foot {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 0;
+  }
+  .kn-end__actions {
+    justify-content: space-between;
+  }
+  .kn-end__credit {
+    font-size: 0.68rem;
+  }
+  .kn-back {
+    justify-content: center;
+  }
+  .kn-pluck-step .beat__text {
+    font-size: 1rem;
+  }
+  /* the opening card sits low so the handoff point (screen centre) stays clear */
+  [data-chapter='knowledge'] .step--title .chapter-title {
+    gap: 0.8rem;
+  }
+  [data-chapter='knowledge'] .step--title .chapter-title__q {
+    font-size: clamp(2rem, 9vw, 2.5rem);
+  }
+  [data-chapter='knowledge'] .step--title .chapter-title__sub .t-lead {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .kn-tag {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 3px;
+    column-gap: 0.45rem;
+    max-width: 250px;
+    font-size: 0.5rem;
+  }
+  .kn-end .deeper-trigger {
+    white-space: nowrap;
+  }
+  .kn-end .deeper-trigger,
+  .kn-back {
+    padding: 0.45rem 0.75rem 0.45rem 0.55rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
+  .kn-end__credit {
+    font-size: 0.62rem;
+  }
+  .kn-eqrow {
+    gap: 0.7rem;
+  }
+  .kn-eqrow__term {
+    min-width: 8.5rem;
+    gap: 0.2rem;
+  }
+  .kn-eqrow__val {
+    font-size: 1.45rem;
+  }
+  .kn-eqrow__formula {
+    font-size: 0.52rem;
+    letter-spacing: 0.02em;
+  }
+  .kn-eqrow__cap,
+  .kn-eqrow__lo {
+    font-size: 0.46rem;
+  }
+  .kn-eqrow__term > .kn-eqrow__cap:first-child {
+    display: none;
+  }
+  .kn-eqrow__eq {
+    width: 16px;
+    gap: 5px;
+  }
+  .kn-terrain {
+    max-width: 230px;
+    white-space: normal;
+    font-size: 0.5rem;
+  }
+  .kn-terrain__long {
+    display: none;
+  }
+  .kn-lbl--legend {
+    font-size: 0.54rem;
+  }
+  .kn-lbl--rim {
+    font-size: 0.56rem;
+    letter-spacing: 0.1em;
+  }
+  .kn-demand {
+    gap: 0.6rem;
+    max-width: min(calc(100vw - 32px), 358px);
+  }
+  .kn-demand__zeros {
+    gap: 1.1rem;
+  }
+  .kn-zero__n {
+    font-size: 2.3rem;
+  }
+  .kn-zero__k {
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+  /* two stacked rows: CLAIMS SHOWN / STRING-THEORY CLAIMS SHOWN */
+  .kn-readline {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.56rem;
+  }
+  .kn-readline__sep {
+    display: none;
+  }
+  .kn-demand__cap {
+    font-size: 0.98rem;
+  }
+}

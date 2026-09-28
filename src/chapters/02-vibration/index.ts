@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 import { defineChapter } from '@/core/chapter'
 import Overlay from './Overlay'
+import { vibScale } from './timeline'
 
 const load = () => import('./Scene')
 
@@ -13,5 +14,5 @@ export default defineChapter({
   preload: load,
   Overlay,
   Fallback: lazy(() => import('./Fallback')),
-  scale: () => null,
+  scale: vibScale,
 })

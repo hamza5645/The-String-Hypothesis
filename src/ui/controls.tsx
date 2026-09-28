@@ -72,7 +72,12 @@ export function Slider({
         <span className="ctl-slider__fill" aria-hidden="true" />
         <span className="ctl-slider__thumb" aria-hidden="true" />
         {ticks?.map((t) => (
-          <span key={t.value} className="ctl-slider__tick" style={{ ['--tp' as string]: toPos(t.value) }} aria-hidden="true">
+          <span
+            key={t.value}
+            className={`ctl-slider__tick${toPos(t.value) < 0.1 ? ' is-start' : toPos(t.value) > 0.9 ? ' is-end' : ''}`}
+            style={{ ['--tp' as string]: toPos(t.value) }}
+            aria-hidden="true"
+          >
             {t.label && <span className="ctl-slider__ticklabel">{t.label}</span>}
           </span>
         ))}

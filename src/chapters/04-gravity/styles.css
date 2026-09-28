@@ -1,0 +1,1407 @@
+/* 04 · Gravity — chapter styles. Every class is prefixed `gr-`. */
+
+/* The title sits at the bottom-left so the H2 loop owns the centre of the first frame. */
+section[data-chapter='gravity'] .step--title .chapter-title__q {
+  font-size: clamp(2.2rem, 3.9vw, 4.1rem);
+  max-width: 13em;
+}
+section[data-chapter='gravity'] .step--title .chapter-title {
+  gap: 1rem;
+}
+
+/* keeps Greek letters, units and variables in their true case inside uppercase labels */
+.gr-nc {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+.gr-dot {
+  font-size: 0.8em;
+  color: var(--st-observed);
+}
+
+/* ─────────── hollow "not observed" tag ─────────── */
+.gr-hollow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  margin-top: 0.45rem;
+  padding: 0.18em 0.6em 0.18em 0.45em;
+  border: 1px dashed rgba(154, 160, 174, 0.35);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.gr-hollow i {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+}
+.gr-hollow--chip {
+  margin-top: 0;
+  padding: 0.28em 0.7em 0.28em 0.55em;
+  font-size: 0.64rem;
+  background: rgba(5, 7, 11, 0.6);
+  cursor: help;
+}
+
+/* ─────────── Beat 1 · force stations ─────────── */
+.gr-fl .scene-label__text {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  text-align: center;
+}
+.gr-fl__name {
+  color: var(--ink);
+  letter-spacing: 0.14em;
+}
+.gr-fl__sub {
+  font-size: 0.64rem;
+  color: var(--ink-2);
+}
+.scene-label.gr-bracket,
+.scene-label.gr-ruler-l,
+.scene-label.gr-ruler-r,
+.scene-label.gr-ruler-cap {
+  font-size: 0.64rem;
+}
+.scene-label--dim.gr-bracket,
+.scene-label--dim.gr-ruler-l,
+.scene-label--dim.gr-ruler-cap,
+.scene-label--dim.gr-fl-tag,
+.scene-label--dim.gr-tl {
+  color: var(--ink-2);
+}
+.gr-bracket .scene-label__text {
+  text-align: center;
+  line-height: 1.5;
+}
+.gr-bracket--side .scene-label__text {
+  text-align: right;
+}
+.gr-ruler-l .scene-label__text {
+  transform: translate(0, 10px);
+  line-height: 1.5;
+}
+.gr-ruler-r .scene-label__text {
+  transform: translate(-100%, 10px);
+  text-align: right;
+  line-height: 1.5;
+}
+.gr-card .gr-nc,
+.gr-card__v {
+  text-transform: none;
+}
+.gr-card {
+  display: grid;
+  gap: 0.3rem;
+  width: 15.5rem;
+  padding: 0.7rem 0.8rem 0.75rem;
+  background: rgba(10, 13, 21, 0.86);
+  border: 1px solid rgba(134, 168, 216, 0.28);
+  border-radius: 3px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  white-space: normal;
+}
+.gr-card__t {
+  font-size: 0.62rem;
+  color: var(--field);
+  letter-spacing: 0.14em;
+  margin-bottom: 0.15rem;
+}
+.gr-card__row {
+  display: grid;
+  grid-template-columns: 5.2rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+.gr-card__k {
+  font-size: 0.62rem;
+  color: var(--ink-2);
+}
+.gr-card__v {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+/* Overlay: the keyboard / touch force explorer under Beat 1 */
+.gr-fx {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1.4rem;
+}
+.gr-fx__label {
+  color: var(--ink-2);
+}
+.gr-fx__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.gr-fx__btn {
+  padding: 0.42rem 0.8rem;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: rgba(5, 7, 11, 0.55);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    color 0.25s,
+    border-color 0.25s,
+    background 0.25s;
+}
+.gr-fx__btn:hover,
+.gr-fx__btn.is-on {
+  color: var(--ink);
+  border-color: rgba(134, 168, 216, 0.7);
+  background: rgba(134, 168, 216, 0.08);
+}
+.gr-fx__btn--g {
+  border-style: dashed;
+}
+
+/* ─────────── Beat 3 · chart ─────────── */
+.scene-label.gr-tick {
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+.scene-label.gr-axis {
+  font-size: 0.64rem;
+  color: var(--ink-2);
+}
+.gr-axis--y .scene-label__text {
+  transform: translate(-2px, -100%);
+}
+.scene-label.gr-cl {
+  font-size: 0.64rem;
+}
+.scene-label--dim.gr-cl,
+.scene-label--dim.gr-vl {
+  color: var(--ink-2);
+}
+.gr-cl--sm .scene-label__text {
+  line-height: 1.45;
+}
+/* the Fermi callout: the chart's key argument, given room */
+.gr-fermi .scene-label__text {
+  display: grid;
+  gap: 0.22rem;
+  padding: 0.45rem 0.65rem 0.5rem;
+  border-left: 1px solid rgba(134, 168, 216, 0.55);
+  background: rgba(5, 7, 11, 0.82);
+  transform: translate(0, -2px);
+  line-height: 1.35;
+}
+.gr-fermi__t {
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  color: var(--field);
+}
+.gr-fermi__b {
+  font-size: 0.66rem;
+  color: var(--ink);
+}
+.gr-fermi__cure {
+  color: var(--ink-2);
+}
+/* chart labels sit on a void plate so gridlines and verticals pass *behind* the words */
+.gr-cl .scene-label__text,
+.gr-vl .scene-label__text {
+  padding: 1px 5px;
+  background: rgba(5, 7, 11, 0.78);
+  border-radius: 2px;
+}
+.gr-zlab .scene-label__text {
+  line-height: 1.5;
+  font-size: 0.66rem;
+  padding: 2px 6px;
+  background: rgba(5, 7, 11, 0.7);
+}
+.scene-label.gr-cl--c,
+.gr-cl--c .scene-label__text {
+  text-transform: none;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+.gr-cl--glyph .scene-label__text {
+  text-align: center;
+  line-height: 1.45;
+  background: none;
+}
+.gr-cl--g .scene-label__text {
+  line-height: 1.5;
+}
+.gr-cl__c {
+  text-transform: none;
+  color: var(--field);
+  font-size: 1.15em;
+}
+.gr-cl--wedge .scene-label__text {
+  text-align: right;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.scene-label.gr-vl {
+  font-size: 0.62rem;
+}
+.gr-vl .scene-label__text {
+  text-align: center;
+  line-height: 1.5;
+}
+.gr-vl--right .scene-label__text {
+  transform: translate(8px, -100%);
+  text-align: left;
+}
+.gr-vl--left .scene-label__text {
+  transform: translate(-100%, -100%) translateX(-8px);
+  text-align: right;
+}
+.gr-cursor .scene-label__text {
+  display: grid;
+  justify-items: end;
+  gap: 0.2rem;
+  padding: 0.45rem 0.6rem 0.5rem;
+  border-right: 1px solid rgba(134, 168, 216, 0.5);
+  background: linear-gradient(90deg, transparent, rgba(5, 7, 11, 0.7));
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-size: 0.74rem;
+  transform: translate(-100%, -50%);
+}
+.gr-cursor__k {
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.gr-cursor__row sub {
+  font-size: 0.75em;
+}
+
+/* ─────────── Beat 4 / Beat 5 / Lab · the +/× pattern glyph (a cross turned by ψ) ─────────── */
+.gr-glyph .scene-label__text {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  width: max-content;
+}
+.gr-pg {
+  flex: none;
+  min-width: 46px;
+}
+.gr-pg {
+  width: 46px;
+  height: 46px;
+  overflow: visible;
+}
+.gr-pg line {
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.gr-pg--ink line {
+  stroke: var(--ink);
+}
+.gr-pg--filament line {
+  stroke: var(--filament-core);
+  filter: drop-shadow(0 0 4px rgba(255, 201, 138, 0.8));
+}
+.gr-pg__halo {
+  fill: rgba(5, 7, 11, 0.55);
+  stroke: rgba(154, 160, 174, 0.28);
+  stroke-width: 0.75;
+}
+.gr-pg--filament .gr-pg__halo {
+  stroke: rgba(255, 201, 138, 0.3);
+}
+.gr-glyph__psi {
+  font-size: 0.74rem;
+  text-transform: none;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─────────── the pattern tile ─────────── */
+.gr-tile-wrap .scene-label__text {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.gr-tile {
+  --lit: 0;
+  --hd: 0;
+  --l0: 0;
+  --l3: 0;
+  --lz: 0;
+  --ann: 0;
+  --sub: 0;
+  /* grid metrics: header column, entry column, header row, entry row */
+  --hc: 50px;
+  --ec: 62px;
+  --hr: 28px;
+  --er: 34px;
+  --ef: 0.95rem;
+  position: relative;
+  font-family: var(--font-mono);
+  color: var(--field);
+}
+/* Beat 5: the tile is the chapter's key object — larger than in the Lab */
+.gr-tile[data-ctx='story'] {
+  --hc: 62px;
+  --ec: 80px;
+  --hr: 34px;
+  --er: 44px;
+  --ef: 1.2rem;
+}
+.gr-tile__cap {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+.gr-tile__cap-t {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--field);
+}
+.gr-tile__cap sub {
+  text-transform: none;
+  font-size: 0.8em;
+}
+.gr-tile__legend {
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  opacity: var(--hd);
+}
+.gr-tile__legend i {
+  font-family: var(--font-display);
+  font-size: 1.1em;
+}
+.gr-tile__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--hc) var(--ec) var(--ec);
+  grid-template-rows: var(--hr) var(--er) var(--er);
+  align-items: center;
+  justify-items: center;
+  padding: 0;
+  background: radial-gradient(closest-side, rgba(5, 7, 11, 0.9), rgba(5, 7, 11, 0.6) 70%, transparent);
+}
+/* the brackets around the entries */
+.gr-tile__grid::before,
+.gr-tile__grid::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--hr) + 3px);
+  height: calc(2 * var(--er) - 6px);
+  width: 7px;
+  border: 1px solid rgba(134, 168, 216, calc(0.3 + 0.6 * var(--lit)));
+}
+.gr-tile__grid::before {
+  left: calc(var(--hc) + 1px);
+  border-right: 0;
+}
+.gr-tile__grid::after {
+  right: 1px;
+  border-left: 0;
+}
+.gr-tile[data-mode='vec'] .gr-tile__grid::after,
+.gr-tile[data-mode='c1'] .gr-tile__grid::after {
+  right: calc(var(--ec) + 1px);
+}
+.gr-tile__corner {
+  font-size: 0.64rem;
+  color: var(--ink-2);
+  font-style: normal;
+  opacity: var(--hd);
+}
+.gr-tile__corner i {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+.gr-tile__ch,
+.gr-tile__rh {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+.gr-tile__ch b,
+.gr-tile__rh b {
+  font-weight: 400;
+  opacity: calc(0.35 + 0.65 * var(--hd));
+}
+.gr-tile__ar {
+  width: 20px;
+  height: 20px;
+  overflow: visible;
+  opacity: var(--hd);
+}
+.gr-tile__ar line,
+.gr-tile__ar polyline {
+  fill: none;
+  stroke: var(--field);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gr-tile__e {
+  font-size: var(--ef);
+  font-variant-numeric: tabular-nums;
+  color: var(--field);
+  opacity: calc(0.16 + 0.84 * var(--lit));
+  transition: color 0.3s;
+}
+.gr-tile__e--0 {
+  opacity: calc(0.16 + 0.84 * var(--l0));
+  text-shadow: 0 0 calc(var(--l0) * 14px) rgba(134, 168, 216, 0.75);
+}
+.gr-tile__e--3 {
+  opacity: calc(0.16 + 0.84 * var(--l3));
+  text-shadow: 0 0 calc(var(--l3) * 14px) rgba(134, 168, 216, 0.75);
+}
+.gr-tile__e--z {
+  opacity: calc(0.16 + 0.84 * var(--lz));
+}
+.gr-tile__e[data-zero='1'] {
+  color: var(--ink-2);
+  text-shadow: none;
+}
+.gr-tile[data-mode='vec'] .gr-tile__c2,
+.gr-tile[data-mode='c1'] .gr-tile__c2,
+.gr-tile[data-mode='vec'] .gr-tile__ch,
+.gr-tile[data-mode='c1'] .gr-tile__ch {
+  visibility: hidden;
+}
+.gr-tile__circ {
+  display: none;
+  position: absolute;
+  left: calc(100% + 6px);
+  top: calc(var(--hr) - 4px);
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.gr-tile[data-mode='c2'] .gr-tile__circ,
+.gr-tile[data-mode='c1'] .gr-tile__circ {
+  display: flex;
+}
+.gr-tile__tag {
+  font-size: 0.64rem;
+  color: var(--ink-2);
+}
+.gr-tile__plus {
+  color: var(--ink-2);
+}
+.gr-tile__mini {
+  display: grid;
+  grid-template-columns: 40px 40px;
+  grid-template-rows: 30px 30px;
+  align-items: center;
+  justify-items: center;
+  font-size: 0.8rem;
+  border-left: 1px solid rgba(134, 168, 216, 0.6);
+  border-right: 1px solid rgba(134, 168, 216, 0.6);
+}
+.gr-tile[data-mode='c1'] .gr-tile__mini {
+  grid-template-columns: 40px 0;
+}
+/* under the grid: the xx / yy annotations, then (same slot) the spin-2 sub-label, then the corner note */
+.gr-tile__below {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 10px);
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  width: max-content;
+  text-align: center;
+  text-transform: uppercase;
+}
+.gr-tile__ann,
+.gr-tile__sub {
+  grid-area: 1 / 1;
+}
+.gr-tile__ann {
+  display: flex;
+  gap: 1.1rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--field);
+  opacity: var(--ann);
+}
+.gr-tile__ann0 {
+  opacity: var(--l0);
+}
+.gr-tile__ann3 {
+  opacity: var(--l3);
+}
+.gr-tile__ann .gr-nc {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.12em;
+}
+.gr-tile__sub {
+  max-width: 19rem;
+  font-size: 0.66rem;
+  line-height: 1.55;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  opacity: var(--sub);
+}
+.gr-tile__dim {
+  color: var(--ink-2);
+}
+.gr-tile__note {
+  white-space: nowrap;
+  line-height: 1.6;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-2);
+  opacity: calc(0.85 * var(--sub));
+}
+.gr-tile[data-ctx='story'] .gr-tile__cap-lab,
+.gr-tile[data-ctx='story'] .gr-tile__sub-lab,
+.gr-tile[data-ctx='lab'] .gr-tile__cap-story,
+.gr-tile[data-ctx='lab'] .gr-tile__sub-story,
+.gr-tile[data-ctx='lab'] .gr-tile__ann {
+  display: none;
+}
+/* the corner note belongs to Beat 5; the lab keeps its tile lean */
+.gr-tile[data-ctx='lab'] .gr-tile__note {
+  display: none;
+}
+.gr-tile [class*='gr-tile__only-'] {
+  display: none;
+}
+.gr-tile[data-mode='m2'] .gr-tile__only-m2,
+.gr-tile[data-mode='c2'] .gr-tile__only-c2,
+.gr-tile[data-mode='vec'] .gr-tile__only-vec,
+.gr-tile[data-mode='c1'] .gr-tile__only-c1,
+.gr-tile[data-mode='id'] .gr-tile__only-id {
+  display: inline;
+}
+/* the legend only makes sense for the two-arrow tile */
+.gr-tile[data-mode='vec'] .gr-tile__legend,
+.gr-tile[data-mode='c1'] .gr-tile__legend,
+.gr-tile[data-mode='id'] .gr-tile__legend {
+  visibility: hidden;
+}
+
+/* readout under the lock "=" (+ the not-to-scale note) and the two scale tags under ring and loop */
+.gr-eq-read .scene-label__text {
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+}
+.gr-eq-read__m {
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+}
+.gr-eq-read__s {
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-2);
+}
+.gr-eq-read__s sub,
+.gr-scaletag sub {
+  text-transform: none;
+  font-size: 0.8em;
+}
+.gr-eq-read__mob {
+  display: none;
+}
+.scene-label.gr-scaletag {
+  font-size: 0.64rem;
+  color: var(--ink-2);
+}
+.gr-scaletag .scene-label__text {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* ─────────── Beat 6 · timeline ─────────── */
+.scene-label.gr-tl-head {
+  font-size: 0.64rem;
+  color: var(--ink-2);
+}
+.gr-tl .scene-label__text {
+  display: grid;
+  gap: 0.12rem;
+  line-height: 1.35;
+  text-align: left;
+}
+.gr-tl.scene-label--above .scene-label__text {
+  transform: translate(-6px, calc(-100% - 4px));
+}
+.gr-tl.scene-label--below .scene-label__text {
+  transform: translate(-6px, 4px);
+}
+.gr-tl--end .scene-label__text {
+  text-align: right;
+  justify-items: end;
+}
+.gr-tl--end.scene-label--above .scene-label__text {
+  transform: translate(calc(-100% + 6px), calc(-100% - 4px));
+}
+.gr-tl--end.scene-label--below .scene-label__text {
+  transform: translate(calc(-100% + 6px), 4px);
+}
+.gr-tl__y {
+  font-size: 0.72rem;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+}
+.gr-tl__l {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+.gr-tl--key .gr-tl__y {
+  color: var(--field);
+}
+.gr-tl--key .gr-tl__l {
+  color: var(--ink);
+}
+.gr-sizetag .scene-label__text {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: end;
+  text-align: right;
+  text-transform: none;
+}
+.gr-sizetag__t {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+}
+.gr-sizetag__s {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+.gr-sizetag.scene-label--above .scene-label__text {
+  justify-items: center;
+  text-align: center;
+}
+.gr-sizetag.scene-label--left .scene-label__text,
+.gr-cons.scene-label--left .scene-label__text {
+  justify-items: start;
+  text-align: left;
+}
+.gr-cons .scene-label__text {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: end;
+  text-align: right;
+  text-transform: none;
+  white-space: normal;
+  width: 16rem;
+}
+.gr-cons__eq {
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.gr-cons__eq .eq {
+  color: var(--ink);
+}
+.gr-cons__note {
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.gr-cons__soft {
+  margin-top: 0.3rem;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* ─────────── Beat 5 · the aha ─────────── */
+.gr-step-aha .step__content {
+  max-width: 50rem;
+  /* the centred text leaves before its sticky hold ends (Overlay sets --gx), so it never crosses the figure */
+  opacity: calc(var(--sv, 1) * var(--gx, 1));
+}
+.gr-step-aha[data-gx-off] .step__content {
+  visibility: hidden;
+}
+.gr-aha [data-s] {
+  transition:
+    opacity 0.5s var(--ease-out),
+    color 0.5s;
+  opacity: 0.62;
+}
+.gr-aha[data-phase='0'] [data-s='0'],
+.gr-aha[data-phase='1'] [data-s='1'],
+.gr-aha[data-phase='2'] [data-s='2'],
+.gr-aha[data-phase='3'] [data-s='3'] {
+  opacity: 1;
+}
+.gr-aha[data-phase='3'] [data-s='3'] {
+  color: var(--filament-core);
+}
+.gr-step-outro .step__content {
+  max-width: 40rem;
+}
+
+/* stage captions under the ring / loop (Lab) */
+.gr-subcap .scene-label__text {
+  display: grid;
+  justify-items: center;
+  gap: 0.28rem;
+  width: 19rem;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.45;
+  font-size: 0.64rem;
+  color: var(--ink-2);
+}
+.gr-subcap__scale {
+  color: var(--ink);
+}
+.gr-subcap__dim {
+  color: var(--ink-2);
+  font-size: 0.6rem;
+}
+.gr-strcap .scene-label__text {
+  display: grid;
+  gap: 0.45rem;
+  width: 17rem;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.gr-strcap__row,
+.gr-strcap__scale {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.gr-strcap__scale {
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.gr-strcap__scale sub {
+  text-transform: none;
+  font-size: 0.8em;
+}
+.gr-strcap .status {
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+/* ─────────── Lab panel ─────────── */
+/* keep the panel clear of the chapter rail: its buttons are ~189 px wide at right: gutter/2 and sit above
+   the overlay, so anything under them is unclickable (see director.ts labRegionRight) */
+@media (min-width: 861px) {
+  section[data-chapter='gravity'] .step--lab .lab {
+    margin-right: calc(197px - var(--gutter) * 0.5);
+  }
+  /* the hint floats over the stage (left of the panel), above the ring | tile | loop triptych — only once the
+     step has docked, so it never slides up across the ring */
+  section[data-chapter='gravity'] .step--lab .lab-hint {
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+  }
+  section[data-chapter='gravity'] .step--lab[data-hint-on] .lab-hint {
+    opacity: 1;
+  }
+  section[data-chapter='gravity'] .step--lab .lab-hint {
+    position: absolute;
+    top: 0;
+    /* centre of the free stage [118 px, W − gutter − (197 − gutter/2) − 388 px], minus the content box's gutter */
+    left: calc(50vw - 233.5px - 1.25 * var(--gutter));
+    transform: translateX(-50%);
+    margin: 0;
+    white-space: nowrap;
+  }
+}
+/* phones: the string's cartoon caption lives in the bottom sheet (the stage above is small) */
+.gr-lab__string {
+  display: none;
+}
+@media (max-width: 720px) {
+  .gr-lab__string {
+    display: flex;
+  }
+  /* the stage above the sheet is small; the panel's own dial copy carries the instruction */
+  section[data-chapter='gravity'] .step--lab .lab-hint {
+    display: none;
+  }
+}
+.gr-lab__string {
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.gr-lab__string .status {
+  flex: none;
+  margin-top: 0.1rem;
+}
+.gr-lab__note {
+  margin: -0.35rem 0 0;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+/* desktop: the exaggeration note lives on the stage, under the ring (Ring.tsx), so the panel fits */
+@media (min-width: 861px) {
+  .gr-lab__note {
+    display: none;
+  }
+}
+.gr-dialrow {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.gr-dialbox {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+}
+.gr-dialbox__v {
+  font-size: 0.72rem;
+  color: var(--filament-core);
+}
+.gr-dial {
+  width: 84px;
+  height: 84px;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+  border-radius: 50%;
+}
+.gr-dial:focus-visible {
+  outline: 1px solid var(--filament);
+  outline-offset: 3px;
+}
+.gr-dial__ring {
+  fill: rgba(5, 7, 11, 0.5);
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+}
+.gr-dial__tk {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+}
+.gr-dial__tk--M {
+  stroke: var(--ink-2);
+}
+.gr-dial__needle {
+  stroke: rgba(255, 201, 138, 0.35);
+  stroke-width: 1;
+}
+.gr-dial__ghost {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  stroke-dasharray: 2 2.5;
+}
+.gr-dial__pat {
+  fill: none;
+  stroke: var(--field);
+  stroke-width: 1.3;
+}
+.gr-dial__knob {
+  fill: var(--filament-core);
+  filter: drop-shadow(0 0 4px var(--filament));
+}
+.gr-meter {
+  display: grid;
+  gap: 0.35rem;
+}
+.gr-meter__k {
+  color: var(--ink-2);
+  font-size: 0.6rem;
+}
+.gr-meter__q {
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+.gr-meter__bar {
+  position: relative;
+  height: 10px;
+  background:
+    linear-gradient(90deg, rgba(134, 168, 216, 0.1), rgba(134, 168, 216, 0.02) 45%, rgba(134, 168, 216, 0.02) 55%, rgba(255, 201, 138, 0.14)),
+    transparent;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+.gr-meter__mid {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: var(--hairline-strong);
+}
+.gr-meter__mk {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: calc(var(--m) * 100%);
+  width: 2px;
+  margin-left: -1px;
+  background: var(--filament-core);
+  box-shadow: 0 0 8px var(--filament);
+  transition: left 0.12s linear;
+}
+.gr-meter__ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--ink-2);
+}
+.gr-meter__state {
+  margin: 0;
+  min-height: 1.3em;
+  font-size: 0.86rem;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.gr-meter__dim {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-2);
+}
+.gr-meter__rep {
+  font-size: 0.66rem;
+  color: var(--field);
+}
+.gr-two {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 10px;
+}
+.gr-two .ctl-seg__opt {
+  min-width: 0;
+  padding-inline: 0.35rem;
+}
+.gr-two .ctl-seg__opt:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.gr-speed {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+.gr-speed .btn {
+  padding: 0.4rem 0.65rem;
+  margin-bottom: 2px;
+}
+.gr-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.2rem;
+}
+.gr-toggles .ctl-toggle {
+  font-size: 0.84rem;
+}
+.gr-chirp {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem;
+  align-items: center;
+}
+.gr-chirp .btn {
+  padding: 0.38rem 0.7rem;
+}
+.gr-chirp__cap {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+/* compact readout block: label left, value right, hairline rules */
+.gr-reads {
+  display: grid;
+  margin: 0;
+  border-top: 1px dashed var(--hairline);
+}
+.gr-reads > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.28rem 0;
+  border-bottom: 1px dashed var(--hairline);
+}
+.gr-reads dt {
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.gr-reads dd {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--ink);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.gr-reads__f {
+  color: var(--field) !important;
+}
+.gr-reads__u {
+  color: var(--ink-2);
+}
+
+/* the Spin Lab is dense: tighten the shared panel rhythm so every control, the readouts and the Go-deeper
+   drawer fit without an inner scroll (1440 × 900 and 1280 × 800) */
+@media (min-width: 861px) {
+  section[data-chapter='gravity'] .step--lab .step__inner {
+    padding-top: 64px;
+  }
+  section[data-chapter='gravity'] .step--lab .lab {
+    max-height: calc(100svh - 92px);
+    padding: 16px 18px 12px;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__head {
+    margin-bottom: 0.6rem;
+    gap: 0.25rem;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__intro {
+    margin-bottom: 0.7rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__intro p {
+    margin: 0;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__body {
+    gap: 0.72rem;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__foot {
+    margin-top: 0.7rem;
+    padding-top: 0.6rem;
+  }
+  section[data-chapter='gravity'] .step--lab .ctl {
+    gap: 0.3rem;
+  }
+  section[data-chapter='gravity'] .step--lab .ctl-seg__opt {
+    padding-block: 0.42rem;
+  }
+  section[data-chapter='gravity'] .step--lab .ctl-slider__track {
+    height: 22px;
+  }
+}
+@media (min-width: 861px) and (max-height: 840px) {
+  section[data-chapter='gravity'] .step--lab .step__inner {
+    padding-top: 58px;
+  }
+  section[data-chapter='gravity'] .step--lab .lab {
+    max-height: calc(100svh - 80px);
+    padding-top: 12px;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__title {
+    font-size: 1.25rem;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__body {
+    gap: 0.5rem;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__intro {
+    font-size: 0.84rem;
+    margin-bottom: 0.5rem;
+  }
+  .gr-dial {
+    width: 74px;
+    height: 74px;
+  }
+  .gr-dialrow {
+    grid-template-columns: 80px 1fr;
+  }
+  .gr-meter {
+    gap: 0.22rem;
+  }
+  .gr-meter__q {
+    font-size: 0.7rem;
+  }
+  section[data-chapter='gravity'] .step--lab .ctl-seg__opt {
+    padding-block: 0.34rem;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__foot {
+    margin-top: 0.5rem;
+    padding-top: 0.45rem;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__head {
+    margin-bottom: 0.45rem;
+  }
+  .gr-reads > div {
+    padding: 0.18rem 0;
+  }
+  .gr-dial {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (min-width: 861px) and (max-height: 780px) {
+  section[data-chapter='gravity'] .step--lab .step__inner {
+    padding-top: 50px;
+  }
+  section[data-chapter='gravity'] .step--lab .lab {
+    max-height: calc(100svh - 70px);
+    padding: 10px 16px 8px;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__title {
+    font-size: 1.12rem;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__intro {
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+  section[data-chapter='gravity'] .step--lab .lab__body {
+    gap: 0.42rem;
+  }
+  section[data-chapter='gravity'] .step--lab .ctl-seg__opt {
+    padding-block: 0.28rem;
+  }
+  section[data-chapter='gravity'] .step--lab .ctl-slider__track {
+    height: 18px;
+  }
+  .gr-reads > div {
+    padding: 0.1rem 0;
+  }
+  .gr-dial {
+    width: 64px;
+    height: 64px;
+  }
+  .gr-dialrow {
+    grid-template-columns: 70px 1fr;
+  }
+}
+
+/* ─────────── phones ─────────── */
+@media (max-width: 720px) {
+  section[data-chapter='gravity'] .step--title .chapter-title__q {
+    font-size: clamp(2rem, 9vw, 2.7rem);
+  }
+  .gr-fl__name {
+    font-size: 0.54rem;
+    letter-spacing: 0.08em;
+  }
+  .gr-fl__sub {
+    font-size: 0.52rem;
+    letter-spacing: 0.04em;
+  }
+  .gr-fx {
+    margin-top: 0.9rem;
+  }
+  .gr-card {
+    width: 13rem;
+  }
+  .gr-tl__l {
+    font-size: 0.54rem;
+  }
+  .gr-tl__y {
+    font-size: 0.62rem;
+  }
+  .gr-cons .scene-label__text {
+    width: 12.6rem;
+    gap: 0.25rem;
+  }
+  .gr-cons__eq {
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .gr-cons__note,
+  .gr-cons__soft {
+    font-size: 0.54rem;
+  }
+  .gr-sizetag__t {
+    font-size: 0.58rem;
+  }
+  .gr-sizetag__s {
+    font-size: 0.54rem;
+  }
+  .gr-tile,
+  .gr-tile[data-ctx='story'] {
+    --hc: 40px;
+    --ec: 50px;
+    --hr: 24px;
+    --er: 30px;
+    --ef: 0.84rem;
+  }
+  .gr-tile__ar {
+    width: 14px;
+    height: 14px;
+  }
+  .gr-tile__ch,
+  .gr-tile__rh {
+    gap: 3px;
+    font-size: 0.62rem;
+  }
+  .gr-tile__legend {
+    display: none;
+  }
+  .gr-tile__below {
+    gap: 0.3rem;
+  }
+  .gr-tile__ann {
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.58rem;
+  }
+  .gr-tile__sub {
+    max-width: 13rem;
+    font-size: 0.56rem;
+  }
+  .gr-tile__note {
+    display: none;
+  }
+  .gr-tile__cap {
+    bottom: calc(100% + 4px);
+  }
+  .gr-tile__cap-t {
+    font-size: 0.6rem;
+  }
+  .gr-eq-read__mob {
+    display: inline;
+  }
+  .scene-label.gr-ruler-cap .scene-label__text {
+    text-align: center;
+    line-height: 1.5;
+  }
+  .gr-eq-read__m {
+    font-size: 0.6rem;
+  }
+  .gr-eq-read__s {
+    font-size: 0.56rem;
+  }
+  .scene-label.gr-cl,
+  .scene-label.gr-vl,
+  .scene-label.gr-axis,
+  .scene-label.gr-tick {
+    font-size: 0.54rem;
+  }
+  .gr-cursor .scene-label__text {
+    font-size: 0.6rem;
+    padding: 0.3rem 0.45rem;
+  }
+  .gr-fermi .scene-label__text {
+    width: 9.6rem;
+    white-space: normal;
+    padding: 0.3rem 0.45rem 0.35rem;
+    gap: 0.12rem;
+  }
+  .gr-fermi__t {
+    font-size: 0.6rem;
+  }
+  .gr-fermi__b {
+    font-size: 0.54rem;
+  }
+  .gr-pg {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+  }
+  .gr-glyph .scene-label__text {
+    grid-auto-flow: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  /* phones, triptych (Beat 5, Lab): the tile carries the numbers; the ring's ψ readout would crowd it */
+  .gr-glyph__psi[data-tri] {
+    display: none;
+  }
+  .gr-dialrow {
+    grid-template-columns: 92px 1fr;
+  }
+  .gr-dial {
+    width: 86px;
+    height: 86px;
+  }
+}
+
+/* the gauge note: what the left-hand scale gauge means on string-only frames */
+.gr-gauge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+  white-space: nowrap;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.gr-gauge sub {
+  font-size: 0.8em;
+  text-transform: none;
+}
+.gr-gauge--center {
+  justify-content: center;
+  margin-top: 0.6rem;
+}
+@media (max-width: 720px) {
+  /* phones have no scale gauge, so its note would explain nothing */
+  .gr-gauge {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  /* Work-around: the shared phone rule (.beat::before inset −12 % sideways) pokes past the screen edge and
+     widens the mobile layout viewport (390 → 417 px), cropping the stage. Keep this chapter's backdrops in the gutters. */
+  section[data-chapter='gravity'] .beat::before {
+    inset: -30% -4%;
+  }
+}
+
+/* no-WebGL figure: right of the text column on desktop, in the upper half on phones */
+@media (min-width: 861px) {
+  section[data-chapter='gravity'] .chapter-fallback {
+    place-items: center end;
+    padding-right: calc(var(--gutter) + 90px);
+  }
+  section[data-chapter='gravity'] .chapter-fallback svg {
+    width: min(52vw, 780px);
+  }
+}
+@media (max-width: 720px) {
+  section[data-chapter='gravity'] .chapter-fallback {
+    place-items: start center;
+    padding-top: 84px;
+  }
+  section[data-chapter='gravity'] .chapter-fallback svg {
+    width: 94vw;
+    max-height: 42svh;
+  }
+}

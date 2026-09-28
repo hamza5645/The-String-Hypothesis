@@ -39,6 +39,7 @@
   inset: 0;
   z-index: var(--z-fx);
   pointer-events: none;
+  overflow: hidden; /* the oversized grain layer must never widen the layout viewport on phones */
 }
 .fx__vignette {
   position: absolute;
@@ -353,6 +354,7 @@
 
 .step--lab .step__inner {
   justify-content: flex-end;
+  padding-top: 72px;
 }
 .step--lab-left .step__inner {
   justify-content: flex-start;
@@ -369,9 +371,11 @@
 
 .lab {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: min(360px, 100%);
-  max-height: calc(100svh - 140px);
-  overflow: auto;
+  max-height: calc(100svh - 104px);
+  overflow: hidden;
   padding: 18px 18px 16px;
   background: var(--glass);
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
@@ -380,6 +384,10 @@
   border-radius: var(--radius);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
   pointer-events: auto;
+}
+.lab__scroll {
+  min-height: 0;
+  overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--ink-3) transparent;
   overscroll-behavior: auto;
@@ -588,6 +596,15 @@
   font-size: 0.58rem;
   color: var(--ink-3);
   white-space: nowrap;
+}
+.ctl-slider__tick.is-start .ctl-slider__ticklabel {
+  left: 0;
+  transform: none;
+}
+.ctl-slider__tick.is-end .ctl-slider__ticklabel {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 .ctl-slider:has(.ctl-slider__ticklabel) .ctl-slider__track {
   margin-bottom: 12px;
@@ -1033,6 +1050,10 @@
   white-space: nowrap;
   color: var(--ink-2);
 }
+.scene-label--case {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
 .scene-label--md {
   font-size: 0.78rem;
 }
@@ -1104,6 +1125,15 @@
 }
 .topbar > * {
   pointer-events: auto;
+}
+.topbar::before {
+  /* soft scrim: text scrolling away passes *under* the chrome instead of colliding with it */
+  content: '';
+  position: absolute;
+  inset: 0 0 -46px 0;
+  background: linear-gradient(to bottom, rgba(5, 7, 11, 0.86), rgba(5, 7, 11, 0.55) 55%, transparent);
+  pointer-events: none;
+  z-index: -1;
 }
 .topbar__progress {
   position: absolute;
@@ -1210,6 +1240,15 @@
   .topbar__mark {
     display: none;
   }
+  .topbar {
+    gap: 0.5rem;
+  }
+  .topbar__tools {
+    gap: 0;
+  }
+  .tool {
+    padding: 0.45rem 0.4rem;
+  }
 }
 
 /* ═══════════════════════ Chapter rail ═══════════════════════ */
@@ -1251,7 +1290,9 @@
   gap: 2px;
 }
 .rail__item {
+  position: relative;
   width: 100%;
+  pointer-events: none; /* only the tick column (and labels while the rail is hovered) take clicks */
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1262,6 +1303,22 @@
   background: none;
   cursor: pointer;
   color: var(--ink-3);
+}
+.rail__item::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: auto;
+}
+.rail:hover .rail__item,
+.rail:focus-within .rail__item {
+  pointer-events: auto;
+}
+.is-lab .rail__label {
+  opacity: 0 !important;
 }
 .rail__tick {
   width: 8px;

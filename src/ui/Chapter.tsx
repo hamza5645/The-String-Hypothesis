@@ -50,6 +50,7 @@ export function Step({
   align = 'left',
   valign = 'center',
   fade = true,
+  exit = 'late',
   className,
   children,
 }: {
@@ -58,12 +59,14 @@ export function Step({
   align?: StepAlign
   valign?: 'center' | 'top' | 'bottom' | 'lower'
   fade?: boolean
+  /** 'early': fade out as soon as the held content starts moving away (keeps the centre/header clear). */
+  exit?: 'late' | 'early'
   className?: string
   children?: ReactNode
 }) {
   const h = useChapter()
   const ref = useRef<HTMLDivElement>(null)
-  useLayoutEffect(() => bindStep(h.id, id, ref.current!, fade), [h.id, id, fade])
+  useLayoutEffect(() => bindStep(h.id, id, ref.current!, fade, exit === 'early'), [h.id, id, fade, exit])
   return (
     <div
       ref={ref}
@@ -98,7 +101,7 @@ export function ChapterTitle({
 }) {
   const meta = useChapterMeta()
   return (
-    <Step id="title" length={length} align={align} valign={valign} className="step--title">
+    <Step id="title" length={length} align={align} valign={valign} exit="early" className="step--title">
       <header className="chapter-title">
         <div className="chapter-title__eyebrow t-label">
           <span className="chapter-title__num">{String(meta.index).padStart(2, '0')}</span>

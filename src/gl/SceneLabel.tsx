@@ -16,6 +16,7 @@ export function SceneLabel({
   leader = false,
   opacity = 1,
   size = 'sm',
+  caseSensitive = false,
   className,
 }: {
   position: [number, number, number]
@@ -25,6 +26,8 @@ export function SceneLabel({
   leader?: boolean
   opacity?: number | ((f: FrameInfo) => number)
   size?: 'sm' | 'md' | 'lg'
+  /** keep the author's letter case (physics symbols: c, ħ, α′, eV …) instead of uppercasing */
+  caseSensitive?: boolean
   className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -46,7 +49,7 @@ export function SceneLabel({
     <Html position={position} portal={portal} zIndexRange={[1, 0]} style={{ pointerEvents: 'none' }}>
       <div
         ref={ref}
-        className={`scene-label scene-label--${align} scene-label--${tone} scene-label--${size}${leader ? ' scene-label--leader' : ''}${className ? ' ' + className : ''}`}
+        className={`scene-label scene-label--${align} scene-label--${tone} scene-label--${size}${leader ? ' scene-label--leader' : ''}${caseSensitive ? ' scene-label--case' : ''}${className ? ' ' + className : ''}`}
         style={{ opacity: 0 }}
       >
         <span className="scene-label__text">{children}</span>
