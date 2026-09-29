@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
-import { journey } from '../journey'
+import { journey, warmNeighbours } from '../journey'
 import { settings } from '../settings'
 import { clock } from '../time'
 import { portalRegistry } from './registry'
@@ -144,7 +144,14 @@ export function Compositor() {
     // screenshot harness: signal once a registered scene has drawn a few frames
     if (ea || eb) {
       readyFrames.n++
-      if (readyFrames.n === 8) (window as unknown as { __stageReady: boolean }).__stageReady = true
+      if (readyFrames.n === 8) {
+        ;(window as unknown as { __stageReady: boolean }).__stageReady = true
+        // the first scene is up: let neighbouring chapters mount once the browser has breathing room
+        window.setTimeout(() => {
+          if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(() => warmNeighbours(), { timeout: 2500 })
+          else warmNeighbours()
+        }, 1200)
+      }
     }
 
     // Scene renders use three's default autoClear (so a chapter's own background clears correctly

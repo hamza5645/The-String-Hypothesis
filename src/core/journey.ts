@@ -64,6 +64,8 @@ export const journey = {
   section: 0,
   /** During a long programmatic jump: the target chapter index (mounting follows it). */
   travelTo: null as number | null,
+  /** False until the first scene has settled: neighbours are not pre-mounted before that. */
+  warm: false,
   docHeight: 1,
 }
 
@@ -72,7 +74,9 @@ interface JourneyStore {
   mounted: number[]
 }
 
-export const useJourney = create<JourneyStore>(() => ({ active: 0, mounted: [0, 1] }))
+// Only the first chapter mounts at load; neighbours join once the page has settled (see warmNeighbours),
+// so first paint never waits on a heavy neighbouring scene's geometry and shader compilation.
+export const useJourney = create<JourneyStore>(() => ({ active: 0, mounted: [0] }))
 
 export function registerChapters(list: { id: string; index: number }[]) {
   journey.chapters = list.map((c) => ({
@@ -198,6 +202,13 @@ export function measure() {
   update(window.scrollY)
 }
 
+/** Allow neighbour pre-mounting (called once the first scene has rendered and the browser is idle, or on first scroll). */
+export function warmNeighbours() {
+  if (journey.warm) return
+  journey.warm = true
+  update(journey.scrollY)
+}
+
 let labOn = false
 const listeners = new Set<() => void>()
 /** Subscribe to every scroll update (non-React). Returns an unsubscribe fn. */
@@ -291,7 +302,8 @@ export function update(y: number) {
     // with ±2 hysteresis so hovering around a boundary never thrashes mounts. While a long
     // programmatic jump is in flight, the target's neighbourhood is mounted instead.
     const centre = journey.travelTo ?? k
-    const want = [centre - 1, centre, centre + 1]
+    // before warm-up only the chapter under the reader (and, mid-dissolve, the one arriving) mounts
+    const want = journey.warm ? [centre - 1, centre, centre + 1] : journey.blend > 0 ? [centre, centre + 1] : [centre]
     const keep = journey.travelTo != null ? [] : st.mounted.filter((i) => i >= centre - 2 && i <= centre + 2)
     const set = [...new Set([...keep, ...want])].filter((i) => i >= 0 && i < cs.length).sort((a, b) => a - b)
     const mountedChanged = set.join() !== st.mounted.join()

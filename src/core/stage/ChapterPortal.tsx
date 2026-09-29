@@ -4,6 +4,7 @@ import { createPortal, useFrame, useThree } from '@react-three/fiber'
 import { ChapterContext, getHandle, useChapter, type ChapterMeta } from '../chapter'
 import { releaseStageCursor } from '../explore'
 import { HANDOFF } from '../handoff'
+import { settings } from '../settings'
 import { portalRegistry } from './registry'
 import { StageBoundary } from './StageBoundary'
 
@@ -109,6 +110,7 @@ function Registrar({ id, scene }: { id: string; scene: THREE.Scene }) {
             const m = (o as THREE.Mesh).material as THREE.Material & { map?: THREE.Texture | null }
             if (m && !Array.isArray(m) && m.map) r.initTexture(m.map)
           })
+          if (settings().quality === 'low') return // weak GPUs: compile only; upload on first real frame
           warmRT ??= new THREE.WebGLRenderTarget(16, 16)
           const prev = r.getRenderTarget()
           r.setRenderTarget(warmRT)

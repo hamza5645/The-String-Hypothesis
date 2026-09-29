@@ -1,5 +1,5 @@
 import Lenis from 'lenis'
-import { chapterScrollY, journey, measure, scheduleMeasure, setJumpImpl, stepScrollY, update } from './journey'
+import { chapterScrollY, journey, measure, scheduleMeasure, setJumpImpl, stepScrollY, update, warmNeighbours } from './journey'
 import { params } from './params'
 import { prefersReducedMotion } from './time'
 
@@ -13,7 +13,14 @@ export function initScroller() {
     // allowNestedScroll: wheel/touch over a lab panel scrolls the page unless the panel itself can scroll.
     lenis = new Lenis({ autoRaf: true, lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true, syncTouch: false, allowNestedScroll: true })
   }
-  window.addEventListener('scroll', () => update(window.scrollY), { passive: true })
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!journey.warm && window.scrollY > 40) warmNeighbours()
+      update(window.scrollY)
+    },
+    { passive: true },
+  )
   // resize → re-measure; measure() itself re-anchors the reader inside their chapter (Lenis-aware jump)
   setJumpImpl((y) => scrollToY(y, true))
   window.addEventListener('resize', scheduleMeasure)

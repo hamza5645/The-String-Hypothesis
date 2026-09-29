@@ -39,34 +39,50 @@ const save = (k: string, v: string) => {
   }
 }
 
+/** One throwaway WebGL2 probe: is WebGL2 there at all, and which GPU renders it? (context released right after) */
+function probeGPU(): { webgl: boolean; renderer: string } {
+  if (params.nowebgl || typeof document === 'undefined') return { webgl: false, renderer: '' }
+  try {
+    const c = document.createElement('canvas')
+    const g = c.getContext('webgl2') // three r186 is WebGL2-only
+    if (!g) return { webgl: false, renderer: '' }
+    const dbg = g.getExtension('WEBGL_debug_renderer_info')
+    const renderer = dbg ? String(g.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : ''
+    g.getExtension('WEBGL_lose_context')?.loseContext()
+    return { webgl: true, renderer }
+  } catch {
+    return { webgl: false, renderer: '' }
+  }
+}
+const GPU = probeGPU()
+
+// Software rasterizers draw every pixel on the CPU; integrated laptop GPUs (Intel UHD/Iris, mobile
+// chips) share memory bandwidth and, on Windows, compile shaders through Direct3D's slow FXC compiler.
+const SOFTWARE_GPU = /swiftshader|llvmpipe|softpipe|basic render|software/i
+const INTEGRATED_GPU = /intel|uhd graphics|iris|hd graphics|mali|adreno|powervr|videocore/i
+
 function detectQuality(): QualityTier {
   if (params.quality) return params.quality
   if (typeof window === 'undefined') return 'medium'
+  if (SOFTWARE_GPU.test(GPU.renderer)) return 'low'
   const coarse = window.matchMedia('(pointer: coarse)').matches
   const small = Math.min(window.innerWidth, window.innerHeight) < 700
   const cores = navigator.hardwareConcurrency || 4
   const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8
   if (cores <= 4 || mem <= 4) return 'low'
-  if (coarse || small) return 'medium'
+  if (coarse || small || INTEGRATED_GPU.test(GPU.renderer)) return 'medium'
   return 'high'
 }
 
-function detectWebGL(): boolean {
-  if (params.nowebgl) return false
-  try {
-    const c = document.createElement('canvas')
-    return !!c.getContext('webgl2') // three r186 is WebGL2-only
-  } catch {
-    return false
-  }
-}
+/** The GPU's renderer string (for diagnostics; empty when unavailable). */
+export const gpuRenderer = GPU.renderer
 
 export const useSettings = create<Settings>((set) => ({
   sound: false,
   deeper: params.deeper || load('deeper') === '1',
   quality: detectQuality(),
   qualityLocked: !!params.quality,
-  webgl: typeof document !== 'undefined' ? detectWebGL() : true,
+  webgl: typeof document !== 'undefined' ? GPU.webgl : true,
   glossaryOpen: false,
   menuOpen: false,
   drawer: null,
