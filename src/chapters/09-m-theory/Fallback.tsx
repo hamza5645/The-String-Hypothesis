@@ -1,8 +1,14 @@
-// PLACEHOLDER — static illustration shown when WebGL is unavailable.
+import { MapSvg } from './MapSvg'
+import { useM } from './store'
+
+// No-WebGL fallback: the whole map, top-down. Bridges follow the Lab's toggles (all shown until one is used),
+// so the fallback keeps the pieces counter live.
 export default function Fallback() {
-  return (
-    <svg viewBox="0 0 800 400" role="img" aria-label="M-theory">
-      <path d="M160 200 Q400 120 640 200" fill="none" stroke="#FFC98A" strokeWidth="2" />
-    </svg>
-  )
+  const T = useM((s) => s.T)
+  const S = useM((s) => s.S)
+  const L = useM((s) => s.L)
+  const C = useM((s) => s.C)
+  const any = T || S || L || C
+  const on = { T, S, L, C }
+  return <MapSvg className="mth-fallback" active={any ? (b) => on[b.kind] : (b) => b.kind !== 'C'} />
 }

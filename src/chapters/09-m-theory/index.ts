@@ -13,5 +13,6 @@ export default defineChapter({
   preload: load,
   Overlay,
   Fallback: lazy(() => import('./Fallback')),
+  // The map is a space of theories, not of space: no length scale to show (the Scene prints its own note).
   scale: () => null,
 })

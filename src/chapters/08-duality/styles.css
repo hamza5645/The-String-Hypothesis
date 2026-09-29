@@ -1,0 +1,1089 @@
+/* Chapter 08 · Duality. Prefix: du-
+   Chapter colour code: momentum = Field blue, winding = Filament amber (flat swatches), vibration = Ink-2 grey. */
+
+.du-c-mom {
+  color: var(--field);
+}
+.du-c-wind {
+  color: var(--filament);
+}
+.du-c-vib {
+  color: var(--ink-2);
+}
+.du-c-ghost {
+  color: var(--ink-2);
+}
+.du-dim {
+  color: var(--ink-3);
+}
+.du-deeper {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.du-fine {
+  font-size: 0.82rem;
+  color: var(--ink-3);
+}
+.du-fine-list {
+  font-size: 0.88rem;
+}
+
+/* ───────── landing: "Two pictures. One spectrum." ───────── */
+
+.du-landing-step .step__content {
+  max-width: min(46rem, 100%);
+}
+.du-landing {
+  display: block;
+  font-style: italic;
+  font-size: clamp(2.4rem, 4.8vw, 4.6rem);
+  line-height: 1.02;
+}
+.du-landing em,
+.du-landing span {
+  display: block;
+  font-style: italic;
+  white-space: nowrap;
+}
+/* the caption stays inside the text column, clear of World A beside the display type */
+.du-landing-step .caption {
+  max-width: 30rem;
+}
+.du-landing__swap {
+  margin: 1.1rem 0 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+.du-landing__swap span:not(.du-dim) {
+  color: var(--ink);
+}
+.du-landing__swap .du-c-mom {
+  color: var(--field);
+}
+.du-landing__swap .du-c-wind {
+  color: var(--filament);
+}
+
+.du-inline-deeper {
+  margin-top: 1rem;
+}
+
+/* ───────── Beat 6: the dictionary ───────── */
+
+.du-web-step .step__content {
+  width: 100%;
+}
+.du-web {
+  display: grid;
+  grid-template-columns: minmax(0, calc(var(--col) + 2rem)) minmax(0, 41rem);
+  justify-content: space-between;
+  align-items: center;
+  gap: clamp(24px, 4vw, 72px);
+  padding-left: clamp(0px, 5.5vw, 110px);
+  padding-right: clamp(0px, 9vw, 150px);
+}
+.du-dict {
+  --dp: 0;
+  position: relative;
+  display: grid;
+  gap: 7px;
+  perspective: 900px;
+  pointer-events: auto;
+}
+.du-dict__head,
+.du-dict__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1.6rem minmax(0, 1fr) 7.2rem;
+  align-items: center;
+  column-gap: 0.7rem;
+}
+.du-dict__head {
+  padding: 0 14px 6px;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--hairline);
+  opacity: clamp(0, calc((var(--dp) - 0.06) * 14), 1);
+}
+.du-dict__eqh {
+  text-align: center;
+}
+.du-dict__sth {
+  text-align: right;
+}
+.du-dict__row {
+  --k: clamp(0, calc((var(--dp) - var(--at)) * 11), 1);
+  position: relative;
+  padding: 9px 14px;
+  min-height: 42px;
+  background: linear-gradient(90deg, rgba(134, 168, 216, 0.045), rgba(11, 15, 23, 0.5) 38%, rgba(11, 15, 23, 0.5) 62%, rgba(255, 201, 138, 0.03));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(134, 168, 216, 0.15);
+  border-radius: 2px;
+  opacity: var(--k);
+  transform: translate3d(0, calc((1 - var(--k)) * 14px), 0) rotateX(calc(8deg + (1 - var(--k)) * 22deg));
+  transform-origin: 50% 100%;
+}
+.du-dict__a,
+.du-dict__b {
+  font-size: 0.86rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.du-dict__a {
+  text-align: right;
+}
+.du-dict__eq {
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--ink);
+}
+.du-dict__st {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.du-dict__note {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--hairline);
+}
+.du-dict__tag {
+  flex: none;
+  white-space: nowrap;
+  color: var(--st-conjectured);
+}
+.du-dict__notetext {
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  color: var(--ink-3);
+}
+.du-dict__legend {
+  display: none;
+}
+.du-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  vertical-align: 0;
+}
+.du-dot--obs {
+  background: var(--st-observed);
+}
+.du-hodge {
+  flex: none;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: var(--ink-2);
+  letter-spacing: 0.04em;
+}
+
+.du-dials {
+  width: 104px;
+  height: 26px;
+  overflow: visible;
+}
+.du-dials__ring {
+  fill: none;
+  stroke: var(--hairline-strong);
+  stroke-width: 0.8;
+}
+.du-dials__arc {
+  fill: none;
+  stroke: rgba(169, 155, 214, 0.55);
+  stroke-width: 1;
+}
+.du-dials__hand {
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  transform-origin: 0 0;
+}
+.du-dials__hand--up {
+  animation: du-dial-up 6s var(--ease-inout) infinite alternate;
+}
+.du-dials__hand--down {
+  animation: du-dial-down 6s var(--ease-inout) infinite alternate;
+}
+@keyframes du-dial-up {
+  from {
+    transform: rotate(-135deg);
+  }
+  to {
+    transform: rotate(135deg);
+  }
+}
+@keyframes du-dial-down {
+  from {
+    transform: rotate(135deg);
+  }
+  to {
+    transform: rotate(-135deg);
+  }
+}
+.du-dials__t {
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  fill: var(--ink-3);
+}
+.du-dials__eq {
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+.du-ads {
+  width: 34px;
+  height: 26px;
+  overflow: visible;
+}
+.du-ads__rim,
+.du-ads__wall {
+  fill: rgba(134, 168, 216, 0.06);
+  stroke: rgba(134, 168, 216, 0.9);
+  stroke-width: 0.9;
+}
+.du-ads__ring,
+.du-ads__line {
+  fill: none;
+  stroke: rgba(134, 168, 216, 0.35);
+  stroke-width: 0.6;
+}
+
+/* ───────── Lab panel ───────── */
+
+.du-lab {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+}
+.du-formula {
+  display: grid;
+  gap: 0.2rem;
+}
+.du-formula .eq--display {
+  margin: 0;
+  font-size: 0.84rem;
+  text-align: center;
+}
+.du-formula .eq .katex-display {
+  margin: 0;
+}
+/* the drawer's formula: its terms lit by the lab's selected state */
+.du-dformula .term-mom,
+.du-formula .term-mom {
+  color: color-mix(in srgb, var(--field) calc(45% + var(--hl) * 55%), var(--ink-3));
+  text-shadow: 0 0 calc(var(--hl) * 12px) rgba(134, 168, 216, calc(var(--hl) * 0.6));
+}
+.du-dformula .term-wind,
+.du-formula .term-wind {
+  color: color-mix(in srgb, var(--filament) calc(45% + var(--hl) * 55%), var(--ink-3));
+  text-shadow: none;
+}
+.du-dformula .term-vib,
+.du-formula .term-vib {
+  color: color-mix(in srgb, var(--ink) calc(35% + var(--hl) * 65%), var(--ink-3));
+  text-shadow: none;
+}
+.du-dformula [class*='term-'],
+.du-formula [class*='term-'] {
+  transition:
+    color 0.35s,
+    text-shadow 0.35s,
+    box-shadow 0.35s;
+}
+.du-formula__vals .is-dom {
+  padding-bottom: 1px;
+  border-bottom: 1px solid currentColor;
+}
+.du-formula__vals {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+}
+.du-formula__op {
+  color: var(--ink-3);
+}
+.du-formula__sum {
+  color: var(--ink);
+}
+.du-formula__lm {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--ink-2);
+}
+.du-formula__lmnote {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.du-chart {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+.du-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  cursor: pointer;
+  outline: none;
+}
+.du-chart__svg:focus-visible {
+  outline: 1px solid var(--filament);
+  outline-offset: 3px;
+}
+.du-chart__grid {
+  stroke: var(--hairline);
+  stroke-width: 0.6;
+  stroke-dasharray: 1 3;
+}
+.du-chart__base {
+  stroke: var(--ink-3);
+  stroke-width: 0.8;
+}
+.du-chart__tick,
+.du-chart__nw,
+.du-chart__axis,
+.du-chart__tag,
+.du-chart__clip {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  fill: var(--ink-3);
+}
+.du-chart__nw {
+  font-size: 6.6px;
+  letter-spacing: -0.02em;
+}
+.du-chart__axis {
+  font-size: 6.4px;
+  letter-spacing: 0.08em;
+}
+.du-chart__tag {
+  fill: var(--ink);
+  letter-spacing: 0.1em;
+  font-size: 6.6px;
+}
+.du-chart__clip {
+  fill: var(--ink);
+  font-size: 8px;
+}
+.du-seg {
+  opacity: 0.8;
+  transition:
+    fill 0.8s var(--ease-inout),
+    y 0.3s var(--ease-out),
+    height 0.3s var(--ease-out);
+}
+.du-seg--mom {
+  fill: var(--field);
+}
+.du-seg--wind {
+  fill: var(--filament);
+}
+.du-seg--vib {
+  fill: var(--ink-2);
+}
+.du-pair__hit {
+  fill: transparent;
+}
+.du-pair__sel {
+  fill: rgba(236, 230, 217, 0.05);
+  stroke: rgba(236, 230, 217, 0.45);
+  stroke-width: 0.6;
+}
+.du-pair.is-sel .du-seg {
+  opacity: 1;
+}
+.du-pair.is-sel .du-chart__nw {
+  fill: var(--ink);
+}
+.du-pair:hover .du-seg {
+  opacity: 1;
+}
+.du-pair.is-miss .du-chart__nw {
+  fill: var(--st-conjectured);
+}
+.du-chart__key {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--ink-3);
+}
+
+.du-radius {
+  display: grid;
+  gap: 0;
+}
+.du-radius__top {
+  align-items: center;
+  margin-bottom: 2px;
+}
+.du-radius__top .btn {
+  padding: 0.42rem 0.6rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.du-radius__value {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.74rem;
+  color: var(--filament-core);
+  white-space: nowrap;
+}
+.du-radius__sd {
+  color: var(--ink);
+}
+.du-strip {
+  display: block;
+  width: 100%;
+  height: 48px;
+  border-bottom: 0;
+}
+.du-strip__c {
+  fill: none;
+  stroke-width: 0.9;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.7;
+}
+.du-strip__c--mom {
+  stroke: var(--field);
+}
+.du-strip__c--wind {
+  stroke: var(--filament);
+}
+.du-strip__c--vib {
+  stroke: var(--ink-2);
+}
+.du-strip__mid {
+  stroke: var(--ink-3);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 3;
+  vector-effect: non-scaling-stroke;
+}
+.du-strip__cursors {
+  position: relative;
+  height: 0;
+}
+.du-strip__cur,
+.du-strip__ghost {
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  height: 48px;
+  pointer-events: none;
+}
+.du-strip__cur {
+  left: calc(var(--pos) * 100%);
+  border-left: 1px solid var(--ink);
+}
+.du-strip__ghost {
+  left: calc(var(--ghost) * 100%);
+  border-left: 1px dashed var(--ink-2);
+}
+.du-track {
+  position: relative;
+  height: 24px;
+  margin-bottom: 12px;
+}
+.du-track__line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--hairline-strong);
+  pointer-events: none;
+}
+.du-track__thumb,
+.du-track__ghost {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.du-track__thumb {
+  left: calc(var(--pos) * 100%);
+  background: var(--filament-core);
+  box-shadow:
+    0 0 0 3px rgba(255, 201, 138, 0.12),
+    0 0 14px rgba(255, 201, 138, 0.7);
+}
+.du-track__ghost {
+  left: calc(var(--ghost) * 100%);
+  border: 1px dashed var(--ink-2);
+}
+.is-gliding .du-track__thumb,
+.is-gliding .du-track__ghost,
+.is-gliding .du-strip__cur,
+.is-gliding .du-strip__ghost {
+  transition: left 0.9s var(--ease-inout);
+}
+.du-track input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+.du-radius:has(input:focus-visible) {
+  outline: 1px solid var(--filament);
+  outline-offset: 4px;
+}
+.du-radius input:active ~ .du-track__thumb,
+.du-radius input:focus-visible ~ .du-track__thumb {
+  transform: scale(1.3);
+}
+.du-track__tick {
+  position: absolute;
+  top: calc(50% + 4px);
+  left: calc(var(--tp) * 100%);
+  width: 1px;
+  height: 5px;
+  background: var(--ink-3);
+  pointer-events: none;
+}
+.du-track__tick span {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.du-track__tick:first-of-type span {
+  transform: none;
+  left: 0;
+}
+.du-track__tick:last-of-type span {
+  transform: translateX(-100%);
+  left: 0;
+}
+.du-track__tick.is-mid {
+  top: calc(50% - 6px);
+  height: 12px;
+  background: var(--ink-2);
+}
+.du-track__tick.is-mid span {
+  top: 19px;
+  color: var(--ink-2);
+}
+
+.du-lab__actions .ctl-seg {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.8rem;
+}
+.du-lab__actions .ctl-seg__row {
+  flex-wrap: nowrap;
+}
+.du-lab__actions .ctl__label {
+  max-width: 9.5rem;
+  line-height: 1.35;
+}
+.du-lab__actions .ctl-seg__opt {
+  font-size: 0.66rem;
+  padding: 0.45rem 0.4rem;
+}
+.du-readouts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 0.9rem;
+  font-size: 0.68rem;
+}
+.du-readouts > div {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.28rem 0;
+  border-top: 1px dashed var(--hairline);
+}
+.du-readouts dt {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.du-readouts dd {
+  margin: 0;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.du-readouts .is-miss dd {
+  color: var(--st-conjectured);
+}
+.du-lab__note {
+  margin: 0;
+  min-height: 2.7em;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+.du-lab__fine {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+/* the lab panel carries more instruments than most: give it a touch more room */
+@media (min-width: 721px) {
+  .step--lab .lab:has(.du-lab) {
+    width: min(376px, 100%);
+    max-height: calc(100svh - 96px);
+    padding: 14px 18px 12px;
+  }
+}
+.step--lab .lab:has(.du-lab) .lab__head {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.2rem 0.6rem;
+  margin-bottom: 0.4rem;
+}
+.step--lab .lab:has(.du-lab) .lab__title {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.step--lab .lab:has(.du-lab) .lab__status {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+}
+/* clear the chapter rail's active label, which sits over the right edge at mid-height */
+@media (min-width: 721px) {
+  [data-chapter='duality'] .step--lab .lab {
+    margin-right: 94px;
+  }
+}
+.step--lab .lab:has(.du-lab) .lab__title {
+  font-size: 1.32rem;
+}
+/* the hint floats over the stage (centred on the two worlds) instead of taking the panel's height */
+@media (min-width: 721px) {
+  [data-chapter='duality'] .step--lab .step__content {
+    position: relative;
+  }
+  [data-chapter='duality'] .step--lab .lab-hint {
+    position: absolute;
+    top: 12svh;
+    left: 0;
+    right: 494px;
+    width: max-content;
+    max-width: calc(100% - 510px);
+    margin: 0 auto;
+  }
+}
+.step--lab .lab:has(.du-lab) .lab__intro {
+  margin-bottom: 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.step--lab .lab:has(.du-lab) .lab__foot {
+  margin-top: 0.6rem;
+  padding-top: 0.55rem;
+}
+
+/* ───────── scene labels (in the #scene-labels layer) ───────── */
+
+.du-sl {
+  display: inline-block;
+  line-height: 1.5;
+  text-transform: none;
+  text-shadow:
+    0 0 6px var(--void),
+    0 0 12px var(--void);
+}
+.du-sl sub {
+  font-size: 0.72em;
+  vertical-align: -0.25em;
+}
+
+/* the title card sits under the handoff loop as one line, like a film title */
+[data-chapter='duality'] .step--title .step__inner {
+  padding-bottom: max(40px, 6svh);
+}
+[data-chapter='duality'] .step--title .chapter-title {
+  gap: 1rem;
+}
+/* two short lines, left of the handoff loop, so the title never crosses the loop as it scrolls away */
+[data-chapter='duality'] .step--title .chapter-title__q {
+  max-width: 9.4em;
+  font-size: clamp(2.3rem, 3.9vw, 4rem);
+}
+[data-chapter='duality'] .step--title .chapter-title__sub {
+  max-width: 42ch;
+}
+.du-sl__sub {
+  display: block;
+  color: var(--ink-3);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+}
+.scene-label.du-sl--glyph {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 2.5rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+.scene-label.du-sl--glyph .is-miss {
+  color: var(--st-conjectured);
+}
+.du-sl--caption {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--ink);
+}
+.du-sl-mom {
+  color: var(--field);
+}
+.du-sl-wind {
+  color: var(--filament);
+}
+
+/* tablets and small laptops: icon-only chips (each keeps its title and screen-reader meaning), tighter rows */
+@media (max-width: 1100px) and (min-width: 721px) {
+  .du-web {
+    grid-template-columns: minmax(0, 30ch) minmax(0, 1fr);
+    /* clear the chapter rail's active label */
+    padding-right: clamp(0px, 11vw, 124px);
+  }
+  .du-dict {
+    gap: 5px;
+  }
+  .du-dict__head,
+  .du-dict__row {
+    grid-template-columns: minmax(0, 1fr) 1.2rem minmax(0, 1fr) auto;
+    column-gap: 0.55rem;
+  }
+  .du-dict__row {
+    padding: 6px 10px;
+    min-height: 0;
+  }
+  .du-dict__head {
+    padding: 0 10px 5px;
+  }
+  .du-dict__sth {
+    display: none;
+  }
+  .du-dict__a,
+  .du-dict__b {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+  .du-dict__st .status__label {
+    display: none;
+  }
+  .du-dict__note {
+    justify-content: flex-start;
+    gap: 0.15rem 0.6rem;
+    margin-top: 4px;
+    padding-top: 4px;
+  }
+  .du-dict__notetext {
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 0.62rem;
+    line-height: 1.35;
+  }
+  .du-dials {
+    flex: none;
+    width: 76px;
+    height: 20px;
+  }
+  .du-dict__legend {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    padding-top: 2px;
+    opacity: clamp(0, calc((var(--dp) - 0.1) * 10), 1);
+  }
+  .du-dict__legend .status {
+    font-size: 0.54rem;
+  }
+}
+
+@media (max-width: 720px) {
+  [data-chapter='duality'] .step--title .chapter-title__q {
+    white-space: normal;
+    font-size: clamp(2.2rem, 10vw, 3rem);
+  }
+  [data-chapter='duality'] .step--title .chapter-title__sub {
+    grid-template-columns: 1fr;
+  }
+  .du-landing {
+    font-size: clamp(2.2rem, 11vw, 3rem);
+  }
+  .du-web-step .step__inner {
+    align-items: stretch;
+    padding-top: calc(64px + env(safe-area-inset-top, 0px));
+  }
+  .du-web-step .step__content {
+    height: 100%;
+  }
+  .du-web {
+    height: 100%;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    padding: 0;
+    gap: 14px;
+  }
+  .du-web__beat {
+    order: 2;
+    align-self: end;
+  }
+  .du-web__beat .beat__text {
+    font-size: 0.98rem;
+  }
+  .du-dict {
+    order: 1;
+    gap: 4px;
+  }
+  .du-dict__head {
+    display: none;
+  }
+  .du-dict__row {
+    grid-template-columns: minmax(0, 1fr) 0.9rem minmax(0, 1fr) auto;
+    column-gap: 0.35rem;
+    padding: 5px 8px;
+    min-height: 0;
+  }
+  .du-dict__a,
+  .du-dict__b {
+    font-size: 0.66rem;
+    line-height: 1.25;
+  }
+  .du-dict__eq {
+    font-size: 0.9rem;
+  }
+  .du-dict__st .status__label {
+    display: none;
+  }
+  /* the caveats stay on phones: one compact line each, decorative glyphs dropped */
+  .du-dict__note {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.1rem 0.5rem;
+    margin-top: 3px;
+    padding-top: 3px;
+  }
+  .du-dict__note .du-dials,
+  .du-dict__note .du-ads {
+    display: none;
+  }
+  .du-dict__tag {
+    font-size: 0.5rem;
+  }
+  .du-hodge {
+    font-size: 0.58rem;
+  }
+  .du-dict__notetext {
+    font-size: 0.54rem;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+  }
+  .du-dict__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding-top: 2px;
+    opacity: clamp(0, calc((var(--dp) - 0.1) * 10), 1);
+  }
+  .du-dict__legend .status {
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+  }
+  .du-lab {
+    gap: 0.7rem;
+  }
+}
+
+.du-dformula__note {
+  margin: 0.5rem 0 1rem;
+  text-align: center;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+:is(strong, b).du-c-mom {
+  color: var(--field);
+}
+:is(strong, b).du-c-wind {
+  color: var(--filament);
+}
+:is(strong, b).du-c-vib {
+  color: var(--ink-2);
+}
+
+/* no-WebGL fallback: keep the diagram in the right-hand stage, clear of the beat column */
+@media (min-width: 900px) {
+  [data-chapter='duality'] .chapter-fallback {
+    justify-items: end;
+    padding-right: calc(var(--gutter) + 90px);
+  }
+  [data-chapter='duality'] .chapter-fallback svg {
+    width: min(52vw, 760px);
+  }
+}
+@media (max-width: 720px) {
+  [data-chapter='duality'] .chapter-fallback {
+    align-items: start;
+    padding-top: 76px;
+  }
+}
+
+/* Beat 2: crest numbers riding the momentum wave */
+.scene-label.du-sl--crest {
+  font-size: 0.62rem;
+  letter-spacing: 0;
+  color: #cfe0f6;
+}
+
+/* Beat 4: each world's reading of the selected rung */
+.du-read {
+  letter-spacing: 0.08em;
+}
+.du-read__head {
+  margin-right: 0.6em;
+  color: var(--ink-3);
+}
+.du-read__dot {
+  color: var(--ink-3);
+}
+.du-read__head:empty {
+  display: none;
+}
+
+/* short laptop screens (≤ 820 px tall): the whole instrument fits without an inner scroll */
+@media (min-width: 721px) and (max-height: 820px) {
+  [data-chapter='duality'] .step--lab .step__inner {
+    padding-top: 62px;
+    padding-bottom: 14px;
+  }
+  .step--lab .lab:has(.du-lab) {
+    max-height: calc(100svh - 76px);
+    padding: 12px 16px 10px;
+  }
+  .du-lab {
+    gap: 0.4rem;
+  }
+  .du-formula {
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    align-items: baseline;
+    row-gap: 0.1rem;
+  }
+  .du-formula .eq--display {
+    grid-column: 1 / -1;
+  }
+  .du-formula__vals {
+    justify-content: flex-start;
+  }
+  .du-chart__key {
+    font-size: 0.62rem;
+    line-height: 1.3;
+  }
+  .du-strip,
+  .du-strip__cur,
+  .du-strip__ghost {
+    height: 36px;
+  }
+  .du-track {
+    margin-bottom: 10px;
+  }
+  .du-readouts > div {
+    padding: 0.18rem 0;
+  }
+  .du-lab__note {
+    min-height: 2.6em;
+  }
+  .step--lab .lab:has(.du-lab) .lab__foot {
+    margin-top: 0.4rem;
+    padding-top: 0.4rem;
+  }
+}
+@media (min-width: 721px) and (max-height: 740px) {
+  /* the smallest laptops: the hint above the worlds says what to do; the panel keeps every instrument */
+  .step--lab .lab:has(.du-lab) .lab__intro {
+    display: none;
+  }
+}
+
+/* phones: the radius slider (and its jump) comes first, so it is never below the sheet's fold */
+@media (max-width: 720px) {
+  .du-radius {
+    order: -2;
+  }
+  .du-chart {
+    order: -1;
+  }
+}
+
+/* short laptop screens: the dictionary's seven rows rest pinned without reaching the top bar */
+@media (min-width: 721px) and (max-height: 820px) {
+  .du-dict {
+    gap: 5px;
+  }
+  .du-dict__row {
+    padding: 5px 14px;
+    min-height: 0;
+  }
+  .du-dict__head {
+    padding-bottom: 4px;
+  }
+  .du-dict__a,
+  .du-dict__b {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+  .du-dict__note {
+    margin-top: 3px;
+    padding-top: 3px;
+    row-gap: 0.1rem;
+  }
+  .du-dict__notetext {
+    font-size: 0.62rem;
+    line-height: 1.3;
+  }
+  .du-dials {
+    height: 20px;
+  }
+  .du-ads {
+    height: 20px;
+  }
+}

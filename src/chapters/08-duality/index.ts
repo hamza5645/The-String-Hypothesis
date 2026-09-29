@@ -13,5 +13,6 @@ export default defineChapter({
   preload: load,
   Overlay,
   Fallback: lazy(() => import('./Fallback')),
+  // Radii here are in string lengths ℓs = √α′, whose size in meters is unknown: no gauge reading.
   scale: () => null,
 })
