@@ -14,7 +14,7 @@
   grid-template-rows: auto 1fr auto auto;
   grid-template-areas:
     'head'
-    '.'
+    'band'
     'foot'
     'key';
   row-gap: 18px;
@@ -166,17 +166,42 @@
   letter-spacing: 0.02em;
   font-size: 0.7rem;
 }
-/* portrait phones: two right-aligned lines above the Thread's end; never wider than the screen */
-.pro-scene-note--portrait {
-  display: block;
-  width: max-content; /* the anchor is near the right edge: shrink-to-fit alone would collapse it */
-  max-width: calc(100vw - 32px);
-  white-space: normal;
-  text-align: right;
-  line-height: 1.7;
+
+/* The Thread's band. On the desktop layout it is just the free space between the title and the foot (the Scene
+   composes the Thread and its note itself); on the portrait layout it holds the note and the slot the Thread
+   rests in, and the Overlay publishes the slot's height to the Scene (store.bandY). */
+.pro-band {
+  grid-area: band;
 }
-.pro-scene-note--portrait .status {
-  margin-right: 0.45rem;
+.pro-band__note,
+.pro-band__slot {
+  display: none;
+}
+@media (max-width: 720px), (max-aspect-ratio: 4/5) {
+  .pro-band {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 68px;
+  }
+  /* the same figure caption the Scene pins beside the Thread on desktop: two right-aligned lines above its end */
+  .pro-band__note {
+    display: block;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    line-height: 1.7;
+    text-align: right;
+    color: var(--ink-3);
+  }
+  .pro-band__note .status {
+    margin-right: 0.45rem;
+  }
+  .pro-band__slot {
+    display: block;
+    height: 24px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -217,5 +242,34 @@
   }
   .pro-key__short {
     display: none;
+  }
+}
+/* short phones: the portrait band costs ~70px, so tighten the head to keep the opening beat and the
+   "Touch the thread" line on the first screen */
+@media (max-width: 720px) and (max-height: 700px) {
+  .pro-step .step__inner {
+    padding-top: calc(64px + env(safe-area-inset-top, 0px));
+  }
+  .pro-hero {
+    row-gap: 10px;
+  }
+  .pro-hero__head {
+    gap: 0.7rem;
+  }
+  .pro-title {
+    font-size: clamp(2.2rem, 10.5vw, 2.9rem);
+  }
+  .pro-sub {
+    margin-top: 0;
+    line-height: 1.35;
+  }
+  .pro-band {
+    min-height: 64px;
+  }
+  .pro-band__slot {
+    height: 20px;
+  }
+  .pro-beats {
+    gap: 0.7rem;
   }
 }

@@ -442,7 +442,7 @@ function SpinLab() {
             playChirp(g.pitch4)
             g.set({ chirpAt: performance.now(), spin: 2, circular: false })
           }}
-          title="Hear a synthesized GW150914 chirp: 35 → 250 Hz in about 0.2 s"
+          title={`Hear a synthesized GW150914 chirp: 35 → 250 Hz in about 0.2 s${g.pitch4 ? ' (now played two octaves up: 140 → 1000 Hz)' : ''}`}
         >
           ♪ Chirp
         </Button>
@@ -598,7 +598,7 @@ export default function Overlay() {
 
       <SpinLab />
 
-      <Step id="outro" length={LEN.outro} align="center" valign="bottom" className="gr-step-outro">
+      <Step id="outro" length={LEN.outro} align="center" valign="bottom" exit="hold" className="gr-step-outro">
         <Beat status="derived">
           In flat spacetime, the bookkeeping that keeps the graviton massless balances only in 10 dimensions (26 for the simpler bosonic string).
         </Beat>

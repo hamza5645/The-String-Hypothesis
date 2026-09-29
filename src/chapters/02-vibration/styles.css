@@ -898,6 +898,12 @@
 .vib-far .ctl-slider__tick:nth-last-child(2) .ctl-slider__ticklabel {
   transform: translateX(-12px);
 }
+/* the smallest phones: keep the two captions apart */
+@media (max-width: 340px) {
+  .vib-far .ctl-slider__ticklabel {
+    font-size: 0.56rem;
+  }
+}
 .vib-far__off {
   display: block;
   margin-bottom: 0.2rem;

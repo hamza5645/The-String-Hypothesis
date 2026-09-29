@@ -360,8 +360,11 @@ function Deeper() {
       </p>
       <h3>Who found what</h3>
       <ul>
-        <li>T-dualities: 1986–89. An early S-duality conjecture: Font–Ibáñez–Lüst–Quevedo, 1990; Sen, 1994.</li>
-        <li>The IIA string as a wrapped membrane: Duff–Howe–Inami–Stelle, 1987. Hull–Townsend, 1994; Townsend, January 1995.</li>
+        <li>T-dualities: 1986–89.</li>
+        <li>An early S-duality conjecture: Font–Ibáñez–Lüst–Quevedo, 1990. Evidence from dyon bound states: Sen, 1994.</li>
+        <li>The IIA string as a wrapped membrane: Duff–Howe–Inami–Stelle, 1987.</li>
+        <li>U-duality and IIB’s SL(2,ℤ) self-duality: Hull–Townsend, 1994.</li>
+        <li>The case that IIA is eleven-dimensional on a circle: Townsend, January 1995.</li>
         <li>Witten’s March 1995 paper tied the web together; Polchinski’s D-branes (October 1995); Hořava–Witten, 1995–96.</li>
         <li>Matrix theory: Banks, Fischler, Shenker, Susskind, 1996, for special backgrounds.</li>
       </ul>

@@ -198,7 +198,7 @@ export default function Overlay() {
         <LabPanel />
       </Lab>
 
-      <Step id="exit" length={STEP_LEN.exit} align="center" valign="lower">
+      <Step id="exit" length={STEP_LEN.exit} align="center" valign="lower" exit="hold">
         <Beat status={['derived', 'analogy']}>Step back far enough, and every state of the string looks like a point with a mass and a spin.</Beat>
       </Step>
     </>

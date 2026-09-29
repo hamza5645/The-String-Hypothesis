@@ -23,11 +23,19 @@ export interface StepRuntime {
   dy: number
   /** this step is a <Lab> */
   lab: boolean
+  /** within NEAR_VH viewports of the screen: rendered normally (data-near); farther steps skip rendering */
+  near: boolean
 }
 
 export type StepExit = 'late' | 'early' | 'hold'
 /** exit="hold": viewports of scroll over which the held content fades, starting at the sticky release. */
 const HOLD_FADE = 0.4
+/**
+ * Steps farther than this (viewports) from the screen skip style, layout and paint (`content-visibility: auto`
+ * on `.step:not([data-near])`, ui.css). Near steps render with no containment at all, so content that paints
+ * outside its step box (exit="hold", chapter-level pinning) is never clipped.
+ */
+const NEAR_VH = 1
 
 export interface ChapterRuntime {
   id: string
@@ -104,7 +112,8 @@ export function bindStep(chapterId: string, stepId: string, el: HTMLElement, fad
   const early = exit === true || exit === 'early'
   const hold = exit === 'hold'
   el.style.removeProperty('--sh')
-  const s: StepRuntime = { id: stepId, el, top: 0, height: 1, progress: 0, vis: -1, fade, early, hold, dy: 0, lab: el.classList.contains('step--lab') }
+  el.removeAttribute('data-near')
+  const s: StepRuntime = { id: stepId, el, top: 0, height: 1, progress: 0, vis: -1, fade, early, hold, dy: 0, lab: el.classList.contains('step--lab'), near: false }
   c.steps.set(stepId, s)
   scheduleMeasure()
   return () => {
@@ -212,6 +221,11 @@ export function update(y: number) {
     for (const s of c.steps.values()) {
       const p = clamp01((y + vh * 0.5 - s.top) / s.height)
       s.progress = p
+      const near = s.top < y + vh * (1 + NEAR_VH) && s.top + s.height > y - vh * NEAR_VH
+      if (near !== s.near) {
+        s.near = near
+        s.el.toggleAttribute('data-near', near)
+      }
       // fade over ~22% of a viewport of scroll at each end
       const f = Math.min(0.45, (0.22 * vh) / s.height)
       let vis = 1

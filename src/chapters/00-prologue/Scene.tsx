@@ -8,7 +8,7 @@ import { pluck } from '@/core/audio'
 import { clamp, damp, lerp, smoothstep } from '@/core/math'
 import { ambient, prefersReducedMotion } from '@/core/time'
 import { Status } from '@/ui'
-import { usePrologue } from './store'
+import { noteOpacity, usePrologue } from './store'
 
 /*
  * The Thread at rest, as specified in content/01-scale-down.md § Prologue.
@@ -39,13 +39,10 @@ export default function Scene() {
 
   const points = useMemo(() => new Float32Array(N * 3), [])
   const aspect0 = size.width / Math.max(1, size.height)
-  // Portrait: the opening beat sits just under the Thread, so the note goes above its right end,
-  // in the band below the subtitle (right-aligned, clear of the subtitle's short last line).
-  const portrait = aspect0 < 0.8
-  const hvis0 = 2 * HANDOFF.camera.position[2] * Math.tan(((HANDOFF.camera.fov * Math.PI) / 180) / 2)
-  const labelPos: [number, number, number] = portrait
-    ? [Math.min(0.4 * hvis0 * aspect0, 4.75), -0.025 * hvis0 + 0.33, 0]
-    : [0.3 * 0.56 * 6.306 * aspect0 * 0.5, -0.62, 0]
+  const labelPos: [number, number, number] = [0.3 * 0.56 * 6.306 * aspect0 * 0.5, -0.62, 0]
+  // Portrait layout: the hero's DOM band owns the Thread's resting place and carries the analogy note itself
+  // (Overlay publishes the slot's height as bandY), so the Scene never guesses where the text is.
+  const domBand = usePrologue((s) => s.bandY !== null)
   const st = useMemo(
     () => ({
       amp: new Float64Array(MODES + 1), // aₙ(0) of the current ringing
@@ -150,7 +147,9 @@ export default function Scene() {
     st.pxPerUnit = size.height / hvis
     const k = smoothstep(0.55, 1.0, progress) // recede
     const shrink = Math.exp(-k * Math.log(420))
-    st.y0 = lerp(-0.025 * hvis, 0, smoothstep(0, 0.6, k))
+    const bandY = usePrologue.getState().bandY
+    const yRest = bandY !== null ? (0.5 - bandY / Math.max(1, size.height)) * hvis : -0.025 * hvis
+    st.y0 = lerp(yRest, 0, smoothstep(0, 0.6, k))
 
     // external pluck requests (keyboard / button)
     const req = usePrologue.getState().pluckRequests
@@ -284,16 +283,13 @@ export default function Scene() {
         coreColor="#FFFFFF"
         visible={false}
       />
-      <SceneLabel
-        position={labelPos}
-        align={portrait ? 'right' : 'below'}
-        tone="dim"
-        opacity={(f) => 1 - smoothstep(0.08, 0.4, f.progress)}
-      >
-        <span className={portrait ? 'pro-scene-note pro-scene-note--portrait' : 'pro-scene-note'}>
-          <Status kind="analogy" compact /> A picture of an idea.{portrait ? <br /> : ' '}No one has ever seen a string.
-        </span>
-      </SceneLabel>
+      {!domBand && (
+        <SceneLabel position={labelPos} align="below" tone="dim" opacity={(f) => noteOpacity(f.progress)}>
+          <span className="pro-scene-note">
+            <Status kind="analogy" compact /> A picture of an idea. No one has ever seen a string.
+          </span>
+        </SceneLabel>
+      )}
     </>
   )
 }

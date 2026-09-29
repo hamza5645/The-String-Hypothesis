@@ -54,14 +54,14 @@ export class RoutesView implements View {
     chip('speculative', this.lSp)
     this.lTr = div('sp-lbl sp-zone sp-zone--tr', this.box)
     span('sp-lbl__a', this.lTr, m ? 'WEAKLY COUPLED' : 'WEAKLY COUPLED STRINGS')
-    span('sp-lbl__b', this.lTr, m ? 'traditional' : 'traditional estimates')
+    span('sp-lbl__b', this.lTr, m ? 'in those models' : 'derived in those models')
     chip('derived', this.lTr)
     // once the Ruler compresses back to full width, the zone labels collapse into a legend
     this.legend = div('sp-lbl sp-legend', this.box)
     for (const [mark, t, k] of [
       ['✕', m ? 'EXCLUDED IN TESTED MODELS' : 'EXCLUDED IN TESTED LOW-SCALE MODELS · LHC', 'ex'],
       ['○', m ? 'LOW / INTERMEDIATE · SPECULATIVE' : 'LOW OR INTERMEDIATE STRING SCALE · SPECULATIVE', 'sp'],
-      ['◑', m ? 'TRADITIONAL · WEAKLY COUPLED' : 'WEAKLY COUPLED STRINGS · TRADITIONAL ESTIMATES', 'tr'],
+      ['◑', m ? 'WEAKLY COUPLED · IN THOSE MODELS' : 'WEAKLY COUPLED STRINGS · DERIVED IN THOSE MODELS', 'tr'],
     ]) {
       const row = div(`sp-legend__row sp-legend__row--${k}`, this.legend)
       span('sp-legend__t', row, t)
@@ -152,7 +152,7 @@ export class RoutesView implements View {
     at(this.brkLbl, xp, yb + 6, ' translate(-100%,0)')
     const th = smoothstep(0.12, 0.2, p) * zoomed
     op(this.thread, on * th)
-    if (L.mobile) at(this.thread, L.W - 8, ry + 70, ' translate(-100%,0)')
+    if (L.mobile) at(this.thread, L.W - 8, ry + 84, ' translate(-100%,0)')
     else at(this.thread, xp, yb + 40, ' translate(-100%,0)')
 
     // the routes

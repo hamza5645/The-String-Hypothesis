@@ -151,7 +151,7 @@ function BenchTab() {
             <Chip key={i} n={i + 1} />
           ))}
         </div>
-        <p className="vib-note">{ends === 'free' ? 'Put packets in low harmonics to carry more spin.' : 'Guitar mode: amplitudes are continuous and decay.'}</p>
+        <p className="vib-note">{ends === 'free' ? 'Put packets in low harmonics to carry more spin.' : 'Guitar mode: amplitudes look continuous and decay.'}</p>
       </div>
       <Segmented<Ends>
         label="Ends"
@@ -258,10 +258,10 @@ function LadderTab() {
   )
 }
 
-// short labels: the two ticks sit close on the log track; the note under the slider explains the LHC
+// pack copy; the 10² caption grows rightward and the 10¹⁵ caption is right-aligned to its tick (styles.css)
 const DIST_TICKS = [
-  { value: 1e2, label: '10²' },
-  { value: 1e15, label: '10¹⁵ · LHC' },
+  { value: 1e2, label: '10²: already a point' },
+  { value: 1e15, label: '10¹⁵: LHC resolution' },
 ]
 
 /** The chapter's signature move, always in view: step back until the string is a point. */

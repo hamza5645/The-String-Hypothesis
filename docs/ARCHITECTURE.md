@@ -32,7 +32,7 @@ src/chapters/NN-id/
   index.ts      meta (id, index, title, question, lazy Scene, Overlay, lazy Fallback, scale fn) — keep id/index/title
   Overlay.tsx   DOM: <ChapterTitle>, beat <Step>s, <Lab>, <GoDeeper>  (eager — defines the scroll length)
   Scene.tsx     default export: the 3D scene (lazy)
-  Fallback.tsx  default export: a static SVG diagram for no-WebGL (make it genuinely informative)
+  Fallback.tsx  default export: a static SVG diagram for no-WebGL (make it genuinely informative; its root <svg role="img" aria-label> is read to screen readers)
   glossary.ts   default export: GlossaryEntries for terms this chapter introduces
   store.ts      (optional) zustand store shared by Scene + Overlay (lab state)
   styles.css    (optional) chapter CSS; import it from Overlay.tsx; prefix every class with a chapter prefix
@@ -66,6 +66,7 @@ import { ChapterTitle, Step, Beat, Caption, Lab, LabRow, Slider, Segmented, Togg
 ```
 
 - **Steps** are `length × 100svh` of scroll. Their content is sticky and fades in and out. A scene reads `h.step('worldline')` (0 when the viewport's center line reaches the step's top, 1 when it passes the bottom). `h.inStep('lab')` is true while the lab is on screen.
+- **Off-screen steps skip rendering.** A step more than one viewport from the screen gets `content-visibility: auto` (the engine marks nearer steps `data-near` and leaves them uncontained). Content may paint outside its step box (held, pinned) only while the step is near; portal `position: fixed` layers to `<body>`; don't read layout inside far steps every frame.
 - **`exit`** sets how a step's content leaves once its sticky hold ends (its last viewport): `'late'` (default) scrolls up with the page and fades late; `'early'` fades as it starts to rise; `'hold'` stays at its resting place and fades there (~0.4 viewport). `<ChapterTitle>` uses `'hold'`.
 - Typical chapter: title (≈1.15) + 3–6 beat steps (1–1.6 each) + lab (2–2.6) + optional closing step. That is roughly 8–12 viewports. **The final viewport is the dissolve into the next chapter, so keep it calm and at the OUT pose:** give the closing `<Step>` `exit="hold"` so its text never slides across the centred handoff object (unless the step pins its own content).
 - `<Beat>` text ≤ 45 words. Labs ≤ 20 words per caption. Put depth in `<GoDeeper>` (drawer) and optional `<Deeper>` blocks (only shown when the global "Deeper physics" toggle is on).

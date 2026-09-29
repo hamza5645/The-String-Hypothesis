@@ -91,6 +91,12 @@
   position: relative;
   height: calc(var(--len, 1) * 100svh);
 }
+/* Steps more than a viewport off screen skip style, layout and paint (journey.ts marks the rest data-near).
+   Near steps get no containment: paint containment would clip content held or pinned outside its step box
+   (exit="hold", chapter pinning) and would make the step the containing block of fixed descendants. */
+.step:not([data-near]) {
+  content-visibility: auto;
+}
 .step__inner {
   position: sticky;
   top: 0;

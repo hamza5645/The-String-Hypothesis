@@ -66,5 +66,3 @@ export const win = (s: number, hi: number, lo: number, f = 0.5) => smoothstep(hi
 
 /** Visibility 0..1 of the carbon atom's electron haze (Dna.tsx). The Hud hides the 10⁻¹⁰ m ring while it shows. */
 export const carbonHazeA = (s: number) => win(s, -8.6, -11.5, 1.2) * smoothstep(-8.55, -9.05, s)
-/** Visibility 0..1 of the proton hold (Nucleus.tsx). The Hud hides the 10⁻¹⁵ m ring while it shows. */
-export const protonHoldA = (s: number) => win(s, -13.9, -14.8, 0.2)

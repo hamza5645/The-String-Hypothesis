@@ -29,8 +29,9 @@ export function ChapterSection({ meta, webgl }: { meta: ChapterMeta; webgl: bool
       tabIndex={meta.index === 0 ? -1 : undefined}
       aria-label={`${meta.title}. ${meta.question}`}
     >
+      {/* not aria-hidden: each Fallback's root <svg role="img" aria-label> is the chapter's figure description */}
       {!webgl && Fallback && (
-        <div className="chapter-fallback" aria-hidden="true">
+        <div className="chapter-fallback">
           <Suspense fallback={null}>
             <Fallback />
           </Suspense>

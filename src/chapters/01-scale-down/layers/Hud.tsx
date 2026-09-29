@@ -5,7 +5,7 @@ import { GlowPoint, SceneLabel, useChapterFrame, COLORS, type GlowPointApi } fro
 import { HANDOFF } from '@/core/handoff'
 import { smoothstep, superscript } from '@/core/math'
 import { MASK, maskUniforms, updateMask } from '../glsl'
-import { carbonHazeA, protonHoldA, rt, win } from '../runtime'
+import { carbonHazeA, rt, win } from '../runtime'
 
 /*
  * Screen-true diagram marks at z = 0 (so they follow the view shift), in one draw:
@@ -234,8 +234,10 @@ export function Hud() {
       // edge ("no planets, no orbits"), around the gluon fog the 10⁻¹⁵ m ring as a hard proton surface
       // (blobs, not billiard balls). Other decades keep flying outward; the lab keeps its rings. The haze
       // fades in over more than a decade, so its ring is gone once the haze is a third of the way in.
+      // The 10⁻¹⁵ m ring is centred on the target proton from the moment it enters (s −13.48), so it is
+      // held back through the nucleus view too, where it would ring that one nucleon beside the blobs note.
       if (k === -10) a *= 1 - (1 - lab) * Math.min(1, 3 * carbonHazeA(s))
-      else if (k === -15) a *= 1 - (1 - lab) * protonHoldA(s)
+      else if (k === -15) a *= 1 - (1 - lab) * win(s, -13.4, -14.8, 0.2)
       // the hush: no rings below 10⁻³² m in the story (the lab keeps them)
       if (k < -32) a *= lab
       a *= 1 - (1 - lab) * smoothstep(-31.55, -31.95, s)

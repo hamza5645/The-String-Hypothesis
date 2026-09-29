@@ -105,7 +105,7 @@ export default function Overlay() {
       <LabPanel />
 
       <Step id="dive" length={LEN.dive} />
-      <Step id="exit" length={LEN.exit} align="center" valign="lower">
+      <Step id="exit" length={LEN.exit} align="center" valign="lower" exit="hold">
         <Beat status="conjectured">The weak-coupling string we started with is back. It may be one face of something larger.</Beat>
       </Step>
     </>
