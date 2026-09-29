@@ -1,7 +1,8 @@
 // The Vibration Bench's voice (content pack § Optional audio). Six sine oscillators at n × 110 Hz,
-// each through its own gain into a master gain that starts at 0. Nothing is created until the
-// visitor has turned sound on (a click = the user gesture). FREE: a steady tone whose TIMBRE follows
+// each through its own gain into a master gain that starts at 0. Nothing is created while sound is
+// off or before the visitor's first click, tap or key press (the user gesture audio needs). FREE: a steady tone whose TIMBRE follows
 // the packets (the pitch never tracks the mass). PINNED plucks go through the shared pluck() synth.
+import { audioUnlocked } from '@/core/audio'
 import { useSettings } from '@/core/settings'
 import { AQ, F0_HZ, MODES } from './model'
 
@@ -71,7 +72,7 @@ useSettings.subscribe((s) => {
  * on screen, FREE, and not far away. Target gains gₙ = 0.18·Aₙ/A_q, renormalized so Σgₙ ≤ 0.6.
  */
 export function benchTone(amps: ArrayLike<number>, on: boolean, volume: number, nowMs: number) {
-  const want = on && useSettings.getState().sound
+  const want = on && useSettings.getState().sound && audioUnlocked()
   if (!want) {
     if (ctx && master && lastMaster !== 0) {
       master.gain.setTargetAtTime(0, ctx.currentTime, 0.12)

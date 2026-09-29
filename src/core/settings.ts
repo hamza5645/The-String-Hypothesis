@@ -4,7 +4,7 @@ import { params } from './params'
 export type QualityTier = 'low' | 'medium' | 'high'
 
 interface Settings {
-  /** Sound is off by default; turning it on happens from a click (user gesture). */
+  /** Sound is on by default (silent until the first click, tap or key press); switching it off is remembered. */
   sound: boolean
   /** "Deeper physics" mode: shows equations and technical asides inline. */
   deeper: boolean
@@ -78,7 +78,7 @@ function detectQuality(): QualityTier {
 export const gpuRenderer = GPU.renderer
 
 export const useSettings = create<Settings>((set) => ({
-  sound: false,
+  sound: load('sound') !== '0',
   deeper: params.deeper || load('deeper') === '1',
   quality: detectQuality(),
   qualityLocked: !!params.quality,
@@ -86,7 +86,10 @@ export const useSettings = create<Settings>((set) => ({
   glossaryOpen: false,
   menuOpen: false,
   drawer: null,
-  setSound: (v) => set({ sound: v }),
+  setSound: (v) => {
+    save('sound', v ? '1' : '0')
+    set({ sound: v })
+  },
   setDeeper: (v) => {
     save('deeper', v ? '1' : '0')
     set({ deeper: v })

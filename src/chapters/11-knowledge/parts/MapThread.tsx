@@ -103,7 +103,7 @@ export function MapThread({ S, layer }: { S: Stage; layer: LabelLayer | null }) 
         glint.current.visible = k > 0.01
       }
 
-      // audio (muted by default): a faint hum while warm light is on screen under the ceiling —
+      // audio (silent while sound is off): a faint hum while warm light is on screen under the ceiling —
       // in B6 it falls silent the instant the Thread goes out, and nothing replaces it; in the lab it
       // returns whenever the ceiling admits the Thread again
       const lit = ceil ? clamp(visAt(S.yc, P[1])) : 0

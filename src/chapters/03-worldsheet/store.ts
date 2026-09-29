@@ -59,7 +59,7 @@ const wide = typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
 const split0 = solveSplit(0, 0, { x: 0, y: 0, t: 0, t0: 0 })
 
 /*
- * Optional sound (silent unless the visitor turns sound on): where one loop becomes two, one voice divides
+ * Optional sound (silent while sound is off): where one loop becomes two, one voice divides
  * into two slightly detuned voices; a particle vertex is a short dry tick, since a point event has no
  * "gradual" sound. Throttled so a fast sweep does not chatter.
  */

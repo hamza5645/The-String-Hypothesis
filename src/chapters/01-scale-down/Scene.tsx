@@ -111,7 +111,7 @@ export default function Scene() {
       const question = smoothstep(START.gap - 0.15, START.gap + 0.1, rt.z) * (1 - smoothstep(START.gap + 0.45, START.gap + 0.7, rt.z))
       rt.ringsA = smoothstep(1.15, 1.8, rt.z) * (1 - 0.62 * busy) * (1 - end) * (1 - 0.75 * question)
 
-      // sound (muted by default; a sonification): soft detents per decade, silence in Beats 4–5,
+      // sound (a sonification; silent while sound is off): soft detents per decade, silence in Beats 4–5,
       // one tone when the string resolves
       const dec = Math.floor(s)
       if (dec !== rt.lastDecade) {

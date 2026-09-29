@@ -1,14 +1,21 @@
-// Tiny additive synth for string harmonics. Silent unless the visitor turns sound on
-// (the toggle click is the user gesture that unlocks the AudioContext).
+// Tiny additive synth for string harmonics. Sound is on by default, but browsers only let audio start
+// after a user gesture: until the visitor's first click, tap or key press every call here is a no-op
+// (nothing is queued on a suspended context, so nothing bursts out later).
 
 import { useSettings } from './settings'
 
 let ctx: AudioContext | null = null
 let master: GainNode | null = null
 const MASTER_GAIN = 0.22
+let unlocked = false
+let heard = false
+/** The browser's own record of user gestures (not every pointerdown or keydown counts as one). */
+const activation =
+  typeof navigator !== 'undefined' ? (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation : undefined
+const heardListeners = new Set<() => void>()
 
 function ensure(): AudioContext | null {
-  if (!useSettings.getState().sound) return null
+  if (!unlocked || !useSettings.getState().sound) return null
   if (!ctx) {
     try {
       const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
@@ -24,7 +31,10 @@ function ensure(): AudioContext | null {
       return null
     }
   }
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+  if (ctx.state !== 'running') ctx.resume().catch(() => {})
+  // sounds scheduled on a paused context would all play at once when it resumes: schedule only while
+  // it runs, or inside a gesture (where the resume above is about to succeed)
+  if (ctx.state !== 'running' && activation && !activation.isActive) return null
   return ctx
 }
 
@@ -49,7 +59,36 @@ useSettings.subscribe((s, prev) => {
 
 /** Call from the sound toggle's click handler. */
 export function unlockAudio() {
+  unlocked = true
   ensure()
+}
+
+// A click, tap or key press is a user gesture: create/resume the context inside it (Safari needs that),
+// and again on later gestures in case the browser paused it meanwhile. A touch that starts a scroll,
+// or Esc, is not a gesture: creating the context then would only start it paused.
+function onGesture() {
+  if (activation && !activation.isActive) return
+  unlockAudio()
+}
+if (typeof window !== 'undefined')
+  for (const type of ['pointerdown', 'pointerup', 'keydown', 'touchend'])
+    window.addEventListener(type, onGesture, { capture: true, passive: true })
+
+/** Has there been a user gesture yet? Audio contexts created before one start suspended. */
+export const audioUnlocked = () => unlocked
+
+/** Runs `cb` the first time a sound actually plays: the moment to say it is a sonification. */
+export function onFirstSound(cb: () => void): () => void {
+  heardListeners.add(cb)
+  return () => {
+    heardListeners.delete(cb)
+  }
+}
+
+function markHeard() {
+  if (heard) return
+  heard = true
+  queueMicrotask(() => heardListeners.forEach((cb) => cb()))
 }
 
 export interface Partial {
@@ -67,6 +106,7 @@ export interface Partial {
 export function pluck(f0: number, partials: Partial[], opts: { decay?: number; gain?: number; pan?: number } = {}) {
   const c = ensure()
   if (!c || !master) return
+  markHeard()
   const now = c.currentTime
   const decay = opts.decay ?? 2.4
   const out = c.createGain()
@@ -103,6 +143,7 @@ export function pluck(f0: number, partials: Partial[], opts: { decay?: number; g
 export function hum(freq: number, gain = 0.12): () => void {
   const c = ensure()
   if (!c || !master) return () => {}
+  markHeard()
   const now = c.currentTime
   const o = c.createOscillator()
   o.type = 'sine'

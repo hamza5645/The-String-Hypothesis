@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChapterMeta } from '../core/chapter'
 import { getHandle } from '../core/chapter'
-import { unlockAudio, tick } from '../core/audio'
+import { onFirstSound, unlockAudio, tick } from '../core/audio'
 import { journey, onJourney, useJourney } from '../core/journey'
 import { orderOf, superscript } from '../core/math'
 import { scrollToChapter } from '../core/scroller'
@@ -21,8 +21,9 @@ export function TopBar({ chapters }: { chapters: ChapterMeta[] }) {
   const setMenu = useSettings((s) => s.setMenuOpen)
   const active = useJourney((s) => s.active)
   const bar = useRef<HTMLDivElement>(null)
-  // brief ANALOGY note when sound is switched on: every sound on the site is a sonification
+  // brief ANALOGY note when sound is first heard or switched on: every sound on the site is a sonification
   const [soundNote, setSoundNote] = useState(false)
+  useEffect(() => onFirstSound(() => setSoundNote(true)), [])
 
   useEffect(
     () =>
@@ -80,7 +81,7 @@ export function TopBar({ chapters }: { chapters: ChapterMeta[] }) {
               tick(523)
             }
           }}
-          title="Sonification (off by default): strings would make no sound"
+          title="Sonification: strings would make no sound"
         >
           <SoundGlyph on={sound} />
           <span className="tool__label">{sound ? 'Sound on · sonification' : 'Sound off'}</span>
