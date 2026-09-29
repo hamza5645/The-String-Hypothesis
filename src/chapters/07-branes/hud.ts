@@ -402,6 +402,16 @@ export class Hud {
   readonly capText: HTMLDivElement
   readonly note: HTMLDivElement
   private ftitle: HTMLDivElement
+  private pins: HTMLDivElement
+  /** the phone layout (styles.css ≤ 720 px), where the pinned notes and the figure title share the top band */
+  private phone = window.matchMedia('(max-width: 720px)')
+  /** the pin whose note the figure title hangs below on phones ('' = none) */
+  private titlePin = ''
+  private titleMeasured = ''
+  private titleTop = 0
+  private titleTick = 0
+  /** phones: the bottom edge (px) of the figure title while it hangs below a pin, else 0 */
+  titleBottom = 0
   private link: SVGSVGElement
   private linkPath: SVGPathElement
   private linkBr: SVGPathElement
@@ -418,6 +428,7 @@ export class Hud {
 
     // pinned notes (bottom-left)
     const pins = h('div', 'brn-pins')
+    this.pins = pins
     this.root.appendChild(pins)
     const pin = (key: string, kind: StatusKind, text: string) => {
       const el = h('div', 'brn-pin')
@@ -449,7 +460,7 @@ export class Hud {
       cards.appendChild(el)
       this.faders.set('card:' + key, new Fader(el))
     }
-    card('1989', 'derived', '1989 · Dai, Leigh & Polchinski, and independently Hořava. Found through the duality of Chapter 08.')
+    card('1989', 'derived', '1989 · Dai, Leigh & Polchinski, and independently Hořava. Found through the duality of Chapter 8.')
     card('sv', 'derived', '1996 · Counting D-brane bound states reproduced the entropy of certain idealized, supersymmetric black holes (Strominger & Vafa).')
     card('su3', 'speculative', 'Some speculative models use a stack of three branes for the strong force’s SU(3).')
     card('proton', 'observed', 'Between two protons, gravity is ~10³⁶ times weaker than their electric repulsion.')
@@ -568,7 +579,11 @@ export class Hud {
     s(svg, 'text', { x: 12, y: 9, class: 'tk' }, 'brane B · grid spacing ÷ 8')
     s(svg, 'text', { x: 234, y: 70, class: 'tk', 'text-anchor': 'start' }, 'y')
     rs.appendChild(svg)
-    rs.appendChild(h('div', 'brn-rs__cap t-mono', 'Randall & Sundrum, 1999: a warped extra dimension; weakness from warping, not volume'))
+    const rsCap = h('div', 'brn-rs__cap t-mono')
+    rsCap.appendChild(h('span', 'brn-rs__full', 'Randall & Sundrum, 1999: a warped extra dimension; weakness from warping, not volume'))
+    // (phones: the same caption in three lines, so the inset stays clear of the beat on short screens)
+    rsCap.appendChild(h('span', 'brn-rs__short', 'Randall–Sundrum 1999 · warped dimension: weakness from warping, not volume'))
+    rs.appendChild(rsCap)
     this.root.appendChild(rs)
     this.faders.set('rs', new Fader(rs))
 
@@ -608,13 +623,34 @@ export class Hud {
   /** Apply this frame's opacities (one DOM write per element that changed). */
   commit() {
     for (const [k, f] of this.faders) f.set(this.pending.get(k) ?? 0)
+    this.placeTitle()
   }
   setCap(text: string) {
     setText(this.capText, text)
   }
-  /** the stage's figure title (top-left of the stage) */
-  setTitle(text: string) {
+  /** the stage's figure title (top-left of the stage); on phones it hangs just below the note pinned as `below` */
+  setTitle(text: string, below = '') {
     setText(this.ftitle, text)
+    this.titlePin = below
+  }
+  /**
+   * Phones: the pinned notes and the figure title share the top band, so the title flows below its beat's pin
+   * (measured, since the pin's height follows the width and the text size). Desktop keeps the CSS position.
+   */
+  private placeTitle() {
+    const pin = this.titlePin && (this.pending.get('ftitle') ?? 0) > 0 && this.phone.matches ? this.faders.get('pin:' + this.titlePin) : undefined
+    let top = 0
+    if (pin) {
+      // (re-measured now and then while it shows, and at once when the title or its pin changes)
+      if (this.titleMeasured === this.titlePin && this.titleTick++ % 20 !== 0) return
+      this.titleMeasured = this.titlePin
+      top = Math.round(this.pins.offsetTop + pin.el.offsetTop + pin.el.offsetHeight + 4)
+    } else this.titleMeasured = ''
+    if (top !== this.titleTop) {
+      this.titleTop = top
+      this.ftitle.style.top = top ? `${top}px` : ''
+    }
+    this.titleBottom = top ? top + this.ftitle.offsetHeight : 0
   }
   /**
    * The Beat 5 bracket: from the Higgs ruler's top (screen x, y) up and across to a bracket on the matrix's

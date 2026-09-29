@@ -247,7 +247,7 @@ The map stays where it is. The camera eases back down from the Beat 6 height to 
 ### Micro-copy (≤ 20 words each)
 - MAP header: "Six theories, no bridges. Switch on each kind of duality and count the pieces."
 - T toggle: "T-duality: curl one dimension into a circle; radius R becomes α′/R. ◑ Derived."
-- S toggle: "S-duality: coupling g becomes 1/g. Strong becomes weak. ◌ Conjectured, heavily tested."
+- S toggle: "S-duality: coupling g becomes 1/g. Strong becomes weak. ◌ Conjectured. Heavily checked in theory; never by experiment."
 - Lift toggle: "Strong-coupling lift: the coupling becomes the size of an eleventh dimension. ◌ Conjectured."
 - Curl-up toggle: "Curl up four more dimensions: IIA on K3 matches heterotic on a four-torus. ◌"
 - Pieces = 1: "One piece: every island is a limit of one structure. Conjectured, not proven."
@@ -299,7 +299,7 @@ $$M_n = \frac{n}{g_s\,\ell_s} = \frac{n}{R_{11}}$$
 - **n** is the number of D-particles, which is also the number of wavelengths around the circle.
 - **M_n** is the rung's mass. Supersymmetry protects it, so it holds at any coupling.
 
-That is Chapter 05's Kaluza–Klein tower for a circle of radius R₁₁. The string fits too:
+That is Chapter 5's Kaluza–Klein tower for a circle of radius R₁₁. The string fits too:
 
 $$T_{\mathrm{F1}} = 2\pi R_{11}\,T_{\mathrm{M2}}, \qquad T_{\mathrm{M2}} = \frac{1}{(2\pi)^2\,\ell_{11}^{3}}$$
 
@@ -314,7 +314,7 @@ Substitute the first line and every g_s cancels. A membrane wrapped once around 
 ## Glossary
 - `string coupling` — The number g that sets how likely a string is to split or join. Small g: approximations (perturbation theory) work. Near or above 1: they fail.
 - `heterotic string` — A closed string whose waves running one way are superstring-like and the other way bosonic-string-like. It has two supersymmetric versions, with symmetry SO(32) or E8×E8.
-- `S-duality` — A proposed exact equivalence swapping strong and weak coupling, g ↔ 1/g. It maps Type I to heterotic SO(32), and Type IIB to itself. Conjectured and heavily tested.
+- `S-duality` — A proposed exact equivalence swapping strong and weak coupling, g ↔ 1/g. It maps Type I to heterotic SO(32), and Type IIB to itself. Conjectured; passed many theoretical checks, none experimental.
 - `BPS state` — An object whose mass or tension supersymmetry fixes exactly by its charges, so it can be followed reliably from weak to strong coupling.
 - `D-particle` — A D0-brane: Type IIA's pointlike D-brane, with mass 1/(g ℓ_s). Heavy at weak coupling, light at strong coupling.
 - `membrane` — A two-dimensional extended object (the M2-brane). In M-theory, a membrane wrapped once around the eleventh-dimensional circle behaves exactly as the Type IIA string.

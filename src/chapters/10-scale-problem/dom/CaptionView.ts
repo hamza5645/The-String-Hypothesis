@@ -4,9 +4,10 @@
  */
 import { smoothstep } from '@/core/math'
 import { handoffFit } from '@/core/handoff'
+import { prefersReducedMotion } from '@/core/time'
 import type { StageState } from '../choreo'
 import type { Layout } from '../layout'
-import { SI, local } from '../timeline'
+import { S0_H2, SI, local, openS } from '../timeline'
 import type { Ctx, View } from './Diagram'
 import { at, chip, div, op, span } from './dom'
 
@@ -42,10 +43,16 @@ export class CaptionView implements View {
     op(this.box, live ? 1 : 0)
     if (!live) return
     const po = local(T, 'open')
-    const a = T < SI.open ? 1 : T < SI.decades ? 1 - smoothstep(0.05, 0.2, po) : 0
+    // The Thread's marks stay on it for as long as it glows warm, and ride the loop as the pull-back
+    // shrinks it: the same scale and warmth rule as OpeningGL (δ = L/50, warmth = smoothstep(1, 3, ℓ/δ)).
+    // Reduced motion: no pull-back; the marks leave with the loop as it cross-fades into the point.
+    const reduced = prefersReducedMotion()
+    const k = T < SI.open || reduced ? 1 : Math.pow(10, S0_H2 - openS(po))
+    const lr = (2 * Math.PI * R * k) / (L.H / 50) // ℓ/δ, in px
+    const a = T < SI.open ? 1 : T < SI.decades ? (reduced ? 1 - smoothstep(0.3, 0.6, po) : smoothstep(1, 3, lr)) : 0
     op(this.thread, a)
-    if (L.mobile) at(this.thread, L.Wc / 2, L.H / 2 - R - 26, ' translate(-50%,-100%)')
-    else at(this.thread, L.Wc / 2, L.H / 2 + R + 30, ' translate(-50%,0)')
+    if (L.mobile) at(this.thread, L.Wc / 2, L.H / 2 - R * k - 26, ' translate(-50%,-100%)')
+    else at(this.thread, L.Wc / 2, L.H / 2 + R * k + 30, ' translate(-50%,0)')
     // phones: the beat text rises through mid-screen as its step ends, so the caption waits for it to clear
     const [b0, b1] = L.mobile ? [0.82, 0.92] : [0.62, 0.78]
     const b = T >= SI.open && T < SI.decades ? smoothstep(b0, b1, po) : T >= SI.decades && T < SI.quarter ? 1 - smoothstep(0, 0.05, local(T, 'decades')) : 0

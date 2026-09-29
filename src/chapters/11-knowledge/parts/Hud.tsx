@@ -42,7 +42,8 @@ export function Hud({ S, layer, map }: { S: Stage; layer: LabelLayer | null; map
       const vw = S.vw
       L.tag.x = S.mobile ? vw - 16 : W - 64
       L.tag.y = S.mobile ? 70 : 76
-      L.tag.target = S.tag * (1 - S.cnt.grow) * (1 - S.holo.grow) * (S.sp.lab > 0.1 && S.sp.lab < 0.97 ? 0.6 : 1)
+      // full strength in the lab too: it is the map's caveat, not decoration
+      L.tag.target = S.tag * (1 - S.cnt.grow) * (1 - S.holo.grow)
       // B6 frame readouts: centred under the ground's near edge (never on it), once the beat text has
       // gone (phones: the text leaves upward through the lower half, so the figure waits for it)
       v.set(0, 0, 7).applyMatrix4(map.current.matrixWorld).project(f.state.camera)

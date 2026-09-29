@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useChapter } from '@/core/chapter'
 import { onJourney } from '@/core/journey'
-import { clamp01, smoothstep } from '@/core/math'
+import { PORTRAIT_QUERY } from '@/core/layout'
+import { clamp, clamp01, smoothstep } from '@/core/math'
 import { clock, prefersReducedMotion } from '@/core/time'
 import { Status, Term } from '@/ui'
 import { packP, sizeOf, squashB3 } from './timeline'
@@ -20,27 +21,32 @@ function useFigureFrame(range: [number, number], animate: boolean, draw: (P: num
   useEffect(() => {
     let raf = 0
     let running = false
+    let wasIn = false
     const tick = () => {
       if (!running) return
       ref.current(packP(h.progress()), clock.t)
       raf = requestAnimationFrame(tick)
     }
-    const onScroll = () => {
+    // draws only while P is in range, plus one clamped draw on the way out (the figure rests at its first or
+    // last state); anywhere else in the journey a scroll event costs one comparison
+    const onScroll = (force = false) => {
       const P = packP(h.progress())
       const inRange = P >= range[0] && P <= range[1]
       if (animate && inRange && !running) {
         running = true
         raf = requestAnimationFrame(tick)
-      } else if ((!animate || !inRange) && running) {
+      } else if (!inRange && running) {
         running = false
         cancelAnimationFrame(raf)
       }
-      if (inRange || !animate) ref.current(P, clock.t)
+      if (inRange) ref.current(P, clock.t)
+      else if (wasIn || force) ref.current(clamp(P, range[0], range[1]), clock.t)
+      wasIn = inRange
     }
-    const off = onJourney(onScroll)
-    onScroll()
+    const off = onJourney(() => onScroll())
+    onScroll(true)
     // a late first draw once the stage clock has started
-    const t0 = window.setTimeout(onScroll, 400)
+    const t0 = window.setTimeout(() => onScroll(true), 400)
     return () => {
       off()
       window.clearTimeout(t0)
@@ -51,8 +57,9 @@ function useFigureFrame(range: [number, number], animate: boolean, draw: (P: num
   }, [h])
 }
 
-/** Phones in portrait (the same breakpoint as the chapter CSS): figures switch to their compact layouts. */
-const PORTRAIT_Q = '(max-width: 720px)'
+/** The portrait layout (phones, portrait tablets; the engine's predicate, as in the chapter CSS): figures
+ *  switch to their compact layouts. */
+const PORTRAIT_Q = PORTRAIT_QUERY
 export function usePortrait() {
   const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(PORTRAIT_Q).matches)
   useEffect(() => {
@@ -210,9 +217,11 @@ export function WaveLadder() {
       if (!w) continue
       let d = ''
       const amp = m === 0 ? 0 : A * Math.cos((reduced ? 0 : t) * (1.6 + 0.9 * m))
+      // the uniform (m = 0) pattern rides just outside the ring, so the Field ring stays visible under it
+      const r0 = m === 0 ? R + (lay.current ? 1.5 : 2) : R
       for (let i = 0; i <= 96; i++) {
         const a = (i / 96) * 2 * Math.PI
-        const r = R + amp * Math.cos(m * a)
+        const r = r0 + amp * Math.cos(m * a)
         d += `${i ? 'L' : 'M'}${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`
       }
       w.setAttribute('d', d + 'Z')
@@ -252,9 +261,9 @@ export function WaveLadder() {
           <g className="cy-ladder__rings">
             {RINGS.map((r, i) => (
               <g key={r.m} transform={`translate(${55 + i * 110} 20)`}>
-                <circle r={13} className="cy-ladder__ring" />
                 <path ref={(el) => void (lobes.current[r.m] = el)} className="cy-ladder__lobe" />
                 <path ref={(el) => void (waves.current[r.m] = el)} className={`cy-ladder__wave${r.m === 0 ? ' is-zero' : ''}`} />
+                <circle r={13} className="cy-ladder__ring" />
                 {nodesOf(r.m, 13).map((n, k) => (
                   <circle key={k} cx={n.x} cy={n.y} r={1.7} className="cy-ladder__node" />
                 ))}
@@ -265,7 +274,7 @@ export function WaveLadder() {
         </svg>
       ) : (
         <svg viewBox="-160 -136 300 162" className="cy-ladder__svg" aria-hidden="true">
-          {/* rings (inset callback to chapter 05), each tied to its rung by a leader */}
+          {/* rings (inset callback to chapter 05: Ink quantum waves on a Field circle), each tied to its rung by a leader */}
           <g className="cy-ladder__rings">
             {RINGS.map((r) => (
               <g key={r.m}>
@@ -278,9 +287,10 @@ export function WaveLadder() {
                   className="cy-ladder__leader"
                 />
                 <g transform={`translate(-40 ${-r.m * ROW})`}>
-                  <circle r={RING_R} className="cy-ladder__ring" />
                   <path ref={(el) => void (lobes.current[r.m] = el)} className="cy-ladder__lobe" />
                   <path ref={(el) => void (waves.current[r.m] = el)} className={`cy-ladder__wave${r.m === 0 ? ' is-zero' : ''}`} />
+                  {/* the Field ring (the hidden circle itself) is drawn over its wave, as in chapter 05 */}
+                  <circle r={RING_R} className="cy-ladder__ring" />
                   {nodesOf(r.m, RING_R).map((n, k) => (
                     <circle key={k} cx={n.x} cy={n.y} r={1.8} className="cy-ladder__node" />
                   ))}
@@ -409,9 +419,39 @@ export function Ledger() {
   const obs = useRef<(SVGGElement | null)[]>([])
   const ty = useRef<(SVGGElement | null)[]>([])
   const counter = useRef<HTMLSpanElement>(null)
+  // short phones: the ledger can be taller than the room left above the beat text. Its cell then clips it
+  // (CSS) and the view follows the build-up: counts first, then down to the 100-vs-3 landing and its notes.
+  // Scroll-linked like everything else here, never a nested scroller.
+  const view = useRef({ over: 0, P: 0 })
+  const viewAt = useRef((P: number) => {
+    const el = root.current
+    const cell = el?.parentElement
+    if (!el || !cell) return
+    const v = view.current
+    v.P = P
+    const y = v.over * ss(0.515, 0.575, P)
+    el.style.setProperty('--cy-lpan', `${y.toFixed(1)}px`)
+    // soft edges only where something is cut off
+    cell.style.setProperty('--cy-ft', `${Math.min(16, y).toFixed(1)}px`)
+    cell.style.setProperty('--cy-fb', `${Math.min(16, v.over - y).toFixed(1)}px`)
+  })
+  useEffect(() => {
+    const el = root.current
+    const cell = el?.parentElement
+    if (!el || !cell) return
+    const ro = new ResizeObserver(() => {
+      const pad = parseFloat(getComputedStyle(cell).paddingTop) || 0
+      view.current.over = Math.max(0, Math.round(el.offsetHeight + pad - cell.clientHeight))
+      viewAt.current(view.current.P)
+    })
+    ro.observe(el)
+    ro.observe(cell)
+    return () => ro.disconnect()
+  }, [])
   useFigureFrame([0.44, 0.64], false, (P) => {
     const el = root.current
     if (!el) return
+    viewAt.current(P)
     const Ly = layRef.current
     const [gx, gy, gp] = Ly.grid
     const tickPos = (i: number) => (i < 100 ? { x: gx + (i % 10) * gp, y: gy + Math.floor(i / 10) * gp } : { x: gx + 10 * gp + 4, y: gy + 9 * gp })
@@ -631,7 +671,7 @@ export function Dials() {
           ))}
           <line ref={big} x1="0" y1="4" x2="0" y2="-34" className="cy-dial__needle cy-dial__needle--big" />
           <circle r="2.4" className="cy-dial__hub" />
-          <text y="62" textAnchor="middle" className="cy-dials__lbl">
+          <text y="62" textAnchor="middle" className="cy-dials__lbl cy-dials__lbl--size">
             Size ×1
           </text>
         </g>

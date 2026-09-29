@@ -130,6 +130,10 @@
   font-size: 0.72rem;
   color: var(--ink-2);
 }
+/* the last mark (○) sits at the scroller's edge: keep its glyph inside so it is not clipped into a 'C' */
+.kn-ceil .ctl-slider__tick.is-end .ctl-slider__ticklabel {
+  right: 3px;
+}
 .kn-ceil__copy {
   margin: 0;
   min-height: 2.9em;
@@ -594,8 +598,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.56rem;
-  color: var(--ink-3);
+  font-size: 0.66rem;
+  color: var(--ink-2);
 }
 .kn-tag__chip {
   padding: 0.18em 0.55em;
@@ -618,8 +622,8 @@
   transition: opacity 0.4s;
 }
 .kn-eqrow__cap {
-  font-size: 0.56rem;
-  color: var(--ink-3);
+  font-size: 0.66rem;
+  color: var(--ink-2);
 }
 .kn-eqrow__formula {
   font-size: 0.68rem;
@@ -669,8 +673,8 @@
   white-space: nowrap;
 }
 .kn-eqrow__lo {
-  font-size: 0.52rem;
-  color: var(--ink-3);
+  font-size: 0.66rem;
+  color: var(--ink-2);
   border: 1px solid var(--hairline);
   padding: 1px 6px;
   border-radius: 999px;
@@ -1051,7 +1055,14 @@ a.kn-end__title {
     row-gap: 3px;
     column-gap: 0.45rem;
     max-width: 250px;
-    font-size: 0.5rem;
+  }
+  /* the epilogue's caveat is one long line: it wraps onto centred lines instead of running off the screen */
+  .kn-tag--e1 {
+    justify-content: center;
+    text-align: center;
+  }
+  .kn-tag--e1 > span:last-child {
+    white-space: normal;
   }
   .kn-end .deeper-trigger {
     white-space: nowrap;
@@ -1078,10 +1089,6 @@ a.kn-end__title {
   .kn-eqrow__formula {
     font-size: 0.52rem;
     letter-spacing: 0.02em;
-  }
-  .kn-eqrow__cap,
-  .kn-eqrow__lo {
-    font-size: 0.46rem;
   }
   .kn-eqrow__term > .kn-eqrow__cap:first-child {
     display: none;

@@ -5,7 +5,7 @@ import { GlowPoint, SceneLabel, useChapterFrame, COLORS, type GlowPointApi } fro
 import { rng, smoothstep } from '@/core/math'
 import { particleScale } from '@/core/settings'
 import { FLICKER, HASH, MASK, NEAR_FADE, POINT_FRAG, POINT_FRAG_MASKED, lineMaterial, maskUniforms, updateMask } from '../glsl'
-import { rt, win } from '../runtime'
+import { carbonHazeA, rt, win } from '../runtime'
 
 /*
  * Beat 1 end + Beat 2. A right-handed B-DNA double helix (Ink hairline backbones of ~4k points each,
@@ -190,26 +190,34 @@ const glowVert = /* glsl */ `
   uniform float uResY;
   uniform float uHalf;
   varying float vA;
+  varying float vK;
   void main() {
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
     float ws = length(vec3(modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2]));
     float px = 5.0 * aRand.w * ws * projectionMatrix[1][1] * uResY * 0.5 / max(-mv.z, 1e-4);
-    gl_PointSize = clamp(px, 1.0, 1024.0);
     float ends = 1.0 - smoothstep(uHalf * 0.5, uHalf, abs(position.x));
     // sprites clamped by the point-size limit would look wrong: fade them
     vA = uAlpha * ends * nearFade(mv) * (1.0 - smoothstep(700.0, 1000.0, px)) * mix(1.0, uTargetFade, aTarget);
+    // fill rate: the glow keeps its true size (px), but only the disc where it can still add 1/255 is
+    // rasterised: exp(-6.25 r²)·vA ≥ 1/255 ⇔ r² ≤ ln(255 vA) / 6.25. A sprite too faint to show is culled.
+    float k2 = log(max(255.0 * vA, 1.0)) / 6.25;
+    vK = sqrt(min(k2, 1.0));
+    gl_PointSize = clamp(px * vK, 1.0, 1024.0);
+    if (k2 <= 0.0) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   }
 `
 const glowFrag = /* glsl */ `
   ${MASK}
   uniform vec3 uColor;
   varying float vA;
+  varying float vK;
   void main() {
-    vec2 c = gl_PointCoord * 2.0 - 1.0;
+    vec2 c = (gl_PointCoord * 2.0 - 1.0) * vK;
     float r2 = dot(c, c);
     if (r2 > 1.0) discard;
     float g = exp(-r2 * 6.25) * (1.0 - r2);
+    if (g * vA < 1.0 / 255.0) discard;
     gl_FragColor = vec4(uColor * g * vA * textMask(), 1.0);
   }
 `
@@ -473,7 +481,7 @@ export function Dna() {
     updateMask(atomMat.uniforms, dpr)
     glowMat.uniforms.uTargetFade.value = 1 - smoothstep(-8.55, -9.0, rt.s)
     glowMat.uniforms.uResY.value = rt.H * dpr
-    carbonMat.uniforms.uAlpha.value = aCarbon * 0.25 * smoothstep(-8.55, -9.05, rt.s) * 2.6
+    carbonMat.uniforms.uAlpha.value = carbonHazeA(rt.s) * 0.25 * 2.6
     carbonMat.uniforms.uTime.value = rt.ta
     carbonMat.uniforms.uPx.value = dpr
 

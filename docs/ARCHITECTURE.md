@@ -43,7 +43,7 @@ src/chapters/NN-id/
 
 **Bundle rule:** `index.ts` and `Overlay.tsx` (and anything they import, such as `store.ts` or `styles.css`) are in the first-paint bundle. They must **not** import `three`, `@react-three/*`, or `@/gl`. Only `Scene.tsx` and its sub-modules may. This keeps three.js out of the first paint. It also matters for correctness: colour management is disabled when the stage chunk loads, so a `THREE.Color` created earlier would come out wrong.
 
-`scale(h)` in index.ts returns the characteristic length (meters) of what's on screen for the left scale gauge, or `null`. It is evaluated every frame, so keep it pure and cheap.
+`scale(h)` in index.ts returns the characteristic length (meters) of what's on screen for the left scale gauge, or `null`. It is evaluated every frame, so keep it pure and cheap. The gauge flags a hypothetical reading with a hollow ring and `HYPOTHETICAL`: by default any reading below ~10⁻³² m (the unknown string scale), plus the line "ℓs unknown · ~10⁻³⁴ m if traditional estimates hold" at the ~10⁻³⁴ m fiducial. Override it with optional `scaleStatus(h, scale)` returning `'speculative'` or `null` (same rules: pure, no allocation).
 
 ## 3. Overlay API (`@/ui`)
 
@@ -66,7 +66,8 @@ import { ChapterTitle, Step, Beat, Caption, Lab, LabRow, Slider, Segmented, Togg
 ```
 
 - **Steps** are `length × 100svh` of scroll. Their content is sticky and fades in and out. A scene reads `h.step('worldline')` (0 when the viewport's center line reaches the step's top, 1 when it passes the bottom). `h.inStep('lab')` is true while the lab is on screen.
-- Typical chapter: title (≈1.15) + 3–6 beat steps (1–1.6 each) + lab (2–2.6) + optional closing step. That is roughly 8–12 viewports. **The final viewport is the dissolve into the next chapter, so keep it calm and at the OUT pose.**
+- **`exit`** sets how a step's content leaves once its sticky hold ends (its last viewport): `'late'` (default) scrolls up with the page and fades late; `'early'` fades as it starts to rise; `'hold'` stays at its resting place and fades there (~0.4 viewport). `<ChapterTitle>` uses `'hold'`.
+- Typical chapter: title (≈1.15) + 3–6 beat steps (1–1.6 each) + lab (2–2.6) + optional closing step. That is roughly 8–12 viewports. **The final viewport is the dissolve into the next chapter, so keep it calm and at the OUT pose:** give the closing `<Step>` `exit="hold"` so its text never slides across the centred handoff object (unless the step pins its own content).
 - `<Beat>` text ≤ 45 words. Labs ≤ 20 words per caption. Put depth in `<GoDeeper>` (drawer) and optional `<Deeper>` blocks (only shown when the global "Deeper physics" toggle is on).
 - `<Term id>` needs an entry in your `glossary.ts` (`{ 'worldline': { term: 'Worldline', def: '≤30 words', chapter: 'worldsheet' } }`). Use ids from `content/glossary.md`. A term introduced by another chapter may be referenced by id without redefining it.
 - `<Eq tex highlight>`: wrap terms in `\htmlClass{term-key}{…}` and pass `highlight={{ key: 0..1 }}` driven by the same state as the scene, so equations light up in sync with the visuals.
@@ -102,7 +103,7 @@ import { HANDOFF } from '@/core/handoff'
 - **`<SceneLabel position tone align leader size opacity>`** adds crisp mono annotations pinned in 3D, faded with presence automatically. Use them sparingly: they are figure labels, not paragraphs. Every portal's drei `<Html>` renders into the fixed `#scene-labels` layer, which is `pointer-events:none`. Interactive Html content must set `pointer-events:auto` itself; prefer DOM controls in the Overlay instead.
 - **`<Backdrop />`** is the shared deep-space dust. Include it unless your scene has its own atmosphere.
 - **Handoffs:** `HANDOFF.camera` = fov 35 at (0,0,10) looking at the origin. H0 `<HandoffPoint/>`, H1 `<HandoffOpenString/>` (free-ended open string), H2 `<HandoffLoop/>`. If your content pack says your chapter begins or ends on one of these, render exactly that component (default props, at the origin, camera at HANDOFF.camera, no view shift) at progress 0 / progress 1. The neighbour renders the same object in phase, so the dissolve is seamless.
-- **Composition:** on desktop, beat text sits in the left ~40% of the screen, so shift or offset the subject right. Title cards sit in the lower-left, so keep the center free. On phones (portrait), text sits at the bottom, so compose the subject in the upper 60%. Read `state.size` for the aspect ratio. The lab panel docks bottom-right on desktop (≈360 px wide), so keep the lab subject center or center-left and unobstructed.
+- **Composition:** on desktop, beat text sits in the left ~40% of the screen, so shift or offset the subject right. Title cards sit in the lower-left, so keep the center free. On phones and portrait tablets, text sits at the bottom and the lab is a bottom sheet, so compose the subject in the upper 60%. The DOM switches with `PORTRAIT_QUERY` / `isPortraitLayout(w, h)` from `@/core/layout` (width ≤ 720px or aspect ≤ 0.8): use the same test in scenes, figures and chapter CSS (`@media (max-width: 720px), (max-aspect-ratio: 4/5)`) so the DOM and the scene never disagree. Read `state.size` for the aspect ratio. The lab panel docks bottom-right on desktop (≈360 px wide), so keep the lab subject center or center-left and unobstructed.
 
 ## 5. Rules
 

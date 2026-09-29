@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { Button, Segmented, Slider, Toggle } from '@/ui'
 import { tick, unlockAudio } from '@/core/audio'
 import { useSettings } from '@/core/settings'
@@ -187,7 +187,11 @@ function BenchTab() {
         ]}
       />
       <p className="vib-note">
-        {swirl ? 'A swirl carries spin around the axis: K+1 units, the most this state allows.' : 'Wiggle direction is polarization, like light’s.'}
+        {!swirl
+          ? 'Wiggle direction is polarization, like light’s.'
+          : ends === 'free'
+            ? 'A swirl carries spin around the axis: K+1 units, the most this state allows.'
+            : 'A swirl carries angular momentum around the axis; with ~10²⁸ packets it looks continuous.'}
       </p>
       <div className="vib-pluck">
         <Slider
@@ -254,9 +258,10 @@ function LadderTab() {
   )
 }
 
+// short labels: the two ticks sit close on the log track; the note under the slider explains the LHC
 const DIST_TICKS = [
-  { value: 1e2, label: '10²: already a point' },
-  { value: 1e15, label: '10¹⁵: LHC resolution' },
+  { value: 1e2, label: '10²' },
+  { value: 1e15, label: '10¹⁵ · LHC' },
 ]
 
 /** The chapter's signature move, always in view: step back until the string is a point. */
@@ -448,6 +453,26 @@ function Message() {
 export function LabPanel() {
   const tab = useVib((s) => s.tab)
   const setTab = useVib((s) => s.setTab)
+  const id = useId()
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+  // ARIA tabs pattern: one tab stop; Left/Right (wrapping), Home and End select and focus a tab
+  const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const i = TABS.findIndex((t) => t.value === tab)
+    const j =
+      e.key === 'ArrowRight'
+        ? (i + 1) % TABS.length
+        : e.key === 'ArrowLeft'
+          ? (i - 1 + TABS.length) % TABS.length
+          : e.key === 'Home'
+            ? 0
+            : e.key === 'End'
+              ? TABS.length - 1
+              : -1
+    if (j < 0) return
+    e.preventDefault()
+    setTab(TABS[j].value)
+    tabRefs.current[j]?.focus()
+  }
   return (
     <>
       <div className="vib-ro-wrap">
@@ -455,13 +480,19 @@ export function LabPanel() {
         <Message />
       </div>
       <StepBack />
-      <div className="vib-tabs" role="tablist" aria-label="Bench sections">
-        {TABS.map((t) => (
+      <div className="vib-tabs" role="tablist" aria-label="Bench sections" onKeyDown={onTabKey}>
+        {TABS.map((t, i) => (
           <button
             key={t.value}
+            ref={(el) => {
+              tabRefs.current[i] = el
+            }}
             type="button"
             role="tab"
+            id={`${id}-tab-${t.value}`}
             aria-selected={tab === t.value}
+            aria-controls={`${id}-panel`}
+            tabIndex={tab === t.value ? 0 : -1}
             className={`vib-tab${tab === t.value ? ' is-on' : ''}`}
             onClick={() => setTab(t.value)}
           >
@@ -469,7 +500,7 @@ export function LabPanel() {
           </button>
         ))}
       </div>
-      <div className="vib-tabpanel" role="tabpanel">
+      <div className="vib-tabpanel" role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${tab}`}>
         {tab === 'bench' && <BenchTab />}
         {tab === 'ladder' && <LadderTab />}
         {tab === 'particles' && <ParticlesTab />}

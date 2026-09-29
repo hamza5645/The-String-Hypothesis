@@ -4,6 +4,28 @@ let loader: Promise<typeof import('./katex')> | null = null
 const load = () => (loader ??= import('./katex'))
 
 /**
+ * KaTeX (JS, CSS, fonts) is fetched only when an equation comes within ~1.5 viewports of the screen, so it
+ * never competes with first load. Resolves at once when it is already loaded (or IntersectionObserver is missing).
+ */
+function whenNear(el: Element, fn: () => void): () => void {
+  if (loader || typeof IntersectionObserver === 'undefined') {
+    fn()
+    return () => {}
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        io.disconnect()
+        fn()
+      }
+    },
+    { rootMargin: '150% 0px' },
+  )
+  io.observe(el)
+  return () => io.disconnect()
+}
+
+/**
  * <Eq tex="M^2 = \htmlClass{term-n}{(n/R)^2} + \htmlClass{term-w}{(wR/\alpha')^2}" display
  *     highlight={{ n: 1, w: 0.2 }} />
  *
@@ -29,14 +51,20 @@ export function Eq({
   const [ready, setReady] = useState(0)
 
   useEffect(() => {
+    const el = ref.current
+    if (!el) return
     let alive = true
-    load().then((m) => {
-      if (!alive || !ref.current) return
-      m.renderTexInto(ref.current, tex, display)
-      setReady((r) => r + 1)
-    })
+    // observe the wrapper: the (empty) KaTeX target has no box of its own before the first render
+    const stop = whenNear(el.parentElement ?? el, () =>
+      load().then((m) => {
+        if (!alive || !ref.current) return
+        m.renderTexInto(ref.current, tex, display)
+        setReady((r) => r + 1)
+      }),
+    )
     return () => {
       alive = false
+      stop()
     }
   }, [tex, display])
 

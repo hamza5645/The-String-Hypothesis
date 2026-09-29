@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useChapter } from '@/core/chapter'
 import { onJourney } from '@/core/journey'
+import { smoothstep } from '@/core/math'
 import { prefersReducedMotion } from '@/core/time'
 import {
   Beat,
@@ -21,7 +22,7 @@ import {
 } from '@/ui'
 import { DEGREES, TOPO, type Degree } from './cyMath'
 import { Dials, Ledger, Rosette, Timeline, WaveLadder } from './figures'
-import { useCY } from './store'
+import { cyPan, useCY } from './store'
 import { LEN, packP } from './timeline'
 import './styles.css'
 
@@ -39,6 +40,61 @@ function Foot({ kind, id, children }: { kind: StatusKind; id: string; children: 
       <Status kind={kind} compact />
       <span>{children}</span>
     </p>
+  )
+}
+
+/*
+ * A wide beat's composition: text column + figure. On a short screen (a phone with the browser toolbars
+ * showing, or with Deeper physics on) it can be taller than the screen, and since step content is sticky,
+ * whatever hangs below the fold would never be seen. So while the step holds, the frame slides up by its
+ * overflow (over the first 60% of the hold, then rests), driven by the page scroll itself, never by a nested
+ * scroller. The scene lifts its picture by the same amount (cyPan), so the 3D shape and the DOM figures stay
+ * in register. Where everything fits, this does nothing.
+ */
+function Frame({ step, children }: { step: 'b1' | 'b4' | 'b5'; children: ReactNode }) {
+  const h = useChapter()
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let over = 0
+    let last = 0
+    // the sticky content is settled while the viewport's centre line is ½ viewport inside the step
+    const a = 0.5 / LEN[step]
+    const b = 1 - a
+    const apply = () => {
+      const p = h.step(step)
+      const y = over * smoothstep(a, a + 0.6 * (b - a), p)
+      if (Math.abs(y - last) > 0.05) {
+        last = y
+        el.style.transform = y > 0 ? `translate3d(0, ${(-y).toFixed(1)}px, 0)` : ''
+      }
+      // the scene follows while the content is held, and settles back as the content scrolls away
+      cyPan[step] = y * (1 - smoothstep(b, 1, p))
+    }
+    const measure = () => {
+      // in-flow boxes only (offset* ignore transforms; the beat's backdrop glow must not count)
+      let bottom = 0
+      for (const c of Array.from(el.children) as HTMLElement[]) bottom = Math.max(bottom, c.offsetTop + c.offsetHeight)
+      const o = bottom - el.clientHeight
+      over = o > 1 ? o : 0
+      apply()
+    }
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    for (const c of Array.from(el.children)) ro.observe(c)
+    const off = onJourney(apply)
+    measure()
+    return () => {
+      off()
+      ro.disconnect()
+      cyPan[step] = 0
+    }
+  }, [h, step])
+  return (
+    <div ref={ref} className={`cy-frame cy-frame--${step}`}>
+      {children}
+    </div>
   )
 }
 
@@ -62,7 +118,7 @@ export default function Overlay() {
       </Step>
 
       <Step id="b1" length={LEN.b1} align="wide" className="cy-step">
-        <div className="cy-frame cy-frame--b1">
+        <Frame step="b1">
           <div className="cy-frame__text">
             <Beat status="derived" kicker="Which shapes are allowed?">
               Not any shape will do. If the hidden space is otherwise empty and some{' '}
@@ -84,7 +140,7 @@ export default function Overlay() {
             <Rosette />
           </div>
           <Timeline />
-        </div>
+        </Frame>
       </Step>
 
       <Step id="b2" length={LEN.b2} align="left">
@@ -112,7 +168,7 @@ export default function Overlay() {
       </Step>
 
       <Step id="b4" length={LEN.b4} align="wide" className="cy-step">
-        <div className="cy-frame cy-frame--b4">
+        <Frame step="b4">
           <div className="cy-frame__text">
             <Beat status="derived" kicker="Count the holes, count the families">
               In 1985, Candelas, Horowitz, Strominger and Witten found that in the simplest recipe, particle <Term id="generation">generations</Term> number half the shape’s{' '}
@@ -135,11 +191,11 @@ export default function Overlay() {
           <div className="cy-frame__fig cy-frame__fig--ledger">
             <Ledger />
           </div>
-        </div>
+        </Frame>
       </Step>
 
       <Step id="b5" length={LEN.b5} align="wide" className="cy-step">
-        <div className="cy-frame cy-frame--b5">
+        <Frame step="b5">
           <div className="cy-frame__text">
             <Beat status="derived" kicker="Even the right shape has dials">
               A shape with the right holes still has dials: sizes and shape-twists called <Term id="moduli">moduli</Term>. The quintic has one size dial and 101 shape dials. Their
@@ -170,7 +226,7 @@ export default function Overlay() {
           <div className="cy-frame__fig cy-frame__fig--ledger">
             <Dials />
           </div>
-        </div>
+        </Frame>
       </Step>
 
       <Step id="b6" length={LEN.b6} align="left">

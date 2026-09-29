@@ -2,7 +2,7 @@
  * The chapter's choreography as pure functions of the scroll handle, shared by the Scene
  * (every frame) and index.ts's scale() (the left gauge). No three.js here: this module is eager.
  */
-import type { ChapterHandle } from '@/core/chapter'
+import type { ChapterHandle, ScaleStatus } from '@/core/chapter'
 import { clamp01, smoothstep } from '@/core/math'
 import { EP, E_LHC, HBARC, LHC_REAL_D, S_MAX, floorDx, frameL, machine, machineById } from './model'
 import { useScaleLab } from './store'
@@ -106,4 +106,16 @@ export function gaugeScale(h: ChapterHandle): number | null {
   if (T < SI.point) return Math.pow(10, useScaleLab.getState().logD)
   // the closing point: ~10⁻³⁴ m · hypothetical · unresolved, then the gauge fades before the dissolve
   return local(T, 'point') < 0.5 ? 1e-34 : null
+}
+
+/**
+ * How the gauge marks its reading. HYPOTHETICAL while the reading is the assumed string length
+ * (ℓs ~10⁻³⁴ m) or a frame set by it: the Thread and its pull-back, the point on Beat 6's band, and the
+ * closing point. Everything else is a measured size or a length computed from an energy (ħc/E, the
+ * floor's Δx, the Lab's probe distance), read plainly even below 10⁻³² m: the Planck length is not a
+ * guess, and the floor carries its own CONJECTURED chip on the stage.
+ */
+export function gaugeStatus(h: ChapterHandle): ScaleStatus {
+  const T = timeline(h)
+  return T < SI.decades || (T >= SI.sideways && T < SI.lab) || T >= SI.point ? 'speculative' : null
 }

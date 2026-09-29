@@ -51,10 +51,14 @@ export function paintTexture() {
   const N = 128
   const data = new Float32Array(N * N).fill(1)
   const r = 0.62
+  const r2 = r * r
+  // soft brush: the rim of the stroke fills in a little later than its centre (+0.035 · (d/r)²)
+  const rim = 0.035 / r2
   const cell = 10 / N
   const rc = Math.ceil(r / cell)
   const p = { x: 0, y: 0, z: 0 }
-  const steps = 3200
+  // (an end moves < ½ texel per step; squared distances only, so the bake stays a few ms at Scene mount)
+  const steps = 1600
   for (let k = 0; k < 2; k++)
     for (let i = 0; i <= steps; i++) {
       const tau = (i / steps) * PAINT_TAU
@@ -63,20 +67,23 @@ export function paintTexture() {
       const cx = Math.floor((p.x + 5) / cell)
       // texture v runs with +z (uv = xz/10 + 0.5)
       const cz = Math.floor((p.z + 5) / cell)
-      for (let dz = -rc; dz <= rc; dz++)
-        for (let dx = -rc; dx <= rc; dx++) {
-          const x = cx + dx
-          const z = cz + dz
-          if (x < 0 || z < 0 || x >= N || z >= N) continue
+      const x0 = Math.max(0, cx - rc)
+      const x1 = Math.min(N - 1, cx + rc)
+      const z1 = Math.min(N - 1, cz + rc)
+      for (let z = Math.max(0, cz - rc); z <= z1; z++) {
+        const wz = (z + 0.5) * cell - 5 - p.z
+        const wz2 = wz * wz
+        if (wz2 > r2) continue
+        const row = z * N
+        for (let x = x0; x <= x1; x++) {
           const wx = (x + 0.5) * cell - 5 - p.x
-          const wz = (z + 0.5) * cell - 5 - p.z
-          const d = Math.hypot(wx, wz)
-          if (d > r) continue
-          // soft brush: the rim of the stroke fills in a little later than its centre
-          const tv = Math.min(1, v + (d / r) ** 2 * 0.035)
-          const j = z * N + x
+          const d2 = wx * wx + wz2
+          if (d2 > r2) continue
+          const tv = v + d2 * rim
+          const j = row + x
           if (tv < data[j]) data[j] = tv
         }
+      }
     }
   const bytes = new Uint8Array(N * N)
   for (let j = 0; j < N * N; j++) bytes[j] = Math.round(data[j] * 255)

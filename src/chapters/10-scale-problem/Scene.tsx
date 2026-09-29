@@ -11,9 +11,9 @@ import { Backdrop, useChapterFrame } from '@/gl'
 import { particleScale } from '@/core/settings'
 import { computeStage, createMem, createStage } from './choreo'
 import { Diagram } from './dom/Diagram'
-import { galaxy as makeGalaxy } from './gl/clouds'
 import { MapGL } from './gl/MapGL'
 import { OpeningGL } from './gl/OpeningGL'
+import { useClouds } from './gl/useClouds'
 import { ZoomGL } from './gl/ZoomGL'
 import { makeLayout } from './layout'
 import { timeline } from './timeline'
@@ -24,7 +24,8 @@ export default function Scene() {
   const L = useMemo(() => makeLayout(size.width, size.height, vw), [size.width, size.height, vw])
   const S = useMemo(() => createStage(L), []) // eslint-disable-line react-hooks/exhaustive-deps
   const mem = useMemo(createMem, [])
-  const galaxy = useMemo(() => makeGalaxy(Math.round(60000 * particleScale())), [])
+  // ~140k points (galaxy, star fields, zoom layers), built in a worker from mount
+  const clouds = useClouds(useMemo(particleScale, []))
   const diagram = useRef<Diagram | null>(null)
   S.L = L
 
@@ -54,8 +55,8 @@ export default function Scene() {
   return (
     <>
       <Backdrop intensity={0.4} />
-      <MapGL S={S} galaxy={galaxy} />
-      <ZoomGL S={S} galaxy={galaxy} />
+      <MapGL S={S} clouds={clouds} />
+      <ZoomGL S={S} clouds={clouds} />
       <OpeningGL S={S} />
     </>
   )

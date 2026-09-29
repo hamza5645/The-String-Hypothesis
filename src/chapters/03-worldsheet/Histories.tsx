@@ -6,7 +6,8 @@ import { lerp, smoothstep } from '@/core/math'
 import { ambient } from '@/core/time'
 import { D } from './director'
 import { createNowMaterial, createSheetMaterial, lineMaterial, makeLine, makeSegments } from './gl'
-import { createSlicer, crotchT, pantsField, signed, sliceY, solveSplit, T_STAR, T_VERTEX, Y_SPEED, type Split } from './model'
+import { crotchT, signed, sliceY, solveSplit, T_STAR, T_VERTEX, Y_SPEED, type SliceResult, type Split } from './model'
+import { sliceNow } from './nowSlice'
 import { Marker, screenOffset, Tag, useDispose, type MarkerApi, type TagApi } from './parts'
 import { X_P, X_Y } from './stageConsts'
 import { MAX_MARKS, useWorldsheet } from './store'
@@ -185,7 +186,6 @@ export function PantsHistory() {
   const smearMesh = useRef<THREE.Mesh>(null!)
   const ptsA = useMemo(() => new Float32Array(NF * 3), [])
   const ptsB = useMemo(() => new Float32Array(NF * 3), [])
-  const slicer = useMemo(() => createSlicer(), [])
   const cum = useMemo(() => new Float32Array(3000), [])
   const st = useMemo(() => ({ t0: NaN, th: NaN, ph: NaN, n: 0, marksRef: null as number[] | null, count: -1, seen: -1, distinct: -1 }), [])
   const v = useMemo(() => ({ crotch: new THREE.Vector3(), out: new THREE.Vector3() }), [])
@@ -264,8 +264,7 @@ export function PantsHistory() {
   useDispose(mat, smear, dimLines, tr.wash, washMat)
   const mk = useMemo(() => ({ positions: new Float32Array(MAX_MARKS * 3), alphas: new Float32Array(MAX_MARKS) }), [])
 
-  const resample = (ci: number, out: Float32Array) => {
-    const r = slicer.result
+  const resample = (r: SliceResult, ci: number, out: Float32Array) => {
     const s0 = r.start[ci]
     const n = r.count[ci]
     const P = r.pts
@@ -313,7 +312,7 @@ export function PantsHistory() {
       st.t0 = s.t0
       st.th = s.theta
       st.ph = s.phi
-      const r = slicer.slice(pantsField, s.t0, s.theta, s.phi)
+      const r = sliceNow(s.t0, s.theta, s.phi)
       let n = 0
       let first = -1
       let second = -1
@@ -333,10 +332,10 @@ export function PantsHistory() {
           const xb = r.pts[r.start[b] * 3]
           if (xa > xb) [a, b] = [b, a]
         }
-        resample(a, ptsA)
+        resample(r, a, ptsA)
         fa.current?.update()
         if (b >= 0) {
-          resample(b, ptsB)
+          resample(r, b, ptsB)
           fb.current?.update()
         }
       }

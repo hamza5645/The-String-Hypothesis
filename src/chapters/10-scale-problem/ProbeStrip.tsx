@@ -50,7 +50,9 @@ export function ProbeStrip() {
   return (
     <div className="sp-strip">
       <div className="sp-strip__top">
-        <span className="sp-strip__lbl">Probe distance d</span>
+        <span className="sp-strip__lbl">
+          Probe distance <span className="sp-nocase">d</span>
+        </span>
         <span className="sp-strip__hint">drag toward the small end →</span>
       </div>
       <svg

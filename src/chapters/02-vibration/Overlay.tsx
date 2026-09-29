@@ -179,11 +179,12 @@ export default function Overlay() {
       </Step>
 
       <Step id="charge" length={STEP_LEN.charge} align="left">
-        <Beat status={['derived', 'speculative']} kicker="Where charge comes from">
+        <Beat status={['derived', 'speculative', 'analogy']} kicker="Where charge comes from">
           And charge? In string theory it would come from how the string moves or wraps in <Term id="hidden-dimensions">hidden dimensions</Term>, or where its
           ends attach. Some constructions reproduce the Standard Model’s forces and particle families. None yet predicts the measured masses or force strengths.
         </Beat>
         <Caption>○ Whether any construction describes our universe is an open question</Caption>
+        <Caption>≈ Schematic, not to scale: hidden dimensions need not be circles, and their size is unknown (Ch. 5–7).</Caption>
       </Step>
 
       <Lab

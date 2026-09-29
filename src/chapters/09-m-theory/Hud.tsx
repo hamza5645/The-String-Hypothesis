@@ -104,7 +104,8 @@ export function Hud() {
         const ly = 3.1
         v.set(f.x + f.s * lx * Math.cos(f.yaw), f.y + f.s * ly, f.z - f.s * lx * Math.sin(f.yaw)).project(camera)
         const x = ((v.x + 1) / 2) * size.width
-        const y = Math.max(S.portrait ? 104 : 96, ((1 - v.y) / 2) * size.height)
+        // phones: the "AROUND: / THE ELEVENTH DIMENSION" label under it wraps to two lines, so sit one line higher
+        const y = Math.max(S.portrait ? 104 : 96, ((1 - v.y) / 2) * size.height - (S.portrait ? 34 : 0))
         big.current.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`
       }
     }
@@ -121,7 +122,7 @@ export function Hud() {
     if (scale.current) {
       const aha = S.scaleNoteAha
       scale.current.style.opacity = (Math.max(S.scaleNote * S.mapFade * (1 - aha), aha) * pr * 0.9).toFixed(3)
-      const txt = aha > 0.5 ? 'R₁₁ = g·ℓ_s · ℓ_s ITSELF UNKNOWN' : '— · A MAP OF THEORIES, NOT OF SPACE'
+      const txt = aha > 0.5 ? 'R₁₁ = g·ℓs · ℓs ITSELF UNKNOWN' : '— · A MAP OF THEORIES, NOT OF SPACE'
       if (txt !== L.scale && scaleText.current) {
         scaleText.current.textContent = txt
         L.scale = txt

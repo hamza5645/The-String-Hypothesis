@@ -534,7 +534,18 @@ class FigureSet {
       0,
       -100,
     )
-    this.labSpecCap = L.add(h('span', { class: 'vib-fig vib-lbl vib-lbl--dim vib-lbl--xs' }, 'CLASSICAL · NO PACKETS · DECAYS LIKE A REAL PLUCK'), null, 0, 0)
+    // two lines so it fits a phone: a guitar is quantized too, its packets are just too small to notice
+    this.labSpecCap = L.add(
+      h(
+        'span',
+        { class: 'vib-fig vib-lbl vib-lbl--dim vib-lbl--xs vib-lbl--lines' },
+        h('span', null, 'CLASSICAL LIMIT · ~10²⁸ PACKETS,'),
+        h('span', null, 'TOO SMALL TO SEE · DECAYS LIKE A REAL PLUCK'),
+      ),
+      null,
+      0,
+      0,
+    )
   }
 
   /** Greedy row assignment so strip glyphs never overlap. */
@@ -796,13 +807,13 @@ class FigureSet {
         .at(m ? Math.min(Lo.vw - 16, P.x + 80) : P.x, P.y + 4)
         .alpha(ss(4.12, 4.25, B) * (1 - ss(5.0, 5.05, B)))
     } else if (B >= 8 && B < 9.05 && compA > 0.01) {
-      // a guitar (PINNED) is classical: no packets, no quantized spin
+      // a guitar (PINNED) is the classical limit: ~10²⁸ packets per pluck, far too many to show a quantized spin
       const txt =
         lab.particle && lab.particle !== 'grav'
           ? 'BOTTOM RUNG'
           : lab.ends === 'pinned'
             ? S.spinSign !== 0
-              ? 'SWIRL · CLASSICAL, NO PACKETS'
+              ? 'SWIRL · CLASSICAL LIMIT'
               : 'WIGGLE DIRECTION'
             : S.spinSign !== 0
               ? `SPIN ALONG AXIS: ${S.spinSign > 0 ? '+' : '−'}${S.K + 1} ħ`

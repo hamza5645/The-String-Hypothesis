@@ -578,6 +578,9 @@
   line-height: 1.5;
   color: var(--ink-2);
 }
+.brn-rs__short {
+  display: none;
+}
 
 /* null results */
 .brn-results {
@@ -1094,8 +1097,7 @@
   .brn-plot,
   .brn-mx__legend,
   .brn-mx__nsq,
-  .brn-link,
-  .brn-rs__cap {
+  .brn-link {
     display: none;
   }
   .brn-icons {
@@ -1160,6 +1162,20 @@
   .brn-rs {
     top: 104px;
     width: 180px;
+    gap: 6px;
+    padding: 10px 12px 10px;
+  }
+  /* the inset's only explanation: it stays on phones, compact */
+  .brn-rs__cap {
+    font-size: 0.56rem;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+  .brn-rs__full {
+    display: none;
+  }
+  .brn-rs__short {
+    display: inline;
   }
   .brn-results {
     top: 100px;

@@ -78,19 +78,110 @@ export class LineBuilder {
   }
 
   build() {
-    const g = new THREE.InstancedBufferGeometry()
-    g.setAttribute('position', new THREE.Float32BufferAttribute([0, -1, 0, 0, 1, 0, 1, -1, 0, 1, 1, 0], 3))
-    g.setIndex([0, 2, 1, 1, 2, 3])
-    g.setAttribute('aA', new THREE.InstancedBufferAttribute(new Float32Array(this.a), 3))
-    g.setAttribute('aB', new THREE.InstancedBufferAttribute(new Float32Array(this.b), 3))
-    g.setAttribute('aColor', new THREE.InstancedBufferAttribute(new Float32Array(this.color), 4))
-    g.setAttribute('aStyle', new THREE.InstancedBufferAttribute(new Float32Array(this.style), 4))
-    g.setAttribute('aExtra', new THREE.InstancedBufferAttribute(new Float32Array(this.extra), 4))
-    g.setAttribute('aRef', new THREE.InstancedBufferAttribute(new Float32Array(this.ref), 3))
-    g.instanceCount = this.count
-    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e4)
-    return g
+    return lineGeometry(this)
   }
+}
+
+/**
+ * LineBuilder's layout in preallocated typed arrays, for big static line sets (the landscape terrain):
+ * open polylines from flat xyz, no per-point arrays. build() wraps the arrays without copying, so one
+ * instance can be cached and rebuilt into a geometry on every mount.
+ */
+export class TypedLines {
+  a: Float32Array
+  b: Float32Array
+  color: Float32Array
+  style: Float32Array
+  extra: Float32Array
+  ref: Float32Array
+  count = 0
+
+  constructor(segments: number) {
+    this.a = new Float32Array(segments * 3)
+    this.b = new Float32Array(segments * 3)
+    this.color = new Float32Array(segments * 4)
+    this.style = new Float32Array(segments * 4)
+    this.extra = new Float32Array(segments * 4)
+    this.ref = new Float32Array(segments * 3)
+  }
+
+  /** Add an open polyline of `n` points (xyz packed); the reveal parameter runs 0→1 along it, as in LineBuilder.add. */
+  add(xyz: ArrayLike<number>, n: number, o: LineOpts = {}) {
+    if (n < 2) return this
+    const [r, g, bl] = hexRGB(o.color ?? '#86A8D8')
+    const alpha = o.alpha ?? 1
+    const yr = o.yref ?? 'max'
+    let ymax = -1e9
+    for (let i = 0; i < n; i++) ymax = Math.max(ymax, xyz[i * 3 + 1])
+    const refVal = typeof yr === 'number' ? yr : yr === 'max' ? ymax : 0
+    const refMode = yr === 'vertex' ? 1 : yr === 'none' ? 2 : 0
+    let total = 0
+    for (let i = 1; i < n; i++) total += Math.hypot(xyz[i * 3] - xyz[i * 3 - 3], xyz[i * 3 + 1] - xyz[i * 3 - 2], xyz[i * 3 + 2] - xyz[i * 3 - 1])
+    total = total || 1
+    let c0 = 0
+    for (let i = 0; i < n - 1; i++) {
+      const p = i * 3
+      const q = p + 3
+      const c1 = c0 + Math.hypot(xyz[q] - xyz[p], xyz[q + 1] - xyz[p + 1], xyz[q + 2] - xyz[p + 2])
+      const k = this.count++
+      const k3 = k * 3
+      const k4 = k * 4
+      this.a[k3] = xyz[p]
+      this.a[k3 + 1] = xyz[p + 1]
+      this.a[k3 + 2] = xyz[p + 2]
+      this.b[k3] = xyz[q]
+      this.b[k3 + 1] = xyz[q + 1]
+      this.b[k3 + 2] = xyz[q + 2]
+      this.color[k4] = r
+      this.color[k4 + 1] = g
+      this.color[k4 + 2] = bl
+      this.color[k4 + 3] = alpha
+      this.style[k4] = o.width ?? 1
+      this.style[k4 + 1] = o.glow ?? 0
+      this.style[k4 + 2] = o.group ?? 0
+      this.style[k4 + 3] = o.dash ?? 0
+      this.extra[k4] = c0 / total
+      this.extra[k4 + 1] = c1 / total
+      this.extra[k4 + 2] = c0
+      this.extra[k4 + 3] = c1
+      this.ref[k3] = refVal
+      this.ref[k3 + 1] = refMode
+      this.ref[k3 + 2] = o.ghost ? 1 : 0
+      c0 = c1
+    }
+    return this
+  }
+
+  build() {
+    return lineGeometry(this)
+  }
+}
+
+/** Instance attributes, one instance per segment (plain arrays are copied, typed ones used as they are). */
+interface LineArrays {
+  a: ArrayLike<number>
+  b: ArrayLike<number>
+  color: ArrayLike<number>
+  style: ArrayLike<number>
+  extra: ArrayLike<number>
+  ref: ArrayLike<number>
+  count: number
+}
+
+function lineGeometry(d: LineArrays) {
+  const f32 = (x: ArrayLike<number>) => (x instanceof Float32Array ? x : new Float32Array(x))
+  const g = new THREE.InstancedBufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute([0, -1, 0, 0, 1, 0, 1, -1, 0, 1, 1, 0], 3))
+  g.setIndex([0, 2, 1, 1, 2, 3])
+  g.setAttribute('aA', new THREE.InstancedBufferAttribute(f32(d.a), 3))
+  g.setAttribute('aB', new THREE.InstancedBufferAttribute(f32(d.b), 3))
+  g.setAttribute('aColor', new THREE.InstancedBufferAttribute(f32(d.color), 4))
+  g.setAttribute('aStyle', new THREE.InstancedBufferAttribute(f32(d.style), 4))
+  g.setAttribute('aExtra', new THREE.InstancedBufferAttribute(f32(d.extra), 4))
+  g.setAttribute('aRef', new THREE.InstancedBufferAttribute(f32(d.ref), 3))
+  g.instanceCount = d.count
+  g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e4)
+  return g
 }
 
 const vert = /* glsl */ `

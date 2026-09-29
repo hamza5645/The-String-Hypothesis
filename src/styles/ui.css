@@ -7,6 +7,9 @@
   background: var(--void);
   /* the element touches actually land on: vertical swipes scroll, horizontal drags orbit, pinch still zooms */
   touch-action: pan-y pinch-zoom;
+  /* orbit drags that pass over text must not start a page-wide text selection */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* long rail/menu jumps dip to black instead of flying through every scene */
@@ -112,7 +115,8 @@
 .step__content {
   position: relative;
   opacity: var(--sv, 1);
-  transform: translate3d(0, calc((1 - var(--sv, 1)) * 18px), 0);
+  /* --sh: exit="hold" cancels the sticky release (px), so held content fades in place */
+  transform: translate3d(0, calc((1 - var(--sv, 1)) * 18px + var(--sh, 0px)), 0);
   will-change: opacity, transform;
   pointer-events: none;
 }
@@ -249,7 +253,7 @@
   margin: 0.4rem 0 0;
   font-size: 0.72rem;
   letter-spacing: 0.06em;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 
 /* ═══════════════════════ Status chips ═══════════════════════ */
@@ -278,7 +282,7 @@
 }
 .status--compact {
   padding: 0.2em 0.55em 0.2em 0.45em;
-  font-size: 0.6rem;
+  font-size: 0.66rem;
 }
 .status__mark {
   width: 0.72em;
@@ -389,7 +393,7 @@
   min-height: 0;
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--ink-3) transparent;
+  scrollbar-color: var(--ink-4) transparent;
   overscroll-behavior: auto;
 }
 .lab::before {
@@ -399,15 +403,39 @@
   inset: 6px;
   pointer-events: none;
   background:
-    linear-gradient(var(--ink-3), var(--ink-3)) left top / 8px 1px no-repeat,
-    linear-gradient(var(--ink-3), var(--ink-3)) left top / 1px 8px no-repeat,
-    linear-gradient(var(--ink-3), var(--ink-3)) right top / 8px 1px no-repeat,
-    linear-gradient(var(--ink-3), var(--ink-3)) right top / 1px 8px no-repeat,
-    linear-gradient(var(--ink-3), var(--ink-3)) left bottom / 8px 1px no-repeat,
-    linear-gradient(var(--ink-3), var(--ink-3)) left bottom / 1px 8px no-repeat,
-    linear-gradient(var(--ink-3), var(--ink-3)) right bottom / 8px 1px no-repeat,
-    linear-gradient(var(--ink-3), var(--ink-3)) right bottom / 1px 8px no-repeat;
+    linear-gradient(var(--ink-4), var(--ink-4)) left top / 8px 1px no-repeat,
+    linear-gradient(var(--ink-4), var(--ink-4)) left top / 1px 8px no-repeat,
+    linear-gradient(var(--ink-4), var(--ink-4)) right top / 8px 1px no-repeat,
+    linear-gradient(var(--ink-4), var(--ink-4)) right top / 1px 8px no-repeat,
+    linear-gradient(var(--ink-4), var(--ink-4)) left bottom / 8px 1px no-repeat,
+    linear-gradient(var(--ink-4), var(--ink-4)) left bottom / 1px 8px no-repeat,
+    linear-gradient(var(--ink-4), var(--ink-4)) right bottom / 8px 1px no-repeat,
+    linear-gradient(var(--ink-4), var(--ink-4)) right bottom / 1px 8px no-repeat;
   opacity: 0.8;
+}
+.lab[data-more] .lab__scroll {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent);
+}
+.lab__more {
+  position: absolute;
+  right: 18px;
+  bottom: 5px;
+  color: var(--filament);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.lab[data-more] .lab__more {
+  opacity: 1;
+}
+/* compat: branes renders its own fade + cue inside the panel (drop this once it uses the shared one) */
+.lab:has(.brn-more) .lab__more {
+  display: none;
+}
+.lab[data-more]:has(.brn-more) .lab__scroll {
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 .lab__head {
   display: grid;
@@ -584,7 +612,7 @@
   left: calc(var(--tp) * 100%);
   width: 1px;
   height: 5px;
-  background: var(--ink-3);
+  background: var(--ink-4);
   pointer-events: none;
 }
 .ctl-slider__ticklabel {
@@ -593,7 +621,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   color: var(--ink-3);
   white-space: nowrap;
 }
@@ -645,6 +673,13 @@
   color: var(--void);
   background: var(--filament);
 }
+/* the row clips overflow (rounded hairline frame), so the focus ring goes inside the option */
+.ctl-seg__opt:focus-visible {
+  outline-offset: -3px;
+}
+.ctl-seg__opt.is-on:focus-visible {
+  outline-color: var(--void);
+}
 
 .ctl-toggle {
   display: inline-flex;
@@ -673,7 +708,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--ink-3);
+  background: var(--ink-4);
   transition:
     transform 0.3s var(--ease-out),
     background 0.3s;
@@ -930,7 +965,7 @@
   margin-top: 0.4em;
 }
 .prose li::marker {
-  color: var(--ink-3);
+  color: var(--ink-4);
 }
 .prose .eq--display {
   margin: 1.2rem 0;
@@ -1222,6 +1257,42 @@
   display: block;
 }
 
+/* shown briefly when sound is switched on: every sound here is a sonification (ANALOGY) */
+.sound-note {
+  position: absolute;
+  top: calc(100% + 2px);
+  right: var(--gutter);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  max-width: min(420px, calc(100vw - 32px));
+  margin: 0;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--st-analogy) 40%, transparent);
+  border-radius: var(--radius);
+  background: var(--glass-strong);
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  pointer-events: none !important;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.35s var(--ease-out),
+    transform 0.35s var(--ease-out);
+}
+.sound-note[data-show='1'] {
+  opacity: 1;
+  transform: none;
+}
+.sound-note:empty {
+  visibility: hidden;
+}
+.sound-note__chip {
+  flex: none;
+  color: var(--st-analogy);
+}
+
 @media (max-width: 860px) {
   .tool__label {
     display: none;
@@ -1262,6 +1333,12 @@
   display: flex;
   align-items: stretch;
   gap: 0;
+}
+/* the rail's boxes span the (invisible) label column: they must never catch clicks meant for a lab panel */
+.rail,
+.rail__list,
+.rail__list > li {
+  pointer-events: none;
 }
 .rail__line {
   position: absolute;
@@ -1316,6 +1393,10 @@
 .rail:hover .rail__item,
 .rail:focus-within .rail__item {
   pointer-events: auto;
+}
+/* during a lab the labels are hidden, so the items stay tick-only even while hovered */
+.is-lab .rail:hover .rail__item {
+  pointer-events: none;
 }
 .is-lab .rail__label {
   opacity: 0 !important;
@@ -1399,7 +1480,7 @@
   top: calc(var(--tp) * 100%);
   width: 3px;
   height: 1px;
-  background: var(--ink-3);
+  background: var(--ink-4);
   opacity: 0.5;
 }
 .gauge__tick.is-major {
@@ -1412,11 +1493,16 @@
   top: calc(var(--tp) * 100%);
   transform: translateY(-50%);
   font-family: var(--font-mono);
-  font-size: 0.56rem;
+  font-size: 0.62rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-3);
   white-space: nowrap;
+  transition: opacity 0.4s;
+}
+/* a landmark next to the live reading steps aside (the readout would sit on it) */
+.gauge__mark[data-near] {
+  opacity: 0;
 }
 .gauge__marker {
   position: absolute;
@@ -1434,24 +1520,74 @@
   background: var(--filament);
   box-shadow: 0 0 12px var(--filament);
 }
-.gauge__readout {
+/* a hypothetical reading (the unknown string length) wears the SPECULATIVE form: a hollow ring */
+.gauge[data-hyp='h'] .gauge__diamond,
+.gauge[data-hyp='f'] .gauge__diamond {
+  left: -5px;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  transform: none;
+  border-radius: 50%;
+  border: 1px solid var(--filament);
+  background: var(--void);
+  box-shadow: 0 0 8px rgba(255, 201, 138, 0.45);
+}
+.gauge__read {
   position: absolute;
   left: 12px;
-  top: -0.6em;
-  padding: 0.1em 0.4em;
+  top: -0.75em;
+  width: max-content;
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  padding: 2px 5px 3px;
+  /* opaque: the landmark labels on the axis never show through the reading */
+  background: var(--void);
+}
+.gauge__readout {
   font-size: 0.66rem;
   color: var(--filament-core);
   white-space: nowrap;
-  background: rgba(5, 7, 11, 0.75);
+}
+.gauge__flag,
+.gauge__note {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.gauge__flag {
+  color: var(--ink-2);
+}
+.gauge__note {
+  /* 4 short lines that end before the beat column starts (x ≈ 135px at 1440 wide) */
+  max-width: 5.5rem;
+  color: var(--ink-3);
+  letter-spacing: 0.03em;
+  text-transform: none;
+  line-height: 1.35;
+}
+.gauge[data-hyp='h'] .gauge__flag,
+.gauge[data-hyp='f'] .gauge__flag,
+.gauge[data-hyp='f'] .gauge__note {
+  display: block;
 }
 .gauge__title {
   position: absolute;
   left: 0;
   top: -26px;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
 }
 @media (max-width: 1100px) {
   .gauge {
+    display: none;
+  }
+}
+@media (max-width: 1359px) {
+  /* narrower screens bring the beat column closer: keep the reading and its HYPOTHETICAL flag only */
+  .gauge[data-hyp='f'] .gauge__note {
     display: none;
   }
 }
@@ -1539,9 +1675,11 @@
   color: var(--field);
 }
 
-/* ═══════════════════════ Phones ═══════════════════════ */
+/* ═══════════════════════ Phones & portrait tablets ═══════════════════════ */
 
-@media (max-width: 720px) {
+/* The portrait layout (text at the bottom, lab as a bottom sheet) follows the same predicate the scenes use
+   to compose for portrait: width ≤ 720px OR aspect < 0.8 (core/layout.ts PORTRAIT_QUERY). Keep them in sync. */
+@media (max-width: 720px), (max-aspect-ratio: 4/5) {
   :root {
     --col: 100%;
   }
@@ -1580,5 +1718,55 @@
   }
   .lab-hint {
     margin-top: 10svh;
+  }
+  /* no-WebGL figure: in the upper part of the screen, clear of the bottom-anchored beat text */
+  .chapter-fallback {
+    place-items: start center;
+    padding: 64px 16px 0;
+  }
+  .chapter-fallback svg {
+    max-height: 46svh;
+  }
+}
+
+/* Portrait tablets take the portrait layout above; keep the beat column a readable measure */
+@media (min-width: 721px) and (max-aspect-ratio: 4/5) {
+  .step--left .step__content,
+  .step--right .step__content {
+    max-width: 40rem;
+  }
+}
+
+/* ═══════════════════════ Landscape phones ═══════════════════════ */
+
+/* 844×390-class screens keep the desktop layout, compacted so a lab's controls are in view without
+   scrolling the panel first. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .step--lab .step__inner {
+    padding-top: 52px;
+    padding-bottom: 6px;
+  }
+  .lab {
+    max-height: calc(100svh - 60px);
+    width: min(340px, 44vw);
+    padding: 12px 14px 10px;
+  }
+  .lab__head {
+    margin-bottom: 0.6rem;
+  }
+  .lab__title {
+    font-size: 1.1rem;
+  }
+  .lab__intro {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .lab-hint {
+    display: none;
   }
 }

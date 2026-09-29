@@ -1,6 +1,6 @@
 import { createContext, Suspense, useContext, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { ChapterContext, getHandle, useChapter, type ChapterMeta } from '../core/chapter'
-import { bindChapterEl, bindStep } from '../core/journey'
+import { bindChapterEl, bindStep, type StepExit } from '../core/journey'
 import { Status, type StatusKind } from './Status'
 
 const MetaContext = createContext<ChapterMeta | null>(null)
@@ -21,7 +21,14 @@ export function ChapterSection({ meta, webgl }: { meta: ChapterMeta; webgl: bool
   const Overlay = meta.Overlay
   const Fallback = meta.Fallback
   return (
-    <section ref={ref} id={meta.id} className="chapter" data-chapter={meta.id} aria-label={`${meta.title}. ${meta.question}`}>
+    <section
+      ref={ref}
+      id={meta.id}
+      className="chapter"
+      data-chapter={meta.id}
+      tabIndex={meta.index === 0 ? -1 : undefined}
+      aria-label={`${meta.title}. ${meta.question}`}
+    >
       {!webgl && Fallback && (
         <div className="chapter-fallback" aria-hidden="true">
           <Suspense fallback={null}>
@@ -43,6 +50,12 @@ export type StepAlign = 'left' | 'right' | 'center' | 'wide'
 /**
  * A scroll step: `length` viewport-heights of scroll during which its content is held in view
  * (sticky) and faded in/out. Scenes read its local progress with h.step(id).
+ *
+ * `exit` (how the content leaves once its sticky hold ends, in the step's last viewport):
+ * - 'late' (default): it scrolls up with the page and fades over the last ~0.22 viewport.
+ * - 'early': it fades as soon as it starts to move (it still rises ~0.24 viewport while fading).
+ * - 'hold': it stays at its resting place and fades there over ~0.4 viewport. Use it on a chapter's last
+ *   step, whose final viewport is the dissolve: the text never slides across the centred handoff object.
  */
 export function Step({
   id,
@@ -59,14 +72,14 @@ export function Step({
   align?: StepAlign
   valign?: 'center' | 'top' | 'bottom' | 'lower'
   fade?: boolean
-  /** 'early': fade out as soon as the held content starts moving away (keeps the centre/header clear). */
-  exit?: 'late' | 'early'
+  /** See above. 'hold' keeps the text still while it fades (for a chapter's closing step). */
+  exit?: StepExit
   className?: string
   children?: ReactNode
 }) {
   const h = useChapter()
   const ref = useRef<HTMLDivElement>(null)
-  useLayoutEffect(() => bindStep(h.id, id, ref.current!, fade, exit === 'early'), [h.id, id, fade, exit])
+  useLayoutEffect(() => bindStep(h.id, id, ref.current!, fade, exit), [h.id, id, fade, exit])
   return (
     <div
       ref={ref}
@@ -101,7 +114,8 @@ export function ChapterTitle({
 }) {
   const meta = useChapterMeta()
   return (
-    <Step id="title" length={length} align={align} valign={valign} exit="early" className="step--title">
+    // 'hold': the card fades where it rests (lower-left), so it never rises through the centred handoff object
+    <Step id="title" length={length} align={align} valign={valign} exit="hold" className="step--title">
       <header className="chapter-title">
         <div className="chapter-title__eyebrow t-label">
           <span className="chapter-title__num">{String(meta.index).padStart(2, '0')}</span>

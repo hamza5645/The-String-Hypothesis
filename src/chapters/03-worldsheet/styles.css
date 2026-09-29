@@ -47,8 +47,8 @@
 .ws-why {
   display: inline-grid;
   place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.5rem;
+  height: 1.5rem;
   padding: 0;
   border-radius: 50%;
   border: 1px solid var(--hairline-strong);
@@ -157,23 +157,25 @@
   }
 }
 
-/* ── lab ── (compact: the whole instrument fits a 900 px-tall viewport without scrolling) */
-.lab:has(.ws-lab-top) .lab__head {
+/* ── lab ── (compact: the whole instrument fits a 900 px-tall viewport without scrolling)
+   Scoped by the chapter's section, not by :has(): a :has() rule is re-invalidated on every scroll frame
+   anywhere in the journey (≈1 ms of style per frame on an M2). This chapter has exactly one lab. */
+[data-chapter='worldsheet'] .lab .lab__head {
   margin-bottom: 0.5rem;
   gap: 0.25rem;
 }
-.lab:has(.ws-lab-top) .lab__intro {
+[data-chapter='worldsheet'] .lab .lab__intro {
   margin-bottom: 0.6rem;
   font-size: 0.84rem;
   line-height: 1.45;
 }
-.lab:has(.ws-lab-top) .lab__intro p {
+[data-chapter='worldsheet'] .lab .lab__intro p {
   margin: 0;
 }
-.lab:has(.ws-lab-top) .lab__body {
+[data-chapter='worldsheet'] .lab .lab__body {
   gap: 0.62rem;
 }
-.lab:has(.ws-lab-top) .lab__foot {
+[data-chapter='worldsheet'] .lab .lab__foot {
   margin-top: 0.7rem;
   padding-top: 0.6rem;
   flex-wrap: nowrap;
@@ -189,15 +191,16 @@
   position: relative;
   margin: 0;
 }
-/* the caption sits inside the frame, like a plate label */
+/* the caption sits inside the frame, like a plate label (two lines; the plot keeps clear of it) */
 .ws-inset figcaption {
   position: absolute;
   top: 5px;
   left: 6px;
-  font-size: 0.5rem;
-  letter-spacing: 0.1em;
+  right: 6px;
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
   color: var(--ink-2);
-  white-space: nowrap;
   pointer-events: none;
 }
 .ws-inset__canvas {
@@ -220,7 +223,7 @@
   padding: 0.25rem 0 0.35rem;
 }
 .ws-lab-read .readout__label {
-  font-size: 0.54rem;
+  font-size: 0.64rem;
 }
 .ws-lab-read .readout__value {
   font-size: 0.7rem;
@@ -303,7 +306,7 @@
    clickable) sits at mid-height on the right edge: keep the whole panel clear of its hit area, or the ▶
    and the tilt slider's far end would navigate chapters instead */
 @media (min-width: 861px) {
-  .step--lab .lab:has(.ws-lab-top) {
+  [data-chapter='worldsheet'] .step--lab .lab {
     margin-right: calc(208px - var(--gutter) * 0.5);
     max-height: calc(100svh - 118px);
   }
@@ -384,7 +387,10 @@
   font-size: 0.78rem;
 }
 .ws-clear {
-  padding: 0.2rem 0;
+  /* a 24 px-tall hit area; the negative margin keeps the word where it was */
+  min-height: 24px;
+  padding: 0 6px;
+  margin: 0 -6px;
   border: 0;
   background: none;
   font-family: var(--font-mono);
@@ -481,6 +487,24 @@
     padding-top: 10px;
   }
 }
+/* very narrow phones: the readouts need the full width (a split point reads "x +0.19 · y −0.57 · ct 5.38") */
+@media (max-width: 359px) {
+  .ws-lab-top {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .ws-inset {
+    justify-self: start; /* as wide as the canvas, so the plate label wraps inside it */
+  }
+  .ws-lab-read {
+    padding-top: 0;
+  }
+  /* the one-line button made this row 298 px wide, which widened every row of the panel past its box */
+  .ws-lab-dir .btn {
+    white-space: normal;
+    text-align: center;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .ws-deeper-sync__dot {
     animation: none;
@@ -518,46 +542,42 @@
 
 /* short desktop viewports (≈ 720–820 px tall): the whole instrument still fits without inner scrolling */
 @media (min-width: 861px) and (max-height: 820px) {
-  .lab:has(.ws-lab-top) {
+  [data-chapter='worldsheet'] .lab {
     padding: 13px 16px 11px;
     max-height: calc(100svh - 112px);
   }
-  .lab:has(.ws-lab-top) .lab__head {
+  [data-chapter='worldsheet'] .lab .lab__head {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.15rem 0.65rem;
     margin-bottom: 0.35rem;
   }
-  .lab:has(.ws-lab-top) .lab__title {
+  [data-chapter='worldsheet'] .lab .lab__title {
     font-size: 1.2rem;
   }
-  .lab:has(.ws-lab-top) .lab__status {
+  [data-chapter='worldsheet'] .lab .lab__status {
     margin: 0 0 0 auto;
   }
-  .lab:has(.ws-lab-top) .lab__intro {
+  [data-chapter='worldsheet'] .lab .lab__intro {
     margin-bottom: 0.4rem;
     font-size: 0.78rem;
     line-height: 1.4;
   }
-  .lab:has(.ws-lab-top) .lab__body {
-    gap: 0.4rem;
+  [data-chapter='worldsheet'] .lab .lab__body {
+    gap: 0.32rem;
   }
-  .lab:has(.ws-lab-top) .lab__foot {
+  [data-chapter='worldsheet'] .lab .lab__foot {
     margin-top: 0.45rem;
     padding-top: 0.4rem;
   }
+  /* 112 px: the smallest inset whose plate label still wraps to two lines, clear of the plot */
   .ws-lab-top {
-    grid-template-columns: 96px 1fr;
+    grid-template-columns: 112px 1fr;
   }
   .ws-inset__canvas {
-    width: 96px;
-    height: 96px;
-  }
-  .ws-inset figcaption {
-    white-space: normal;
-    max-width: 80px;
-    line-height: 1.3;
+    width: 112px;
+    height: 112px;
   }
   .ws-lab-dir__hint {
     display: none;
@@ -576,6 +596,11 @@
     font-size: 0.68rem;
     line-height: 1.3;
   }
+}
+
+/* keeps an inline equation and the punctuation after it on one line */
+.ws-nobr {
+  white-space: nowrap;
 }
 
 /* a line break used only on phones (scene captions that would outrun a narrow screen) */

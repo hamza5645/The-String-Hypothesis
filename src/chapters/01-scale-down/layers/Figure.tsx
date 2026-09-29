@@ -6,8 +6,12 @@ import { explore } from '@/core/explore'
 import { damp } from '@/core/math'
 import { ambient } from '@/core/time'
 import { HASH, NEAR_FADE, POINT_FRAG_MASKED, maskUniforms, updateMask } from '../glsl'
-import { sampleFigure } from '../body'
+import type { Cloud } from '../body'
+import { useFigureCloud } from '../cloud'
 import { rt, win } from '../runtime'
+
+const SWIRL = { x: -0.45, y: -0.55, z: -0.35 }
+const NONE: Cloud = { positions: new Float32Array(0), normals: new Float32Array(0), starts: new Float32Array(0), rands: new Float32Array(0), count: 0 }
 
 const vert = /* glsl */ `
   ${HASH}
@@ -51,13 +55,12 @@ const vert = /* glsl */ `
 /**
  * A figure made of points. `withBody` = the whole person (opening); otherwise the hand alone, far
  * denser, for the zoom onto the fingertip. The index-finger pad sits at the local origin = the focus.
+ * The points are sampled off the main thread (cloud.ts); until they arrive the figure draws nothing,
+ * then fades in over 0.4 s.
  */
 export function Figure({ withBody, count, seed, hi, lo, alpha }: { withBody: boolean; count: number; seed: number; hi: number; lo: number; alpha: number }) {
   const dpr = useThree((s) => s.viewport.dpr)
-  const cloud = useMemo(
-    () => sampleFigure(withBody, count, seed, { c: new THREE.Vector3(-0.45, -0.55, -0.35), r: withBody ? 1.25 : 0.2 }),
-    [withBody, count, seed],
-  )
+  const cloud = useFigureCloud({ withBody, count, seed, swirl: { ...SWIRL, r: withBody ? 1.25 : 0.2 } }) ?? NONE
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(cloud.positions.subarray(0, cloud.count * 3), 3))
@@ -76,7 +79,7 @@ export function Figure({ withBody, count, seed, hi, lo, alpha }: { withBody: boo
           uTime: { value: 0 },
           uAlpha: { value: 0 },
           uPx: { value: 1 },
-          uSwirl: { value: new THREE.Vector3(-0.45, -0.55, -0.35) },
+          uSwirl: { value: new THREE.Vector3(SWIRL.x, SWIRL.y, SWIRL.z) },
           uColor: { value: new THREE.Color(COLORS.ink) },
           uFloorFade: { value: 0 },
           ...maskUniforms(),
@@ -97,9 +100,12 @@ export function Figure({ withBody, count, seed, hi, lo, alpha }: { withBody: boo
   }, [geometry, material])
   const group = useRef<THREE.Group>(null!)
   const yaw = useRef(0)
+  const fadeIn = useRef(0)
 
   useChapterFrame((f) => {
-    const a = win(rt.s, hi, lo, 0.5) * alpha
+    // fade in once the cloud has arrived (at once when the stage clock is frozen)
+    fadeIn.current = cloud.count === 0 ? 0 : f.dt > 0 ? Math.min(1, fadeIn.current + f.dt / 0.4) : 1
+    const a = win(rt.s, hi, lo, 0.5) * alpha * fadeIn.current
     const g = group.current
     g.visible = a > 0.002
     if (!g.visible) return

@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { useChapterFrame } from '@/gl'
 import { rng, smoothstep } from '@/core/math'
 import { claimById } from '../data'
-import { createLineMaterial, LineBuilder } from '../gl/lines'
+import { createLineMaterial, LineBuilder, TypedLines } from '../gl/lines'
 import { el, type LabelLayer, type Lbl } from '../gl/labels'
 import type { Stage } from '../director'
 
@@ -23,21 +23,21 @@ const ZSCALE = 1.8 // cartoon exaggeration so the dips read at map scale
 const T_SCALE = 0.75
 const T_OFFSET: [number, number, number] = [-0.45, 0.3, -0.35]
 
+function hash(i: number, j: number, seed: number) {
+  const s = Math.sin(i * 127.1 + j * 311.7 + seed * 74.7) * 43758.5453
+  return s - Math.floor(s)
+}
 function vnoise(x: number, y: number, seed: number) {
-  const h = (i: number, j: number) => {
-    const s = Math.sin(i * 127.1 + j * 311.7 + seed * 74.7) * 43758.5453
-    return s - Math.floor(s)
-  }
   const i = Math.floor(x)
   const j = Math.floor(y)
   const fx = x - i
   const fy = y - j
   const ux = fx * fx * (3 - 2 * fx)
   const uy = fy * fy * (3 - 2 * fy)
-  const a = h(i, j)
-  const b = h(i + 1, j)
-  const c = h(i, j + 1)
-  const d = h(i + 1, j + 1)
+  const a = hash(i, j, seed)
+  const b = hash(i + 1, j, seed)
+  const c = hash(i, j + 1, seed)
+  const d = hash(i + 1, j + 1, seed)
   return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy
 }
 const fbm = (x: number, y: number) => {
@@ -52,38 +52,70 @@ const fbm = (x: number, y: number) => {
   return s
 }
 
-function buildTerrain(L: LineBuilder, group: number) {
+/** Hairlines every 4 cells: rows j % 4 = 0, then columns i % 4 = 0. */
+const EVERY = 4
+
+function buildTerrain(group: number) {
   const r = rng(500)
-  const cs: number[][] = []
-  for (let k = 0; k < DIPS; k++) cs.push([(r() * 2 - 1) * SPAN, (r() * 2 - 1) * SPAN, 0.05 + r() * 0.13, 0.08 + r() * 0.14])
+  // dips as (cu, cv, a, 9s², 2s²)
+  const dip = new Float64Array(DIPS * 5)
+  for (let k = 0; k < DIPS; k++) {
+    dip[k * 5] = (r() * 2 - 1) * SPAN
+    dip[k * 5 + 1] = (r() * 2 - 1) * SPAN
+    dip[k * 5 + 2] = 0.05 + r() * 0.13
+    const s = 0.08 + r() * 0.14
+    dip[k * 5 + 3] = 9 * s * s
+    dip[k * 5 + 4] = 2 * s * s
+  }
   const n = GRID + 1
+  // heights only where a hairline passes (about 45% of the grid's nodes)
   const Z = new Float32Array(n * n)
-  for (let j = 0; j < n; j++)
+  const near = new Int32Array(DIPS)
+  for (let j = 0; j < n; j++) {
+    const v = -SPAN + (2 * SPAN * j) / GRID
+    // the dips that can reach this row, in order (d2 ≥ (v − cv)², so this only skips dips that would fail the test)
+    let m = 0
+    for (let k = 0; k < DIPS * 5; k += 5) if ((v - dip[k + 1]) ** 2 < dip[k + 3]) near[m++] = k
     for (let i = 0; i < n; i++) {
+      if (i % EVERY !== 0 && j % EVERY !== 0) continue
       const u = -SPAN + (2 * SPAN * i) / GRID
-      const v = -SPAN + (2 * SPAN * j) / GRID
       let z = 0.12 * fbm(u, v)
-      for (const [cu, cv, a, s] of cs) {
-        const d2 = (u - cu) ** 2 + (v - cv) ** 2
-        if (d2 < 9 * s * s) z -= a * Math.exp(-d2 / (2 * s * s))
+      for (let q = 0; q < m; q++) {
+        const k = near[q]
+        const d2 = (u - dip[k]) ** 2 + (v - dip[k + 1]) ** 2
+        if (d2 < dip[k + 3]) z -= dip[k + 2] * Math.exp(-d2 / dip[k + 4])
       }
       Z[j * n + i] = z * ZSCALE
     }
-  const P = (i: number, j: number) => [-SPAN + (2 * SPAN * i) / GRID, Z[j * n + i], -SPAN + (2 * SPAN * j) / GRID]
+  }
   const edge = (i: number) => {
     const e = Math.min(i, GRID - i) / 10
     return Math.min(1, e)
   }
-  for (let j = 0; j <= GRID; j += 4) {
-    const pts: number[][] = []
-    for (let i = 0; i <= GRID; i++) pts.push(P(i, j))
-    L.add(pts, { color: '#86A8D8', alpha: 0.13 * (0.3 + 0.7 * edge(j)), width: 1, group, yref: 5.2 })
-  }
-  for (let i = 0; i <= GRID; i += 4) {
-    const pts: number[][] = []
-    for (let j = 0; j <= GRID; j++) pts.push(P(i, j))
-    L.add(pts, { color: '#86A8D8', alpha: 0.13 * (0.3 + 0.7 * edge(i)), width: 1, group, yref: 5.2 })
-  }
+  const lines = GRID / EVERY + 1
+  const out = new TypedLines(2 * lines * GRID)
+  const xyz = new Float64Array(n * 3)
+  for (let col = 0; col < 2; col++)
+    for (let m = 0; m <= GRID; m += EVERY) {
+      for (let s = 0; s < n; s++) {
+        const i = col ? m : s
+        const j = col ? s : m
+        xyz[s * 3] = -SPAN + (2 * SPAN * i) / GRID
+        xyz[s * 3 + 1] = Z[j * n + i]
+        xyz[s * 3 + 2] = -SPAN + (2 * SPAN * j) / GRID
+      }
+      out.add(xyz, n, { color: '#86A8D8', alpha: 0.13 * (0.3 + 0.7 * edge(m)), width: 1, group, yref: 5.2 })
+    }
+  return out
+}
+
+// The terrain is seeded and static: build it once per page, in idle time after the scene chunk is
+// prefetched, rather than in the frame that mounts this scene (the scale-problem entry).
+let terrainCache: TypedLines | null = null
+const terrainLines = () => (terrainCache ??= buildTerrain(0))
+if (typeof window !== 'undefined') {
+  if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(() => terrainLines())
+  else window.setTimeout(terrainLines, 300)
 }
 
 // ── rival sketches (local 2D, ~0.8 units) ──
@@ -208,11 +240,7 @@ export function Landscape({ S, layer }: { S: Stage; layer: LabelLayer | null }) 
   const s8 = claimById('S8').pos
   // up and back from OTHER ROUTES (S8), inside the ○ band, in the open sky above the other ○ labels
   const RIVAL_AT = useMemo(() => new THREE.Vector3(s8[0] + 1.18, s8[1] + 1.15, s8[2] - 3.24), [s8])
-  const terrain = useMemo(() => {
-    const L = new LineBuilder()
-    buildTerrain(L, 0)
-    return { geometry: L.build(), material: createLineMaterial() }
-  }, [])
+  const terrain = useMemo(() => ({ geometry: terrainLines().build(), material: createLineMaterial() }), [])
   const rivals = useMemo(() => {
     const L = new LineBuilder()
     for (const rv of RIVALS) {

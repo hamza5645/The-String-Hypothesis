@@ -46,7 +46,7 @@ export class EnergyView implements View {
     this.ticks = path(this.g, { class: 'sp-hair', stroke: '#86A8D8', 'stroke-opacity': 0.6, fill: 'none' })
     // phones: the unit moves into the axis title so the decade labels fit
     for (let e = -40; e <= 15; e += 5) this.tickLbl.push({ e, el: div('sp-lbl sp-tick sp-tick--e', this.box, L.mobile ? `10${sup(e)}` : `10${sup(e)} GeV`) })
-    this.endLbl = div('sp-lbl sp-tick sp-tick--e sp-tick--end', this.box, '1.2 × 10¹⁹ GeV')
+    this.endLbl = div('sp-lbl sp-tick sp-tick--e sp-tick--end', this.box, L.mobile ? '1.2 × 10¹⁹' : '1.2 × 10¹⁹ GeV')
     this.title = label(this.box, 'sp-axis-title sp-field', [L.mobile ? 'ENERGY TO SEE IT (GeV) · E ≈ ħc/d →' : 'ENERGY NEEDED TO SEE IT · E ≈ ħc/d · GROWS →'])
     const E: [number, string, string][] = [
       [-7, 'VISIBLE LIGHT', '~2 eV ↔ ~10⁻⁷ m'],
@@ -126,7 +126,8 @@ export class EnergyView implements View {
       at(k.el, x, fy(ey - 7), ' translate(-50%,-100%)')
     }
     op(this.endLbl, on * smoothstep(0.2, 0.26, p))
-    at(this.endLbl, x1, fy(ey - 7), ' translate(-50%,-100%)')
+    // phones: the Planck end sits near the screen edge, so its label hangs left of the tick (as lblB does)
+    at(this.endLbl, x1, fy(ey - 7), L.mobile ? ' translate(-100%,-100%)' : ' translate(-50%,-100%)')
     op(this.title, on * smoothstep(0.1, 0.22, p))
     at(this.title, x0 - 2, fy(ey + 8))
 
@@ -182,7 +183,10 @@ export class EnergyView implements View {
     const r = ratio < 1.5 ? '× 1' : ratio > 8e14 ? '× 9 × 10¹⁴' : `× ${sci(ratio, 1)}`
     op(this.beadLbl, L.mobile ? beadOn : 0)
     txt(this.beadLbl, r)
-    at(this.beadLbl, xbd, fy(yb - 12), ' translate(-50%,-100%)')
+    // (phones only) centred on the bead, but kept right of the LHC label (which hangs left of its tick) and
+    // inside the screen, so "× 9 × 10¹⁴" stays whole at the Planck end. Width: mono 12px + 0.08em tracking.
+    const bw = r.length * 8.2
+    at(this.beadLbl, Math.min(Math.max(xbd - bw / 2, xb0 + 8), L.W - 12 - bw), fy(yb - 12), ' translate(0,-100%)')
 
     // upper right: the multiplier (display), then the concentration inset takes the same slot
     const ia = inE ? smoothstep(0.82, 0.9, p) : 0

@@ -15,6 +15,9 @@ interface Row {
   b: ReactNode
   status: StatusKind[]
   tag?: string
+  /** a side remark: collapsed (kept for screen readers) on short phones, where the beat must stay on screen */
+  aside?: ReactNode
+  /** an epistemic caveat: always shown */
   note?: ReactNode
   glyph?: ReactNode
 }
@@ -59,7 +62,7 @@ function AdS() {
 const ROWS: Row[] = [
   { a: 'circle of radius R', b: 'circle of radius α′/R', status: ['derived'] },
   { a: 'momentum n', b: 'winding w', status: ['derived'] },
-  { a: 'open-string ends free to slide', b: 'ends pinned on a D-brane', status: ['derived'], note: 'how D-branes were found, 1989' },
+  { a: 'open-string ends free to slide', b: 'ends pinned on a D-brane', status: ['derived'], aside: 'how D-branes were found, 1989' },
   { a: 'type IIA on a circle', b: 'type IIB on the dual circle', status: ['derived'] },
   {
     a: 'coupling g (strong)',
@@ -67,7 +70,7 @@ const ROWS: Row[] = [
     status: ['conjectured'],
     tag: 'S-duality',
     glyph: <Dials />,
-    note: (
+    aside: (
       <>
         <i className="du-dot du-dot--obs" aria-hidden="true" /> a cousin: Maxwell’s equations in empty space are unchanged by E → B, B → −E
       </>
@@ -79,7 +82,8 @@ const ROWS: Row[] = [
     status: ['derived', 'conjectured'],
     tag: 'mirror symmetry',
     glyph: <span className="du-hodge t-mono">(1, 101) ⟷ (101, 1)</span>,
-    note: 'Hodge numbers of the quintic and its mirror · ◑ constructed pairs · ◌ in general',
+    aside: 'Hodge numbers of the quintic and its mirror · ',
+    note: '◑ constructed pairs · ◌ in general',
   },
   {
     a: 'strings + gravity in 5D anti-de Sitter space (× a 5-sphere)',
@@ -87,7 +91,8 @@ const ROWS: Row[] = [
     status: ['conjectured'],
     tag: 'Maldacena 1997',
     glyph: <AdS />,
-    note: '~ schematic · our universe is not anti-de Sitter: its expansion accelerates',
+    aside: '~ schematic · ',
+    note: 'our universe is not anti-de Sitter: its expansion accelerates',
   },
 ]
 
@@ -137,7 +142,7 @@ export function Dictionary() {
         </span>
       </div>
       {ROWS.map((row, i) => (
-        <div key={i} className={`du-dict__row${row.note || row.glyph ? ' has-note' : ''}`} role="row" style={{ ['--at' as string]: 0.07 + i * 0.05 }}>
+        <div key={i} className={`du-dict__row${row.note || row.aside || row.glyph ? ' has-note' : ''}`} role="row" style={{ ['--at' as string]: 0.07 + i * 0.05 }}>
           <span className="du-dict__a" role="cell">
             {row.a}
           </span>
@@ -152,11 +157,16 @@ export function Dictionary() {
               <Status key={k} kind={k} compact />
             ))}
           </span>
-          {(row.note || row.glyph || row.tag) && (
-            <span className="du-dict__note" role="cell">
+          {(row.note || row.aside || row.glyph || row.tag) && (
+            <span className={`du-dict__note${row.note ? '' : ' is-aside'}`} role="cell">
               {row.tag && <span className="du-dict__tag t-label">{row.tag}</span>}
               {row.glyph}
-              {row.note && <span className="du-dict__notetext t-mono">{row.note}</span>}
+              {(row.aside || row.note) && (
+                <span className="du-dict__notetext t-mono">
+                  {row.aside && <span className="du-dict__aside">{row.aside}</span>}
+                  {row.note}
+                </span>
+              )}
             </span>
           )}
         </div>

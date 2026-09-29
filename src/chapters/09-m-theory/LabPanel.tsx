@@ -9,7 +9,7 @@ import { useM } from './store'
 
 const TOGGLES: { k: keyof Toggles; label: string; status: StatusKind; note: string }[] = [
   { k: 'T', label: 'T-duality', status: 'derived', note: 'Curl one dimension into a circle; radius R becomes α′/R.' },
-  { k: 'S', label: 'S-duality', status: 'conjectured', note: 'Coupling g becomes 1/g. Strong becomes weak. Heavily tested.' },
+  { k: 'S', label: 'S-duality', status: 'conjectured', note: 'Coupling g becomes 1/g. Strong becomes weak. Heavily checked in theory; never by experiment.' },
   { k: 'L', label: 'Strong-coupling lift', status: 'conjectured', note: 'The coupling becomes the size of an eleventh dimension.' },
 ]
 
@@ -179,9 +179,9 @@ function DialReadouts({ theory, g }: { theory: Theory; g: number }) {
     return (
       <>
         <div className="mth-readouts">
-          <Readout label="R₁₁ / ℓ₁₁ = g^⅔" value={ratio11(g).toFixed(2)} tone={strong ? 'filament' : 'field'} />
+          <Readout label={<>R₁₁ / ℓ₁₁ = g<sup>2/3</sup></>} value={ratio11(g).toFixed(2)} tone={strong ? 'filament' : 'field'} />
           <Readout label="RUNGS BELOW STRING SCALE" value={String(rungsBelow(g))} />
-          <Readout label="WRAP CHECK" value="2πR₁₁·T_M2 = T_F1 ✓" tone="field" />
+          <Readout label="WRAP CHECK" value={<>2πR₁₁·T<sub>M2</sub> = T<sub>F1</sub> ✓</>} tone="field" />
         </div>
         <p className="mth-msg">
           {strong
@@ -189,7 +189,7 @@ function DialReadouts({ theory, g }: { theory: Theory; g: number }) {
             : 'The eleventh circle is smaller than the 11D Planck length. The ten-dimensional string picture works better.'}
         </p>
         <p className="mth-note">
-          Spacing 1/(g ℓ_s): Chapter 05’s rule for a circle of radius g ℓ_s.{' '}
+          Spacing 1/(g ℓs): Chapter 5’s rule for a circle of radius g ℓs.{' '}
           <span className="mth-tip" title="Bound states: proven for n = 2, strongly supported for all n.">
             ⓘ bound states
           </span>
@@ -201,7 +201,7 @@ function DialReadouts({ theory, g }: { theory: Theory; g: number }) {
     return (
       <>
         <div className="mth-readouts">
-          <Readout label="INTERVAL / ℓ₁₁ = g^⅔" value={ratio11(g).toFixed(2)} tone={strong ? 'filament' : 'field'} />
+          <Readout label={<>INTERVAL / ℓ₁₁ = g<sup>2/3</sup></>} value={ratio11(g).toFixed(2)} tone={strong ? 'filament' : 'field'} />
         </div>
         <p className="mth-msg">Two walls, one E8 on each. Far from both: plain eleven dimensions.</p>
       </>
@@ -211,8 +211,8 @@ function DialReadouts({ theory, g }: { theory: Theory; g: number }) {
     return (
       <>
         <div className="mth-readouts">
-          <Readout label="F-STRING T = 1/2π (REFERENCE)" value={fmtT(T_F1)} unit="1/ℓ_s²" />
-          <Readout label="D-STRING T = 1/2πg" value={fmtT(T_D1(g))} unit="1/ℓ_s²" tone="field" />
+          <Readout label="F-STRING T = 1/2π (REFERENCE)" value={fmtT(T_F1)} unit="1/ℓs²" />
+          <Readout label="D-STRING T = 1/2πg" value={fmtT(T_D1(g))} unit="1/ℓs²" tone="field" />
         </div>
         <p className="mth-msg">{strong ? 'Relabel: this is heterotic SO(32), weakly coupled at 1/g.' : 'The D-string’s tension falls as 1/g. Past g = 1 it is the lightest string.'}</p>
       </>
@@ -222,20 +222,20 @@ function DialReadouts({ theory, g }: { theory: Theory; g: number }) {
     return (
       <>
         <div className="mth-readouts">
-          <Readout label="HETEROTIC STRING T = 1/2π" value={fmtT(T_F1)} unit="1/ℓ_s²" />
+          <Readout label="HETEROTIC STRING T = 1/2π" value={fmtT(T_F1)} unit="1/ℓs²" />
           <div className="mth-estimate">
-            <Readout label="TYPE I STRING ≈ 1/2πg · ESTIMATE" value={fmtT(T_D1(g))} unit="1/ℓ_s²" />
+            <Readout label="TYPE I STRING ≈ 1/2πg · ESTIMATE" value={fmtT(T_D1(g))} unit="1/ℓs²" />
           </div>
         </div>
-        <p className="mth-msg">{strong ? 'Now: Type I at g = 1/g_H. Its D-string is the heterotic string.' : 'The Type I string is not protected: it can break. Its tension is dashed.'}</p>
+        <p className="mth-msg">{strong ? <>Now: Type I at g = 1/g<sub>H</sub>. Its D-string is the heterotic string.</> : 'The Type I string is not protected: it can break. Its tension is dashed.'}</p>
       </>
     )
   }
   return (
     <>
       <div className="mth-readouts">
-        <Readout label="F-STRING (1,0)" value={fmtT(T_pq(1, 0, g))} unit="1/ℓ_s²" />
-        <Readout label="D-STRING (0,1)" value={fmtT(T_pq(0, 1, g))} unit="1/ℓ_s²" tone="field" />
+        <Readout label="F-STRING (1,0)" value={fmtT(T_pq(1, 0, g))} unit="1/ℓs²" />
+        <Readout label="D-STRING (0,1)" value={fmtT(T_pq(0, 1, g))} unit="1/ℓs²" tone="field" />
       </div>
       <p className="mth-msg">Past g = 1 the D-string is lighter. Swap the names: IIB again, at 1/g.</p>
     </>
@@ -288,7 +288,7 @@ function DialStation() {
         </p>
       </div>
       <p className="mth-caveat">
-        <Status kind="analogy" compact /> Not to scale. The string length ℓ_s itself is unknown.
+        <Status kind="analogy" compact /> Not to scale. The string length ℓs itself is unknown.
       </p>
     </>
   )
@@ -336,7 +336,7 @@ function Deeper() {
           <Eq tex="M_n" /> is the rung’s mass. Supersymmetry protects it, so it holds at any coupling.
         </li>
       </ul>
-      <p>That is Chapter 05’s Kaluza–Klein tower for a circle of radius R₁₁. The string fits too:</p>
+      <p>That is Chapter 5’s Kaluza–Klein tower for a circle of radius R₁₁. The string fits too:</p>
       <Eq display tex={String.raw`\htmlClass{term-w}{T_{\mathrm{F1}} = 2\pi R_{11}\,T_{\mathrm{M2}}}, \qquad T_{\mathrm{M2}} = \frac{1}{(2\pi)^2\,\ell_{11}^{3}}`} highlight={hl} label="T F1 equals 2 pi R eleven T M2; T M2 equals one over 2 pi squared l eleven cubed" />
       <ul>
         <li>

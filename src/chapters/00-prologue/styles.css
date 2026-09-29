@@ -166,6 +166,18 @@
   letter-spacing: 0.02em;
   font-size: 0.7rem;
 }
+/* portrait phones: two right-aligned lines above the Thread's end; never wider than the screen */
+.pro-scene-note--portrait {
+  display: block;
+  width: max-content; /* the anchor is near the right edge: shrink-to-fit alone would collapse it */
+  max-width: calc(100vw - 32px);
+  white-space: normal;
+  text-align: right;
+  line-height: 1.7;
+}
+.pro-scene-note--portrait .status {
+  margin-right: 0.45rem;
+}
 
 @media (max-width: 720px) {
   .pro-step .step__inner {

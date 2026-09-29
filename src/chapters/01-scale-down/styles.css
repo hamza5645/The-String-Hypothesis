@@ -42,6 +42,12 @@ section[data-chapter='scale-down'] .step--lab .step__content {
   color: var(--ink-2);
   max-width: 30ch;
 }
+/* the dark stretch is shorter than a viewport (LEN.dark = 0.55), so its 100svh sticky inner can never
+   stick: phones' bottom-anchored text would sit below the fold while fully opaque. Fit the inner to the
+   step, so the beat scrolls through the viewport with its step instead. */
+section[data-chapter='scale-down'] .step[data-step='dark'] .step__inner {
+  height: min(100svh, calc(var(--len, 1) * 100svh));
+}
 
 /* the bridge line, pinned under the H1 string (a fixed layer: it never crosses the handoff object) */
 .sd-bridge {
@@ -262,7 +268,8 @@ section[data-chapter='scale-down'] .step--lab .step__content {
 }
 .sd-tape__win {
   position: relative;
-  height: 50px;
+  /* tall enough for the tick labels: tick at 27 px + label at 10 px + a 13 px line box, plus room for descenders */
+  height: 52px;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22%, #000 78%, transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, #000 22%, #000 78%, transparent 100%);
@@ -674,6 +681,15 @@ section[data-chapter='scale-down'] .step--lab .step__content {
   line-height: 1.35;
   color: var(--ink-3);
 }
+/* past ~10¹⁸ GeV: the ħc/E rule's limit (Ch. 10's black-hole floor), run on from the rule itself */
+.sd-lab__floor {
+  color: var(--ink-2);
+}
+.sd-lab__floor .status {
+  margin-inline: 0.15rem 0.1rem;
+  vertical-align: 0.06em;
+  font-size: 0.6rem;
+}
 .sd-lab__intro {
   margin: 0;
 }
@@ -707,9 +723,6 @@ section[data-chapter='scale-down'] .step--lab .step__content {
   }
   .sd-tape__read {
     font-size: 0.78rem;
-  }
-  .sd-tape__win {
-    height: 46px;
   }
   .sd-gap__q {
     font-size: 1.7rem;

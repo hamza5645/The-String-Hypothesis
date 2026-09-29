@@ -599,8 +599,10 @@ export default function Scene() {
     }
     if (op <= 0.003) return
     const draw = T > 6.5 ? 1 : smoothstep(1.1, 1.36, T)
-    // phones: the stage is the upper 60% (text and the lab sheet sit below), so the hairline ends there
-    const floorY = S.portrait ? lerp(S.yTop, S.yBot, lerp(0.45, 0.6, smoothstep(4.9, 5.1, T) * (1 - smoothstep(6.9, 7.1, T)))) : S.yBot
+    // phones: the stage is the upper 60% (text and the lab sheet sit below), so the hairline ends there;
+    // at the outro the frame is the full-height H2 again, so the faint OUT seam spans it as on desktop
+    const floorF = lerp(lerp(0.45, 0.6, smoothstep(4.9, 5.1, T) * (1 - smoothstep(6.9, 7.1, T))), 1, smoothstep(10.2, 10.45, T))
+    const floorY = S.portrait ? lerp(S.yTop, S.yBot, floorF) : S.yBot
     const bot = lerp(S.yTop, floorY, draw)
     // the hairline steps aside wherever a centred label or glyph sits on it
     const G = S.gaps

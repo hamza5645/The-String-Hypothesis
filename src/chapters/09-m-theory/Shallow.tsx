@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useThree } from '@react-three/fiber'
-import { SceneLabel, useChapterFrame, useIsoGridMaterial, COLORS } from '@/gl'
+import { SceneLabel, useChapterFrame, useIsoGridMaterial, COLORS, type FrameInfo } from '@/gl'
 import { smoothstep } from '@/core/math'
 import { S } from './director'
 import { DynLabel } from './labels'
@@ -31,6 +31,44 @@ function Genus({ h, mat }: { h: number; mat: THREE.ShaderMaterial }) {
         <mesh key={x} geometry={tori} material={mat} position={[x, 0, 0]} renderOrder={8} />
       ))}
     </group>
+  )
+}
+
+const V = new THREE.Vector3()
+
+/**
+ * The shoreline's label ends at its leader tick, right-aligned; on narrow screens it breaks into three lines and,
+ * if it would still run past the page gutter, slides right just enough to keep 16 px of margin.
+ */
+function ShoreLabel({ position, opacity }: { position: [number, number, number]; opacity: (f: FrameInfo) => number }) {
+  const camera = useThree((s) => s.camera)
+  const size = useThree((s) => s.size)
+  const text = useRef<HTMLSpanElement>(null)
+  const st = useRef({ w: 0, dx: 0, on: false })
+  useChapterFrame((f) => {
+    const el = text.current
+    const s = st.current
+    const on = opacity(f) > 0.002
+    // measure once each time it appears (fonts and line breaks are settled by then)
+    if (on && !s.on && el) s.w = el.offsetWidth
+    s.on = on
+    if (!on || !el) return
+    V.set(position[0], position[1], position[2]).project(camera)
+    const left = ((V.x + 1) / 2) * size.width - 10 - s.w
+    const dx = Math.max(0, 16 - left)
+    if (Math.abs(dx - s.dx) > 0.5) {
+      s.dx = dx
+      el.style.transform = dx > 0 ? `translateX(${dx.toFixed(1)}px)` : ''
+    }
+  })
+  return (
+    <SceneLabel position={position} align="right" leader tone="field" opacity={opacity}>
+      <span ref={text} className="mth-mini mth-shore mth-stack">
+        WHERE EASY
+        <br className="mth-br-m" /> CALCULATION ENDS<span className="mth-hide-m"> ·</span>
+        <br className="mth-br-m" /> g ≈ 0.4
+      </span>
+    </SceneLabel>
   )
 }
 
@@ -162,9 +200,7 @@ export function Shallow() {
         </SceneLabel>
       ))}
       {/* the shoreline's far end: the bright line under the label is the sea-level crossing */}
-      <SceneLabel position={SHORE_END} align="right" leader tone="field" opacity={() => vis() * S.shore * smoothstep(4.6, 4.2, S.probe.rho)}>
-        <span className="mth-mini mth-shore">WHERE EASY CALCULATION ENDS · g ≈ 0.4</span>
-      </SceneLabel>
+      <ShoreLabel position={SHORE_END} opacity={() => vis() * S.shore * smoothstep(4.6, 4.2, S.probe.rho)} />
     </>
   )
 }

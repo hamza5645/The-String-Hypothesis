@@ -8,7 +8,7 @@ import { settings } from '@/core/settings'
 import { Status } from '@/ui'
 import { S } from './director'
 import { N_CAPS, createFogMaterial, createSeaMaterial, createTerrainMaterial } from './materials'
-import { BRIDGES, BRIDGE_INDEX, SEA, THEORIES, TIPS, tipCenter, type Theory } from './model'
+import { BRIDGES, BRIDGE_INDEX, SEA, THEORIES, TIPS, finishSdfBake, sdfReady, tipCenter, type Theory } from './model'
 import { Ribbon, type RibbonApi } from './Ribbon'
 import { bridgeCurve } from './curves'
 import { useM } from './store'
@@ -39,25 +39,24 @@ const CAPS: { a: [number, number]; b: [number, number]; bridge: number }[] = (()
 function Terrain() {
   const mat = useMemo(() => createTerrainMaterial(), [])
   const geo = useMemo(() => {
-    // the landmass fits inside ±6.1; 200 segments over 12.8 units ≈ 0.064 per cell (80k triangles)
-    const g = new THREE.PlaneGeometry(12.8, 12.8, 200, 200)
+    // the landmass fits inside ±6.1; 128 segments over 12.8 units = 0.1 per cell (33k triangles): the relief is
+    // smooth at that scale, and height, contours and the outline are evaluated per pixel anyway
+    const g = new THREE.PlaneGeometry(12.8, 12.8, 128, 128)
     g.rotateX(-Math.PI / 2)
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 12)
     return g
   }, [])
   const mesh = useRef<THREE.Mesh>(null)
-  useLayoutEffect(() => {
-    const u = mat.uniforms
-    for (let k = 0; k < N_CAPS; k++) {
-      const c = CAPS[k]
-      ;(u.uCap.value as THREE.Vector4[])[k].set(c.a[0], c.a[1], c.b[0], c.b[1])
-    }
-    return () => {
+  useLayoutEffect(
+    () => () => {
       geo.dispose()
       mat.dispose()
-    }
-  }, [geo, mat])
+    },
+    [geo, mat],
+  )
   useChapterFrame(() => {
+    // the distance field is normally baked in idle time long before this chapter shows; if not, finish it now
+    if (!sdfReady()) finishSdfBake()
     const u = mat.uniforms
     const amp = u.uAmp.value as number[]
     const fl = u.uFlash.value as number[]
@@ -65,8 +64,20 @@ function Terrain() {
       amp[j] = S.amp[j]
       fl[j] = S.flash[j]
     }
+    // only switched-on capsules are tested per pixel, packed first; none while the shelf cannot show
     const on = u.uCapOn.value as number[]
-    for (let k = 0; k < N_CAPS; k++) on[k] = S.bridge[CAPS[k].bridge]
+    const cap = u.uCap.value as THREE.Vector4[]
+    let n = 0
+    if (S.reveal > 0 && S.maskFull < 1)
+      for (let k = 0; k < N_CAPS; k++) {
+        const c = CAPS[k]
+        const v = S.bridge[c.bridge]
+        if (v <= 0) continue
+        cap[n].set(c.a[0], c.a[1], c.b[0], c.b[1])
+        on[n] = v
+        n++
+      }
+    u.uCapN.value = n
     u.uMaskFull.value = S.maskFull
     u.uReveal.value = S.reveal
     u.uTopo.value = S.topo
@@ -292,8 +303,9 @@ function HitTargets() {
     setStageCursor('')
   }
 
+  // never drawn (14 draw calls saved): raycasting ignores visibility, so the targets still receive pointer events
   return (
-    <group>
+    <group visible={false}>
       {TIPS.map((tip, j) => {
         const c = tipCenter(j)
         return (

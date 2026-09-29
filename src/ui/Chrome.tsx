@@ -3,8 +3,8 @@ import type { ChapterMeta } from '../core/chapter'
 import { getHandle } from '../core/chapter'
 import { unlockAudio, tick } from '../core/audio'
 import { journey, onJourney, useJourney } from '../core/journey'
-import { orderOf, sci } from '../core/math'
-import { scrollToChapter, scrollToY } from '../core/scroller'
+import { orderOf, superscript } from '../core/math'
+import { scrollToChapter } from '../core/scroller'
 import { useSettings } from '../core/settings'
 import { glossaryList } from '../core/glossary'
 import { Drawer } from './Drawer'
@@ -21,6 +21,8 @@ export function TopBar({ chapters }: { chapters: ChapterMeta[] }) {
   const setMenu = useSettings((s) => s.setMenuOpen)
   const active = useJourney((s) => s.active)
   const bar = useRef<HTMLDivElement>(null)
+  // brief ANALOGY note when sound is switched on: every sound on the site is a sonification
+  const [soundNote, setSoundNote] = useState(false)
 
   useEffect(
     () =>
@@ -29,12 +31,20 @@ export function TopBar({ chapters }: { chapters: ChapterMeta[] }) {
       }),
     [],
   )
+  useEffect(() => {
+    if (!sound) {
+      setSoundNote(false)
+      return
+    }
+    const t = window.setTimeout(() => setSoundNote(false), 6500)
+    return () => window.clearTimeout(t)
+  }, [sound, soundNote])
 
   const cur = chapters[active]
   return (
     <header className="topbar" data-ui>
       <div ref={bar} className="topbar__progress" aria-hidden="true" />
-      <button type="button" className="topbar__mark" onClick={() => scrollToY(0)} aria-label="Back to the beginning">
+      <button type="button" className="topbar__mark" onClick={() => scrollToChapter(chapters[0].id)} aria-label="Back to the beginning">
         <span className="topbar__mark-name">The String Hypothesis</span>
       </button>
       <button type="button" className="topbar__where t-label" onClick={() => setMenu(true)} aria-label="Open chapter list">
@@ -64,15 +74,16 @@ export function TopBar({ chapters }: { chapters: ChapterMeta[] }) {
           onClick={() => {
             const v = !sound
             setSound(v)
+            setSoundNote(v)
             if (v) {
               unlockAudio()
               tick(523)
             }
           }}
-          title="Hear string vibrations (off by default)"
+          title="Sonification (off by default): strings would make no sound"
         >
           <SoundGlyph on={sound} />
-          <span className="tool__label">{sound ? 'Sound on' : 'Sound off'}</span>
+          <span className="tool__label">{sound ? 'Sound on · sonification' : 'Sound off'}</span>
         </button>
         <button type="button" className="tool" onClick={() => setGlossary(true)} title="Glossary of terms">
           <span className="tool__glyph tool__glyph--serif" aria-hidden="true">
@@ -81,6 +92,16 @@ export function TopBar({ chapters }: { chapters: ChapterMeta[] }) {
           <span className="tool__label">Glossary</span>
         </button>
       </nav>
+      <p className="sound-note" role="status" data-show={soundNote ? '1' : '0'}>
+        {soundNote && (
+          <>
+            <span className="sound-note__chip t-label">
+              <span aria-hidden="true">≈</span> Analogy
+            </span>
+            <span>Sonification: strings would make no sound. You hear the pattern, not a pitch.</span>
+          </>
+        )}
+      </p>
     </header>
   )
 }
@@ -146,19 +167,50 @@ const MARKS = [
   { e: -15, label: 'proton' },
   { e: -35, label: 'Planck' },
 ]
+/** Landmark labels closer than this (decades) to the reading step aside so the readout never sits on them. */
+const MARK_NEAR = 1.5
+/**
+ * Default status rule (a chapter can override it with meta.scaleStatus): below ~10⁻³² m the site only ever
+ * shows the hypothetical string scale or lengths derived from it, so the reading is flagged HYPOTHETICAL.
+ */
+const HYPOTHETICAL_BELOW = -31.8
+/** The site-wide fiducial string length (log₁₀ m): ~10⁻³⁴ m "if traditional estimates hold" (content/00-arc.md). */
+const STRING_FIDUCIAL = -34
+const STRING_NOTE = 'ℓs unknown · ~10⁻³⁴ m if traditional estimates hold'
+
+/**
+ * Gauge reading. One significant figure in scientific form (so it agrees with the chapter's own labels,
+ * e.g. 4 × 10³ m, 5 × 10⁻⁵ m); plain decimals between 1 mm and 1 km; only the order of magnitude for a
+ * hypothetical length, whose mantissa would be spurious.
+ */
+function formatScale(scale: number, e: number, hypothetical: boolean): string {
+  if (hypothetical) return `~${orderOf(scale)}`
+  if (Math.abs(e) < 3) return `${String(Number(scale.toPrecision(2)))} m`
+  let x = Math.floor(e)
+  let m = Math.round(scale / 10 ** x)
+  if (m >= 10) {
+    m = 1
+    x++
+  }
+  return `≈ ${m === 1 ? '' : m + ' × '}10${superscript(x)} m`
+}
 
 export function ScaleGauge({ chapters }: { chapters: ChapterMeta[] }) {
   const root = useRef<HTMLDivElement>(null)
   const readout = useRef<HTMLSpanElement>(null)
+  const marks = useRef<(HTMLSpanElement | null)[]>([])
   useEffect(() => {
     let raf = 0
     let last = ''
+    let lastHyp = ''
+    let lastNear = -1
     const loop = () => {
       raf = requestAnimationFrame(loop)
       const el = root.current
       if (!el) return
       const meta = chapters[journey.active]
-      const scale = meta?.scale ? meta.scale(getHandle(meta.id, meta.index)) : null
+      const h = meta ? getHandle(meta.id, meta.index) : null
+      const scale = meta?.scale && h ? meta.scale(h) : null
       if (scale == null || !(scale > 0)) {
         if (last !== 'none') {
           el.dataset.on = '0'
@@ -170,10 +222,25 @@ export function ScaleGauge({ chapters }: { chapters: ChapterMeta[] }) {
       const pos = (GAUGE_MAX - e) / (GAUGE_MAX - GAUGE_MIN)
       el.dataset.on = '1'
       el.style.setProperty('--pos', Math.min(1, Math.max(0, pos)).toFixed(4))
-      const text = Math.abs(e) < 3 ? sci(scale, 2, 'm') : `≈ ${orderOf(scale)}`
+      const status = meta!.scaleStatus ? meta!.scaleStatus(h!, scale) : e < HYPOTHETICAL_BELOW ? 'speculative' : null
+      const hyp = status === 'speculative'
+      // 'f' = hypothetical at the string fiducial (adds the ℓs line), 'h' = hypothetical, '' = plain
+      const hypKey = hyp ? (Math.abs(e - STRING_FIDUCIAL) <= 0.5 ? 'f' : 'h') : ''
+      if (hypKey !== lastHyp) {
+        el.dataset.hyp = hypKey
+        lastHyp = hypKey
+      }
+      const text = formatScale(scale, e, hyp)
       if (text !== last && readout.current) {
         readout.current.textContent = text
         last = text
+      }
+      // bit mask of landmark labels that sit within MARK_NEAR decades of the reading
+      let near = 0
+      for (let i = 0; i < MARKS.length; i++) if (Math.abs(MARKS[i].e - e) < MARK_NEAR) near |= 1 << i
+      if (near !== lastNear) {
+        for (let i = 0; i < MARKS.length; i++) marks.current[i]?.toggleAttribute('data-near', (near & (1 << i)) !== 0)
+        lastNear = near
       }
     }
     raf = requestAnimationFrame(loop)
@@ -186,14 +253,25 @@ export function ScaleGauge({ chapters }: { chapters: ChapterMeta[] }) {
         {Array.from({ length: GAUGE_MAX - GAUGE_MIN + 1 }, (_, i) => GAUGE_MAX - i).map((e) => (
           <span key={e} className={`gauge__tick${e % 5 === 0 ? ' is-major' : ''}`} style={{ ['--tp' as string]: (GAUGE_MAX - e) / (GAUGE_MAX - GAUGE_MIN) }} />
         ))}
-        {MARKS.map((m) => (
-          <span key={m.e} className="gauge__mark" style={{ ['--tp' as string]: (GAUGE_MAX - m.e) / (GAUGE_MAX - GAUGE_MIN) }}>
+        {MARKS.map((m, i) => (
+          <span
+            key={m.e}
+            ref={(n) => {
+              marks.current[i] = n
+            }}
+            className="gauge__mark"
+            style={{ ['--tp' as string]: (GAUGE_MAX - m.e) / (GAUGE_MAX - GAUGE_MIN) }}
+          >
             {m.label}
           </span>
         ))}
         <span className="gauge__marker">
           <span className="gauge__diamond" />
-          <span ref={readout} className="gauge__readout t-mono" />
+          <span className="gauge__read">
+            <span ref={readout} className="gauge__readout t-mono" />
+            <span className="gauge__flag">Hypothetical</span>
+            <span className="gauge__note">{STRING_NOTE}</span>
+          </span>
         </span>
       </div>
       <span className="gauge__title t-label">Scale</span>

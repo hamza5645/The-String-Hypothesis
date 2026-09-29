@@ -130,6 +130,11 @@
   opacity: var(--k, 0);
   transform: translateY(calc((1 - var(--k, 0)) * 10px));
 }
+/* keyboard focus on its glossary term shows the whole figure, whatever the scroll reveal says */
+.cy-rosette:focus-within {
+  opacity: 1;
+  transform: none;
+}
 .cy-rosette__head {
   display: grid;
   justify-items: center;
@@ -200,6 +205,12 @@
   bottom: 2px;
   height: 46px;
   opacity: var(--k, 0);
+}
+.cy-timeline:focus-within {
+  opacity: 1;
+}
+.cy-timeline:focus-within .cy-timeline__line {
+  transform: none;
 }
 .cy-timeline__track {
   position: absolute;
@@ -301,14 +312,15 @@
   stroke-width: 0.9;
   opacity: 0.75;
 }
+/* the ring waves are chapter 05's Kaluza–Klein waves: quantum waves any particle would have, drawn in Ink as
+   there (only strings glow warm), with the Field ring drawn over them */
 .cy-ladder__wave {
   fill: none;
-  stroke: var(--filament);
-  stroke-width: 1.4;
-  filter: drop-shadow(0 0 3px rgba(255, 201, 138, 0.7));
+  stroke: var(--ink);
+  stroke-width: 1.2;
 }
 .cy-ladder__lobe {
-  fill: rgba(255, 201, 138, 0.26);
+  fill: rgba(236, 230, 217, 0.13);
   fill-rule: evenodd;
   stroke: none;
 }
@@ -330,7 +342,7 @@
   text-transform: uppercase;
 }
 .cy-ladder__tag.is-zero {
-  fill: var(--filament-core);
+  fill: var(--ink);
 }
 .cy-ladder__n {
   fill: var(--ink-2);
@@ -344,7 +356,7 @@
   stroke-width: 1;
 }
 .cy-ladder__axis line.is-zero {
-  stroke: var(--filament);
+  stroke: var(--ink);
   stroke-width: 1.4;
 }
 .cy-ladder__title,
@@ -753,6 +765,18 @@
   align-self: flex-start;
   margin-top: 0;
 }
+/* below 1100 px the scene pins its SIZE: UNKNOWN chip across the top-left (centre at 11% of the height, 8.25%
+   in the portrait layout): the hint pill sits under it, never on it */
+@media (max-width: 1099px) {
+  #calabi-yau .lab-hint {
+    margin-top: max(0px, calc(11dvh - 48px));
+  }
+}
+@media (max-width: 720px), (max-width: 1099px) and (max-aspect-ratio: 4/5) {
+  #calabi-yau .lab-hint {
+    margin-top: max(0px, calc(8.25dvh - 48px));
+  }
+}
 .cy-keys {
   flex: 1 1 190px;
   margin: 0;
@@ -888,8 +912,8 @@
   }
 }
 
-/* ───────── phones ───────── */
-@media (max-width: 720px) {
+/* ───────── phones and portrait tablets (the engine's portrait layout: core/layout.ts PORTRAIT_QUERY) ───────── */
+@media (max-width: 720px), (max-aspect-ratio: 4/5) {
   /* no-WebGL: the compact fallback sits in the upper half, clear of the beat text at the bottom */
   #calabi-yau .chapter-fallback {
     place-items: start center;
@@ -912,7 +936,8 @@
   .cy-step-b3 .cy-ladder {
     order: -1;
     margin: 0 0 0.9rem;
-    width: 100%;
+    /* (portrait tablets: the strip keeps a phone's scale) */
+    width: min(100%, 420px);
     gap: 0.2rem;
   }
   .cy-ladder--strip {
@@ -939,11 +964,23 @@
   .cy-frame--b4 .cy-frame__fig {
     padding-top: 2px;
   }
-  /* B4: the ledger fills the column width above the text */
+  /* B4: the ledger fills the column width above the text (up to a readable size on portrait tablets) */
   .cy-frame--b4 .cy-frame__fig--ledger {
     width: 100%;
     max-width: none;
     justify-self: stretch;
+  }
+  .cy-frame--b4 .cy-ledger,
+  .cy-frame--b5 .cy-dials {
+    width: 100%;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+  /* tall screens: the scene's SIZE chip (centred at 8.25% of the height) reaches into the content's top edge;
+     the ledger and dials start below it */
+  .cy-frame--b4 .cy-frame__fig,
+  .cy-frame--b5 .cy-frame__fig {
+    padding-top: max(2px, calc(8.25dvh - 64px));
   }
   .cy-frame--b4 .deeper-trigger {
     display: none;
@@ -979,6 +1016,31 @@
   .cy-frame--b1 .cy-frame__fig {
     align-self: start;
     justify-self: end;
+  }
+  /* the timeline row starts below the flat torus the scene draws beside the rosette (its lower edge sits at
+     ≈ 39.6% of the canvas height, i.e. the dynamic viewport). On the figure, not its grid cell, so the row
+     still grows with the rosette when that is taller. */
+  .cy-frame--b1 .cy-rosette {
+    align-content: start;
+    min-height: calc(39.6svh - 95px);
+    min-height: calc(39.6dvh - 95px);
+  }
+  /* B4: the ledger's cell takes the room left above the text; when the ledger is taller it is clipped here and
+     its view follows the build-up (figures.tsx), with soft edges only where something is cut off */
+  .cy-frame--b4 .cy-frame__fig {
+    align-self: stretch;
+    min-height: 220px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--cy-ft, 0px), #000 calc(100% - var(--cy-fb, 0px)), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 var(--cy-ft, 0px), #000 calc(100% - var(--cy-fb, 0px)), transparent);
+  }
+  .cy-frame--b4 .cy-ledger {
+    transform: translate3d(0, calc(-1 * var(--cy-lpan, 0px)), 0);
+  }
+  /* B5: below 1160 px the scene steps the slice out of view for the dials, so its "breathing" caveat has
+     nothing to caption here */
+  .cy-frame--b5 .caption {
+    display: none;
   }
   .cy-rosette {
     width: 150px;
@@ -1073,5 +1135,81 @@
   }
   .cy-size--v {
     transform: none;
+  }
+}
+
+/* ───────── short phones: an iPhone in Safari with its toolbars showing is ≈ 664 px tall ───────── */
+/* tighter wide beats, so figure, text and caveats share the screen (Overlay's Frame pan absorbs any remainder) */
+@media (max-width: 720px) and (max-height: 760px) {
+  .cy-step .step__inner {
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  }
+  .cy-frame,
+  .cy-frame--b1 {
+    row-gap: 0.6rem;
+  }
+  .cy-step .beat {
+    gap: 0.6rem;
+  }
+  .cy-foot {
+    margin-top: 0.4rem;
+  }
+  .cy-foot + .cy-foot {
+    margin-top: 0.2rem;
+  }
+  /* B1: a smaller rosette; the timeline's labels one line each (years kept: they are the pack's dates) */
+  .cy-frame--b1 .cy-frame__fig {
+    padding-top: 4px;
+  }
+  .cy-frame--b1 .cy-rosette {
+    min-height: calc(39.6svh - 87px);
+    min-height: calc(39.6dvh - 87px);
+  }
+  .cy-rosette {
+    gap: 0.3rem;
+  }
+  .cy-rosette__svg {
+    width: 80px;
+    height: 80px;
+  }
+  .cy-timeline__cap {
+    margin-bottom: 0.4rem;
+  }
+  .cy-timeline__track {
+    grid-template-columns: auto auto auto;
+    justify-content: space-between;
+  }
+  .cy-timeline__item,
+  .cy-timeline__item--mid,
+  .cy-timeline__item--end {
+    padding-top: 7px;
+    white-space: nowrap;
+  }
+  .cy-timeline__year,
+  .cy-timeline__label {
+    line-height: 1.35;
+  }
+  .cy-timeline__label {
+    letter-spacing: 0.04em;
+  }
+  /* B4: the ledger's own OBSERVED chip and Z-boson note state the same as this footnote, and the ● on
+     "three" (aria-describedby) still points to it; its room goes to the ledger's 100-vs-3 landing instead */
+  .cy-frame--b4 .cy-foot {
+    display: none;
+  }
+  /* B5: smaller dials; their two SVG labels grow back to ≥ 10 px */
+  .cy-dials {
+    gap: 0.4rem;
+  }
+  .cy-dials__svg {
+    justify-self: center;
+    max-width: 230px;
+  }
+  .cy-dials__lbl {
+    font-size: 17px;
+  }
+  /* (clear of the lock glyph at this size) */
+  .cy-dials__lbl--size {
+    transform: translateY(5px);
   }
 }

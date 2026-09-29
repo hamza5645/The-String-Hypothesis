@@ -7,10 +7,11 @@ import { prefersReducedMotion } from '@/core/time'
 import type { StageState } from '../choreo'
 import { hitsRail, type Layout } from '../layout'
 import { RULER_LANDMARKS, type RulerLandmark } from '../landmarks'
-import { S_MAX, S_MIN, S_STUB, sup } from '../model'
+import { S_MAX, S_MIN, S_STRING, S_STUB, sup } from '../model'
 import { SI, ZOOM_END, local } from '../timeline'
 import type { Ctx, View } from './Diagram'
 import { at, div, label, line, op, path, sa, setLine, span, svg } from './dom'
+import { MID_S, midY, placeLabels, rulerXFull } from './placeLabels'
 
 interface LM {
   d: RulerLandmark
@@ -25,12 +26,6 @@ interface LM {
   order: number
 }
 
-// label metrics (CSS: .sp-lm names 11px / values 10.5px desktop, 10px / 10px phones)
-const FONT_A = 11
-const FONT_B = 10.5
-const MID_S = Math.log10(1.19e-4) // the Ruler's midpoint: √(8.8 × 10²⁶ × 1.616 × 10⁻³⁵) m
-const midY = (L: Layout) => L.ry - (L.mobile ? 150 : 172)
-
 export class RulerView implements View {
   private L: Layout
   private g: SVGGElement
@@ -39,6 +34,8 @@ export class RulerView implements View {
   private ticks: SVGPathElement
   private ticksStub: SVGPathElement
   private tickLbl = new Map<number, HTMLDivElement>()
+  /** the closing frame's tag under the point: the assumed string length, never a measured size */
+  private ptTag: HTMLDivElement
   private lms: LM[] = []
   private title: HTMLDivElement
   private youL: SVGPathElement
@@ -66,6 +63,7 @@ export class RulerView implements View {
       const d = div('sp-lbl sp-tick', this.box, `10${sup(s)} m`)
       this.tickLbl.set(s, d)
     }
+    this.ptTag = label(this.box, 'sp-pt-tag', ['ℓs assumed ~10⁻³⁴ m', 'hypothetical · unresolved'])
     this.title = label(this.box, 'sp-dim sp-axis-title', [L.mobile ? 'LENGTH · LOG SCALE · EACH TICK ×10' : 'LENGTH · LOGARITHMIC · EACH TICK ×10'])
 
     // landmarks: glyph at the tick, label above in tiers (placed once, greedy, by priority)
@@ -148,13 +146,27 @@ export class RulerView implements View {
       sa(this.ticksStub, 'd', ds || 'M0,0')
     }
     const tickOn = on * fold
+    // closing frame: the point on the Ruler is the assumed ℓs, so its tick names the assumption and
+    // no plain length label sits under it
+    const inPt = T >= SI.point
+    const xs = X(S_STRING)
     for (const [s, el] of this.tickLbl) {
       const x = X(s)
       const inRange = x >= X(S_MAX) - 1 && x <= X(S_STUB) + 1
-      const show = s % step === 0 && inRange && x > S.rx0 - 16 && x < L.W + 20 && x <= xd + 1 && !(s < S_MIN && pxd < 40) && !hitsRail(L, x - 24, ry + 6, x + 24, ry + 22)
+      const show =
+        s % step === 0 &&
+        inRange &&
+        x > S.rx0 - 16 &&
+        x < L.W + 20 &&
+        x <= xd + 1 &&
+        !(s < S_MIN && pxd < 40) &&
+        !(inPt && Math.abs(x - xs) < 110) &&
+        !hitsRail(L, x - 24, ry + 6, x + 24, ry + 22)
       op(el, show ? tickOn * (s < S_MIN ? 0.5 : 1) : 0)
       if (show) at(el, x, fy(ry + 8), ' translate(-50%,0)')
     }
+    op(this.ptTag, inPt ? tickOn : 0)
+    if (inPt) at(this.ptTag, xs, fy(ry + 8), ' translate(-50%,0)')
     const titleOn = inB1 ? smoothstep(ZOOM_END + 0.16, ZOOM_END + 0.26, p1) : T >= SI.quarter && T < SI.bigger ? 1 - smoothstep(0.08, 0.2, local(T, 'quarter')) : 0
     op(this.title, titleOn * on)
     // the axis title sits under the "27 powers of ten" bracket, never on its end tick
@@ -229,98 +241,4 @@ export class RulerView implements View {
     op(this.midLbl, pm)
     at(this.midLbl, xm + 8, ym + dy, ' translate(0,-100%)')
   }
-}
-
-export const rulerXFull = (L: Layout, s: number) => L.rx0 + ((S_MAX - s) / (S_MAX - S_MIN)) * (L.rx1 - L.rx0)
-
-interface Placement {
-  tier: number
-  align: number
-  cx: number
-  yb: number
-  h: number
-}
-
-/**
- * Landmark labels above the Ruler: every label gets a tier (height) and an alignment (centred, or
- * hanging right/left of its tick) so that no label overlaps another, and no leader line (tick → label)
- * crosses a label. Depth-first search in x order with backtracking; lowest total height wins.
- */
-function placeLabels(L: Layout, list: RulerLandmark[], small: boolean, tierStep: number) {
-  const fa = small ? 10 : FONT_A
-  const fb = small ? 10 : FONT_B
-  const gTop = L.ry - (small ? 18 : 21)
-  const items = list
-    .map((d) => {
-      const names = d.name.split('\n')
-      const w = Math.max(...names.map((n) => n.length * fa * 0.69), d.value.length * fb * 0.64) + 6
-      const h = (names.length + 1) * (small ? 13.6 : 15) + 2
-      return { d, x: rulerXFull(L, d.s), w, h }
-    })
-    .sort((a, b) => a.x - b.x)
-  type R = [number, number, number, number]
-  const hit = (a: R, b: R) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1]
-  // Beat 1's midpoint callout: its dotted line (above PAPER's label) and its label box stay clear
-  const xm = rulerXFull(L, MID_S)
-  const ym = midY(L)
-  const midLine: R = [xm - 2, ym, xm + 2, gTop]
-  const midBox: R = [xm - 4, ym - 36, xm + (small ? 170 : 210), ym + 4]
-  const opts = (it: (typeof items)[number]) => {
-    const out: { p: Placement; r: R; lead: R; cost: number }[] = []
-    for (let t = 0; t < 7; t++)
-      for (const al of [0, -1, 1]) {
-        const cx = al === 0 ? Math.min(Math.max(it.x, 8 + it.w / 2), L.W - 8 - it.w / 2) : it.x
-        const x0 = al === 0 ? cx - it.w / 2 : al === 1 ? it.x - 5 : it.x - it.w + 5
-        // keep clear of the left scale gauge (desktop) and the screen edges
-        if (x0 < (L.W >= 1100 ? 80 : 6) || x0 + it.w > L.W - 6) continue
-        const yb = L.ry - (small ? 20 : 26) - t * tierStep
-        if (yb - it.h < (small ? 58 : 70)) continue // below the top chrome
-        // 8 px of air either side, so two neighbours never read as one label
-        const r: R = [x0 - 8, yb - it.h, x0 + it.w + 8, yb]
-        const lead: R = [it.x - 1.5, yb, it.x + 1.5, gTop]
-        if (hitsRail(L, r[0], r[1], r[2], r[3]) || hitsRail(L, it.x - 1, yb, it.x + 1, L.ry)) continue
-        if (hit(r, midBox) || (it.d.id !== 'paper' && hit(r, midLine))) continue
-        // labels that straddle a neighbour's tick would block that neighbour's leader
-        let straddle = 0
-        for (const o of items) if (o !== it && o.x > r[0] && o.x < r[2]) straddle++
-        out.push({ p: { tier: t, align: al, cx, yb, h: it.h }, r, lead, cost: t * 10 + (al ? 1 : 0) + straddle * 25 })
-      }
-    return out.sort((a, b) => a.cost - b.cost)
-  }
-  const cands = items.map(opts)
-  const chosen: ({ p: Placement; r: R; lead: R } | null)[] = []
-  let best: typeof chosen | null = null
-  let bestCost = Infinity
-  let iters = 0
-  const dfs = (i: number, cost: number) => {
-    if (++iters > 60000 || cost >= bestCost) return
-    if (i === items.length) {
-      best = chosen.slice()
-      bestCost = cost
-      return
-    }
-    for (const c of cands[i]) {
-      let ok = true
-      for (let j = 0; j < i && ok; j++) {
-        const o = chosen[j]
-        if (!o) continue
-        if (hit(c.r, o.r) || hit(c.lead, o.r) || hit(c.r, o.lead)) ok = false
-      }
-      if (!ok) continue
-      chosen[i] = c
-      dfs(i + 1, cost + c.cost)
-      if (iters > 60000) break
-    }
-    // allow a label to be dropped only at a steep price
-    chosen[i] = null
-    dfs(i + 1, cost + 1000)
-  }
-  dfs(0, 0)
-  const map = new Map<string, Placement>()
-  const res = (best ?? []) as ({ p: Placement } | null)[]
-  items.forEach((it, i) => {
-    const c = res[i]
-    if (c) map.set(it.d.id, c.p)
-  })
-  return map
 }

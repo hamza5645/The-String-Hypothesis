@@ -58,5 +58,11 @@ export const useCY = create<CYState>((set, get) => ({
   setPhase: (phase) => set({ phase }),
 }))
 
+/**
+ * How far (CSS px) each wide beat's composition is slid up to fit a short screen (Overlay's fit pan), so the
+ * scene can lift its picture by the same amount and the DOM figures and the 3D shape stay in register.
+ */
+export const cyPan: Record<'b1' | 'b4' | 'b5', number> = { b1: 0, b4: 0, b5: 0 }
+
 // dev-only handle for the screenshot harness (stripped from production builds)
 if (import.meta.env.DEV && typeof window !== 'undefined') (window as unknown as { __cy: typeof useCY }).__cy = useCY

@@ -97,6 +97,8 @@ const TAGS: Record<string, TagDef> = {
 
 /** secondary annotations that would crowd a phone screen */
 const MOBILE_HIDE = new Set(['ax', 'ay', 'az', 'add', 'slabtb', 'far', 'confined', 'nz', 's12', 's21', 'lmatter', 'matter'])
+/** phones: plain labels (no leader line) that step aside when they would sit in the figure title's band (short screens) */
+const YIELD_TO_TITLE = new Set(['gspread'])
 
 const N_STEPS = STEPS.length
 /** scratch brane positions for the bench (one array per brane count, so ys.length stays exact) */
@@ -882,7 +884,12 @@ export default function Scene() {
           tg.hide()
           continue
         }
-        tg.place((pv.x * 0.5 + 0.5) * W, (-pv.y * 0.5 + 0.5) * H, r.o, r.text, vis, frame.mobile ? 10 : 16)
+        const sy = (-pv.y * 0.5 + 0.5) * H
+        if (hud && hud.titleBottom && YIELD_TO_TITLE.has(key) && sy < hud.titleBottom + 20) {
+          tg.hide()
+          continue
+        }
+        tg.place((pv.x * 0.5 + 0.5) * W, sy, r.o, r.text, vis, frame.mobile ? 10 : 16)
       }
       // Beat 5's ruler → matrix bracket (desktop; on phones the matrix and stage are too small for it)
       const L = frame.link

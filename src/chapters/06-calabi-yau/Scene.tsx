@@ -19,6 +19,7 @@ import {
   type OrbitPose,
 } from '@/gl'
 import { HANDOFF, handoffFit } from '@/core/handoff'
+import { isPortraitLayout } from '@/core/layout'
 import { clamp, easeInOutCubic, lerp, smoothstep, TAU } from '@/core/math'
 import { ambient, prefersReducedMotion } from '@/core/time'
 import { useSettings } from '@/core/settings'
@@ -29,7 +30,7 @@ import { HI_LABEL, HodgePlot, PLOT_W, plotX, plotY } from './HodgePlot'
 import { branchPoints, buildLoop, evalP4, HANSON_PITCH, HANSON_YAW, loopNormal, projectP4, type Degree } from './cyMath'
 import { createHairlines, createUnrollGeometry, createUnrollMaterial, unrollPoint } from './unroll'
 import { kf, packP, squashB3, ss, type Keys } from './timeline'
-import { useCY } from './store'
+import { cyPan, useCY } from './store'
 
 /*
  * Chapter 06 · The hidden shape. Everything is timed in pack progress P (see timeline.ts).
@@ -87,7 +88,7 @@ interface Dir {
 
 function makeDir(): Dir {
   return {
-    keysFor: -1,
+    keysFor: NaN,
     kDist: [[0, 10]],
     kShiftX: [[0, 0]],
     kShiftY: [[0, 0]],
@@ -111,12 +112,13 @@ function direct(D: Dir, f: FrameInfo) {
   const size = f.state.size
   const aspect = size.width / Math.max(1, size.height)
   D.aspect = aspect
-  const portrait = aspect < 0.85
+  // the engine's portrait predicate, so the scene composes for the same layout the DOM shows
+  const portrait = isPortraitLayout(size.width, size.height)
   D.portrait = portrait
   D.lab = ss(P, 0.8, 0.815) * (1 - ss(P, 0.935, 0.955))
-  if (D.keysFor !== aspect) {
+  if (D.keysFor !== (portrait ? -aspect : aspect)) {
     // key arrays depend only on the viewport: rebuilt on resize, never per frame
-    D.keysFor = aspect
+    D.keysFor = portrait ? -aspect : aspect
     // portrait: the slice fits the upper half, above the beat text
     const dCY = portrait ? fitD(6.2, 1.36, aspect, 0.84) : 6.2
     const dB3 = portrait ? dCY * 1.3 : 7.0
@@ -199,7 +201,8 @@ function direct(D: Dir, f: FrameInfo) {
   D.pose.target[1] = tq * plotY(102) * 0.5
   D.pose.target[2] = 0
   D.shift[0] = kf(P, D.kShiftX)
-  D.shift[1] = kf(P, D.kShiftY)
+  // + the Overlay's fit pan on short screens (0 elsewhere, so the handoff frames stay centred)
+  D.shift[1] = kf(P, D.kShiftY) + (cyPan.b1 + cyPan.b4 + cyPan.b5) / Math.max(1, size.height)
   return D.pose
 }
 
@@ -914,7 +917,10 @@ function Stage({ D, quality }: { D: Dir; quality: 'low' | 'medium' | 'high' }) {
     // SIZE: UNKNOWN caption, pinned near the (hidden) gauge edge
     const wide = f.state.size.width >= 1100
     screenToPlane(camera, wide ? -0.962 : D.portrait ? -0.9 : -0.93, wide ? 0 : D.portrait ? 0.835 : 0.78, anchors.size)
-    D.L.size = ss(P, 0.012, 0.03) * (1 - ss(P, 0.96, 0.985))
+    // it captions the drawn shape: where B4/B5 hide the slice (crowded) and a short screen slides the ledger or
+    // dials up under it (the Overlay's fit pan), it steps aside instead of printing over their labels
+    const underPan = crowded ? 1 - smoothstep(16, 40, cyPan.b4 + cyPan.b5) : 1
+    D.L.size = ss(P, 0.012, 0.03) * (1 - ss(P, 0.96, 0.985)) * underPan
   }
 
   const lo = (k: string) => (/* f */) => D.L[k] ?? 0
@@ -1104,7 +1110,7 @@ function screenToPlane(camera: THREE.PerspectiveCamera, nx: number, ny: number, 
 function PlotLabels({ D, hodgeLoaded }: { D: Dir; hodgeLoaded: boolean }) {
   const op = (k: string, m = 1) => () => (D.L[k] ?? 0) * m * (hodgeLoaded ? 1 : 0)
   const size = useThree((s) => s.size)
-  const portrait = size.width / Math.max(1, size.height) < 0.85
+  const portrait = isPortraitLayout(size.width, size.height)
   const y0 = plotY(0)
   const y1 = plotY(502)
   const x0 = plotX(-960)

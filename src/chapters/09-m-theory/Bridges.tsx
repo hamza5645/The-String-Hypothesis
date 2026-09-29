@@ -152,6 +152,7 @@ function SDuality() {
   const barF = useRef<THREE.Mesh>(null)
   const barD = useRef<THREE.Mesh>(null)
   const readout = useRef<HTMLSpanElement>(null)
+  const readoutHO = useRef<HTMLSpanElement>(null)
   const matF = useMemo(() => createPanelMaterial(COLORS.filament, 0.3, 0.85), [])
   const matD = useMemo(() => createPanelMaterial(COLORS.field, 0.3, 0.85), [])
   const pts = useMemo(() => new Float32Array(24 * 3), [])
@@ -237,10 +238,14 @@ function SDuality() {
       barD.current.position.y = h / 2
       matD.uniforms.uOpacity.value = bv
     }
-    const txt = s >= 0.97 ? `g_HO = 1/g_I = ${fmtG(1 / g)}` : `g_I = ${fmtG(g)}`
-    if (readout.current && txt !== last.current) {
+    // g_I = … while crossing; once landed, g_HO = 1/g_I = …
+    const ho = s >= 0.97
+    const txt = fmtG(ho ? 1 / g : g)
+    const key = ho ? 'ho' + txt : txt
+    if (readout.current && readoutHO.current && key !== last.current) {
+      readoutHO.current.style.display = ho ? '' : 'none'
       readout.current.textContent = txt
-      last.current = txt
+      last.current = key
     }
   })
 
@@ -281,8 +286,13 @@ function SDuality() {
           <span className="mth-mini mth-stack mth-stack--c">
             TENSION · LOG
             <br />
-            <span className="mth-readout" ref={readout}>
-              g_I = 0.10
+            <span className="mth-readout">
+              <span>
+                <span ref={readoutHO} style={{ display: 'none' }}>
+                  g<sub>HO</sub> = 1/
+                </span>
+                g<sub>I</sub> = <span ref={readout}>0.10</span>
+              </span>
             </span>
           </span>
         </SceneLabel>

@@ -42,6 +42,10 @@
 .vib-lbl--xs {
   font-size: 0.64rem;
 }
+.vib-lbl--lines > span {
+  display: block;
+  line-height: 1.6;
+}
 .vib-lbl--lg {
   font-size: 0.7rem;
   letter-spacing: 0.11em;
@@ -890,12 +894,9 @@
   white-space: nowrap;
   font-size: 0.62rem;
 }
-/* keep the two tick captions inside the panel: the first grows rightward, the last leftward */
+/* the first tick caption grows rightward; the last is right-aligned by the shared .is-end rule */
 .vib-far .ctl-slider__tick:nth-last-child(2) .ctl-slider__ticklabel {
   transform: translateX(-12px);
-}
-.vib-far .ctl-slider__tick:last-child .ctl-slider__ticklabel {
-  transform: translateX(calc(-100% + 16px));
 }
 .vib-far__off {
   display: block;

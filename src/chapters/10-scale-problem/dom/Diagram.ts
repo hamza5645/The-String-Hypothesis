@@ -2,6 +2,8 @@
  * The stage's diagram layer: one full-screen SVG (hairlines, dashes, patterns) plus absolutely
  * positioned mono labels, living in the shared #scene-labels layer (above the canvas, below the
  * narrative). Built once per viewport size; updated every frame from the StageState.
+ * The Scene mounts while Chapter 9 is still on screen, so the views are built one per frame while the
+ * stage is hidden (no single long frame), and all at once only if the stage is needed right away.
  */
 import type { StageState } from '../choreo'
 import type { Layout } from '../layout'
@@ -34,6 +36,9 @@ export interface View {
   destroy?(): void
 }
 
+/** paint order: each view appends its SVG groups and labels as it is built */
+const VIEWS: (new (c: Ctx) => View)[] = [ZoomView, MapView, ChartView, RulerView, QuarterView, EnergyView, RoutesView, CaptionView]
+
 export class Diagram {
   root: HTMLDivElement
   private ctx: Ctx | null = null
@@ -63,23 +68,20 @@ export class Diagram {
     const top = svg('g', {}, s)
     const lbl = div('sp-labels', this.root)
     const front = div('sp-front', this.root)
-    const ctx: Ctx = { L, svg: s, defs, back, mid, top, lbl, front }
-    this.ctx = ctx
-    this.views = [
-      new ZoomView(ctx),
-      new MapView(ctx),
-      new ChartView(ctx),
-      new RulerView(ctx),
-      new QuarterView(ctx),
-      new EnergyView(ctx),
-      new RoutesView(ctx),
-      new CaptionView(ctx),
-    ]
+    this.ctx = { L, svg: s, defs, back, mid, top, lbl, front }
+    this.views = []
   }
 
   update(S: StageState, presence: number) {
     op(this.root, presence)
-    if (presence <= 0 || !this.ctx) return
+    const ctx = this.ctx
+    if (!ctx) return
+    // build the next view (hidden), or every remaining one (the stage is showing)
+    while (this.views.length < VIEWS.length) {
+      this.views.push(new VIEWS[this.views.length](ctx))
+      if (presence <= 0) break
+    }
+    if (presence <= 0) return
     for (const v of this.views) v.update(S)
   }
 

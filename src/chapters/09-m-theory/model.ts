@@ -68,7 +68,7 @@ export const BRIDGES: Bridge[] = [
   { id: 't-het', kind: 'T', a: 4, b: 5, status: 'derived', mid: 'R ~ √α′', story: 'NEEDS A CIRCLE + WILSON LINE · R ↔ ~α′/R', hover: "Heterotic SO(32) on a circle = E8×E8 on the dual circle, with a symmetry-breaking 'Wilson line'." },
   { id: 's-i-ho', kind: 'S', a: 3, b: 4, status: 'conjectured', mid: 'g = 1', hover: "Type I at coupling g = heterotic SO(32) at 1/g. Type I's D-string is the heterotic string." },
   { id: 's-iib', kind: 'S', a: 2, b: 2, status: 'conjectured', mid: 'g ↔ 1/g · F-STRING ↔ D-STRING', story: 'IIB ↔ IIB · g ↔ 1/g · F-STRING ↔ D-STRING', hover: 'IIB at g = IIB at 1/g, fundamental and D-strings exchanged. Part of a larger SL(2,ℤ) symmetry.' },
-  { id: 'l-iia', kind: 'L', a: 1, b: 0, status: 'conjectured', mid: 'R₁₁ ≈ ℓ₁₁', hover: 'Strongly coupled IIA = M-theory on a circle of radius R₁₁ = g ℓ_s.' },
+  { id: 'l-iia', kind: 'L', a: 1, b: 0, status: 'conjectured', mid: 'R₁₁ ≈ ℓ₁₁', hover: 'Strongly coupled IIA = M-theory on a circle of radius R₁₁ = g ℓs.' },
   { id: 'l-he', kind: 'L', a: 5, b: 0, status: 'conjectured', mid: 'INTERVAL ≈ ℓ₁₁', hover: 'Strongly coupled E8×E8 = M-theory on an interval between two walls (Hořava–Witten).' },
   { id: 'c-k3', kind: 'C', a: 1, b: 4, c: 5, status: 'conjectured', hover: 'Curl up four dimensions: IIA on a K3 surface = heterotic on a four-torus.' },
 ]
@@ -148,26 +148,35 @@ export function hypo(t: number, out: [number, number]) {
 }
 
 /**
- * Signed distance to the landmass (negative inside), baked once into an N² grid over [−8, 8]².
+ * Signed distance to the landmass (negative inside), baked into an N² grid over [−8, 8]².
  * The curve has 12-fold (dihedral) symmetry, so each texel is folded into one 30° wedge and measured
- * against that wedge's 60 segments of the 720-segment outline — exact, and ~10 ms instead of seconds.
+ * against that wedge's 60 segments of the 720-segment outline — exact, but still ~20 ms in all. So it is baked
+ * in row slices in idle time (startSdfBake: the Overlay calls it once the previous chapter is active, never from
+ * preload(), which runs for every visitor); a Scene that must draw before then finishes it at once (finishSdfBake).
  */
-export function bakeSdf(N = 256): Float32Array {
-  const K = 60
-  const px = new Float64Array(K + 1)
-  const py = new Float64Array(K + 1)
-  const pa = new Float64Array(K + 1)
-  const pr = new Float64Array(K + 1)
-  for (let k = 0; k <= K; k++) {
-    const t = (k / K) * (Math.PI / 6)
-    px[k] = 5 * Math.cos(t) + Math.cos(5 * t)
-    py[k] = 5 * Math.sin(t) - Math.sin(5 * t)
-    pa[k] = Math.atan2(py[k], px[k])
-    pr[k] = Math.hypot(px[k], py[k])
-  }
-  const out = new Float32Array(N * N)
+export const SDF_N = 256
+const K = 60
+const OUT_X = new Float64Array(K + 1)
+const OUT_Y = new Float64Array(K + 1)
+const OUT_A = new Float64Array(K + 1)
+const OUT_R = new Float64Array(K + 1)
+for (let k = 0; k <= K; k++) {
+  const t = (k / K) * (Math.PI / 6)
+  OUT_X[k] = 5 * Math.cos(t) + Math.cos(5 * t)
+  OUT_Y[k] = 5 * Math.sin(t) - Math.sin(5 * t)
+  OUT_A[k] = Math.atan2(OUT_Y[k], OUT_X[k])
+  OUT_R[k] = Math.hypot(OUT_X[k], OUT_Y[k])
+}
+
+/** Rows j0 … j1−1 of the bake. */
+function bakeSdfRows(out: Float32Array, j0: number, j1: number) {
+  const N = SDF_N
+  const px = OUT_X
+  const py = OUT_Y
+  const pa = OUT_A
+  const pr = OUT_R
   const W60 = Math.PI / 3
-  for (let j = 0; j < N; j++) {
+  for (let j = j0; j < j1; j++) {
     const Z = -8 + ((j + 0.5) * 16) / N
     for (let i = 0; i < N; i++) {
       const X = -8 + ((i + 0.5) * 16) / N
@@ -203,7 +212,61 @@ export function bakeSdf(N = 256): Float32Array {
       out[j * N + i] = rho < rc ? -d : d
     }
   }
-  return out
+}
+
+const SDF = { data: null as Float32Array | null, row: 0, started: false, waiting: [] as ((d: Float32Array) => void)[] }
+const SDF_SLICE = 8 // rows per slice (≈ 0.6 ms)
+
+/** Bake slices while `more()` allows (always at least one); hands the result out once the last row is done. */
+function sdfStep(more: () => boolean) {
+  const d = (SDF.data ??= new Float32Array(SDF_N * SDF_N))
+  while (SDF.row < SDF_N) {
+    const j1 = Math.min(SDF_N, SDF.row + SDF_SLICE)
+    bakeSdfRows(d, SDF.row, j1)
+    SDF.row = j1
+    if (!more()) break
+  }
+  if (SDF.row < SDF_N) return
+  const w = SDF.waiting
+  SDF.waiting = []
+  for (const fn of w) fn(d)
+}
+
+function sdfIdle() {
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(
+      (dl) => {
+        sdfStep(() => dl.timeRemaining() > 2)
+        if (SDF.row < SDF_N) sdfIdle()
+      },
+      { timeout: 500 },
+    )
+  } else {
+    // Safari: short slices between frames
+    setTimeout(() => {
+      const t0 = performance.now()
+      sdfStep(() => performance.now() - t0 < 3)
+      if (SDF.row < SDF_N) sdfIdle()
+    }, 20)
+  }
+}
+
+export const sdfReady = () => SDF.row >= SDF_N
+/** Start the idle-time bake (once). */
+export function startSdfBake() {
+  if (SDF.started) return
+  SDF.started = true
+  sdfIdle()
+}
+/** Finish the bake now (the landmass is about to be drawn). */
+export function finishSdfBake() {
+  SDF.started = true
+  if (!sdfReady()) sdfStep(() => true)
+}
+/** Calls `fn` with the finished distances: at once if they are ready, else when the bake completes. */
+export function onSdfReady(fn: (d: Float32Array) => void) {
+  if (sdfReady() && SDF.data) fn(SDF.data)
+  else SDF.waiting.push(fn)
 }
 
 /** Island shape along tip j: smoothstep(3.3, 3.9, along)·exp(−lat²/0.5). */

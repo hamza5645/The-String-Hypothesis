@@ -39,7 +39,13 @@ export default function Scene() {
 
   const points = useMemo(() => new Float32Array(N * 3), [])
   const aspect0 = size.width / Math.max(1, size.height)
-  const labelX = aspect0 < 0.8 ? 0 : 0.3 * 0.56 * 6.306 * aspect0 * 0.5
+  // Portrait: the opening beat sits just under the Thread, so the note goes above its right end,
+  // in the band below the subtitle (right-aligned, clear of the subtitle's short last line).
+  const portrait = aspect0 < 0.8
+  const hvis0 = 2 * HANDOFF.camera.position[2] * Math.tan(((HANDOFF.camera.fov * Math.PI) / 180) / 2)
+  const labelPos: [number, number, number] = portrait
+    ? [Math.min(0.4 * hvis0 * aspect0, 4.75), -0.025 * hvis0 + 0.33, 0]
+    : [0.3 * 0.56 * 6.306 * aspect0 * 0.5, -0.62, 0]
   const st = useMemo(
     () => ({
       amp: new Float64Array(MODES + 1), // aₙ(0) of the current ringing
@@ -278,9 +284,14 @@ export default function Scene() {
         coreColor="#FFFFFF"
         visible={false}
       />
-      <SceneLabel position={[labelX, -0.62, 0]} align="below" tone="dim" opacity={(f) => 1 - smoothstep(0.08, 0.4, f.progress)}>
-        <span className="pro-scene-note">
-          <Status kind="analogy" compact /> A picture of an idea. No one has ever seen a string.
+      <SceneLabel
+        position={labelPos}
+        align={portrait ? 'right' : 'below'}
+        tone="dim"
+        opacity={(f) => 1 - smoothstep(0.08, 0.4, f.progress)}
+      >
+        <span className={portrait ? 'pro-scene-note pro-scene-note--portrait' : 'pro-scene-note'}>
+          <Status kind="analogy" compact /> A picture of an idea.{portrait ? <br /> : ' '}No one has ever seen a string.
         </span>
       </SceneLabel>
     </>

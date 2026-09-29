@@ -24,7 +24,7 @@ import { MODES, OMEGA1, packetsFrom, projectPull } from './model'
 import type { Shared } from './shared'
 import { live, useVib } from './store'
 import { drag, pin, TENT_C } from './Director'
-import { benchTone } from './benchAudio'
+import { benchTone, silenceBench } from './benchAudio'
 
 /*
  * The Thread: y(σ,t) = Σₙ Aₙ φₙ(σ) cos(nω₁t + θₙ) (+ swirl: z = ±Σ Aₙ φₙ sin(…)), φₙ = sin(nπσ) pinned /
@@ -175,6 +175,16 @@ export function Thread({ S }: { S: Shared }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // benchTone() below runs only while the chapter is visible: silence the bench once it is off
+  // screen (any jump away) or unmounted, so its tone can't outlive the chapter
+  useEffect(() => silenceBench, [])
+  useChapterFrame(
+    (f) => {
+      if (f.presence <= 0) silenceBench()
+    },
+    { always: true },
+  )
 
   useChapterFrame((f) => {
     const lab = useVib.getState()

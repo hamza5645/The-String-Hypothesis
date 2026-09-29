@@ -21,6 +21,7 @@ import { rt, win } from '../runtime'
  */
 
 const NP = 49 // polyline points
+const WIN = 10 // segments measured per pixel when the index window applies (see uWin)
 const A = [0.07, 0.025, 0.012, 0.006]
 const PHI = [0.4, 2.1, 4.0, 5.3]
 const CAM = HANDOFF.camera.position[2]
@@ -51,6 +52,7 @@ const frag = /* glsl */ `
   uniform float uBeadR;
   uniform float uNorm;     // keeps the peak at I0 while the core is widened to the resolution blur
   uniform vec3 uAx;        // (string length px, blur sigma px, weight): axial profile of a true blur
+  uniform vec4 uWin;       // (x of point 0 px, points per px, index slack, on): see visit()
   varying vec2 vP;
   // erf, to ~1e-2 (plenty for light)
   float erfa(float x) { return tanh(1.2025 * x); }
@@ -59,6 +61,21 @@ const frag = /* glsl */ `
     float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-8), 0.0, 1.0);
     return length(pa - ba * h);
   }
+  float d = 1e9;
+  float dc = 1e9;
+  float uc = 0.5;
+  // one polyline segment: distance to it (halo) and to its gated copy (core, with its axial parameter)
+  void visit(int i) {
+    vec2 a = uPts[i];
+    vec2 b = uPts[i + 1];
+    d = min(d, seg(vP, a, b));
+    vec2 ga = a * uGate;
+    vec2 pa = vP - ga;
+    vec2 ba = b * uGate - ga;
+    float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-8), 0.0, 1.0);
+    float dd = length(pa - ba * h);
+    if (dd < dc) { dc = dd; uc = (float(i) + h) / ${(NP - 1).toFixed(1)}; }
+  }
   vec3 glowPoint(float r) {
     if (r >= 1.0) return vec3(0.0);
     float core = exp(-pow(r / 0.18, 2.0) * 2.2);
@@ -66,19 +83,16 @@ const frag = /* glsl */ `
     return uCoreCol * core + uHaloCol * halo * 0.8;
   }
   void main() {
-    float d = 1e9;
-    float dc = 1e9;
-    float uc = 0.5;
-    for (int i = 0; i < ${NP - 1}; i++) {
-      vec2 a = uPts[i];
-      vec2 b = uPts[i + 1];
-      d = min(d, seg(vP, a, b));
-      vec2 ga = a * uGate;
-      vec2 pa = vP - ga;
-      vec2 ba = b * uGate - ga;
-      float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-8), 0.0, 1.0);
-      float dd = length(pa - ba * h);
-      if (dd < dc) { dc = dd; uc = (float(i) + h) / ${(NP - 1).toFixed(1)}; }
+    if (uWin.w > 0.5) {
+      // a long resolved string (gate 1): its points are near-evenly spaced in x, and nothing past the
+      // quad's margin can light a pixel, so only the few segments around this pixel's x are measured
+      int i0 = int(clamp(floor((vP.x - uWin.x) * uWin.y - uWin.z), 0.0, ${(NP - 2).toFixed(1)}));
+      for (int j = 0; j < ${WIN}; j++) {
+        if (i0 + j > ${NP - 2}) break;
+        visit(i0 + j);
+      }
+    } else {
+      for (int i = 0; i < ${NP - 1}; i++) visit(i);
     }
     float rc = dc / uR;
     float gcore = exp(-pow(rc / uCoreR, 2.0) * 2.2);
@@ -135,6 +149,7 @@ export function Point() {
           uBeadR: { value: 11 },
           uNorm: { value: 1 },
           uAx: { value: new THREE.Vector3() },
+          uWin: { value: new THREE.Vector4() },
         },
         transparent: true,
         depthWrite: false,
@@ -271,6 +286,20 @@ export function Point() {
     }
     const u = material.uniforms
     u.uHalf.value.set(hx, hy)
+    // index window (uWin): segment i can light a pixel at x only if its x-extent comes within `margin`
+    // of x. With X_i = X_0 + iΔ ± dev (monotonic), those are i ∈ [u − s − 1, u + s], u = (x − X_0)/Δ,
+    // s = (margin + dev)/Δ: at most 2s + 3 segments. Used only while that fits WIN and the core's gated
+    // polyline is the polyline itself (gate 1); otherwise every segment is measured (short strings, small quads).
+    const x0 = pts[0]
+    const dX = (pts[(NP - 1) * 2] - x0) / (NP - 1)
+    let dev = 0
+    let mono = dX > 0.5 && gate >= 0.999
+    for (let i = 1; mono && i < NP; i++) {
+      if (pts[i * 2] < pts[i * 2 - 2]) mono = false
+      dev = Math.max(dev, Math.abs(pts[i * 2] - x0 - i * dX))
+    }
+    const slack = mono ? (margin + dev) / dX + 1 : 0
+    u.uWin.value.set(x0, mono ? 1 / dX : 0, slack, mono && 2 * slack + 1 <= WIN ? 1 : 0)
     u.uGate.value = gate
     u.uR.value = R
     u.uCoreR.value = (2.098 * sig) / R

@@ -17,9 +17,17 @@ export interface StepRuntime {
   fade: boolean
   /** fade out as soon as the sticky content starts moving away (instead of in the last ~22% vh) */
   early: boolean
+  /** keep the content at its sticky resting place after the sticky release and fade it there (exit="hold") */
+  hold: boolean
+  /** px the content is pushed down to cancel the sticky release (hold only) */
+  dy: number
   /** this step is a <Lab> */
   lab: boolean
 }
+
+export type StepExit = 'late' | 'early' | 'hold'
+/** exit="hold": viewports of scroll over which the held content fades, starting at the sticky release. */
+const HOLD_FADE = 0.4
 
 export interface ChapterRuntime {
   id: string
@@ -86,13 +94,17 @@ export function bindChapterEl(id: string, el: HTMLElement | null) {
   scheduleMeasure()
 }
 
-export function bindStep(chapterId: string, stepId: string, el: HTMLElement, fade: boolean, early = false) {
+/** `exit`: a StepExit, or (legacy) a boolean meaning 'early'. */
+export function bindStep(chapterId: string, stepId: string, el: HTMLElement, fade: boolean, exit: boolean | StepExit = false) {
   const c = journey.byId.get(chapterId)
   if (!c) return () => {}
   const prev = c.steps.get(stepId)
   if (import.meta.env.DEV && prev && prev.el !== el && prev.el.isConnected)
     console.error(`[journey] duplicate <Step id="${stepId}"> in chapter ${chapterId}; ids must be unique per chapter ('title' and 'lab' are used by <ChapterTitle> and <Lab>)`)
-  const s: StepRuntime = { id: stepId, el, top: 0, height: 1, progress: 0, vis: -1, fade, early, lab: el.classList.contains('step--lab') }
+  const early = exit === true || exit === 'early'
+  const hold = exit === 'hold'
+  el.style.removeProperty('--sh')
+  const s: StepRuntime = { id: stepId, el, top: 0, height: 1, progress: 0, vis: -1, fade, early, hold, dy: 0, lab: el.classList.contains('step--lab') }
   c.steps.set(stepId, s)
   scheduleMeasure()
   return () => {
@@ -123,9 +135,30 @@ function svh() {
   return probe.getBoundingClientRect().height || window.innerHeight
 }
 
+/** How a large programmatic re-anchor scrolls (the scroller installs Lenis-aware scrolling). */
+let jumpTo = (y: number) => window.scrollTo(0, y)
+export function setJumpImpl(fn: (y: number) => void) {
+  jumpTo = fn
+}
+
+let measured = false
 export function measure() {
-  journey.vh = svh()
-  journey.vw = window.innerWidth
+  const vh = svh()
+  const vw = window.innerWidth
+  // A viewport resize (window, rotation, fullscreen, devtools) rescales every step (len × 100svh) while the
+  // absolute scrollY stays put. Remember where the reader was inside the current chapter (from the stale
+  // runtime) and return them there once everything is re-measured.
+  let anchor: ChapterRuntime | null = null
+  let anchorF = 0
+  if (measured && (Math.abs(vh - journey.vh) > 0.5 || vw !== journey.vw)) {
+    const c = journey.chapters[journey.section]
+    if (c?.el && c.height > 1) {
+      anchor = c
+      anchorF = (journey.scrollY - c.top) / c.height
+    }
+  }
+  journey.vh = vh
+  journey.vw = vw
   const sy = window.scrollY
   for (const c of journey.chapters) {
     if (!c.el) continue
@@ -148,6 +181,11 @@ export function measure() {
     }
   }
   journey.docHeight = document.documentElement.scrollHeight
+  measured = true
+  if (anchor) {
+    const y = Math.max(0, Math.round(anchor.top + anchorF * anchor.height))
+    if (Math.abs(y - window.scrollY) > 1) jumpTo(y)
+  }
   update(window.scrollY)
 }
 
@@ -177,8 +215,19 @@ export function update(y: number) {
       // fade over ~22% of a viewport of scroll at each end
       const f = Math.min(0.45, (0.22 * vh) / s.height)
       let vis = 1
+      if (s.hold) {
+        // cancel the sticky release: the content stays where it rested while it fades out
+        const dy = Math.min(vh, Math.max(0, y - (s.top + s.height - vh)))
+        if (Math.abs(dy - s.dy) > 0.25) {
+          s.dy = dy
+          s.el.style.setProperty('--sh', `${dy.toFixed(1)}px`)
+        }
+      }
       if (s.fade) {
-        if (s.early) {
+        if (s.hold) {
+          const release = Math.max(f, 1 - (0.5 * vh) / s.height)
+          vis = smoothstep(0, f, p) * (1 - smoothstep(release, Math.min(1, release + (HOLD_FADE * vh) / s.height), p))
+        } else if (s.early) {
           // out as soon as the sticky content releases and starts to rise
           const release = Math.max(f, 1 - (0.5 * vh) / s.height)
           vis = smoothstep(0, f, p) * (1 - smoothstep(release, Math.min(1, release + (0.24 * vh) / s.height), p))
@@ -232,10 +281,28 @@ export function update(y: number) {
     const keep = journey.travelTo != null ? [] : st.mounted.filter((i) => i >= centre - 2 && i <= centre + 2)
     const set = [...new Set([...keep, ...want])].filter((i) => i >= 0 && i < cs.length).sort((a, b) => a - b)
     const mountedChanged = set.join() !== st.mounted.join()
-    if (mountedChanged || st.active !== journey.active) useJourney.setState({ active: journey.active, mounted: mountedChanged ? set : st.mounted })
+    if (mountedChanged || st.active !== journey.active) {
+      if (st.active !== journey.active) syncHash(journey.active)
+      useJourney.setState({ active: journey.active, mounted: mountedChanged ? set : st.mounted })
+    }
   }
   for (const fn of listeners) fn()
 }
+
+/** The URL follows the active chapter (#id), so reloads and shared links land in the same chapter. */
+function syncHash(idx: number) {
+  if (params.shot) return
+  const id = journey.chapters[idx]?.id
+  if (!id) return
+  const url = idx === 0 ? location.pathname + location.search : `${location.pathname}${location.search}#${id}`
+  if (url === location.pathname + location.search + location.hash) return
+  try {
+    history.replaceState(history.state, '', url)
+  } catch {
+    /* rate-limited (Safari): the next change catches up */
+  }
+}
+
 
 /** Scroll position (px) at which a chapter reaches the given progress. */
 export function chapterScrollY(id: string, progress = 0) {

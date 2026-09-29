@@ -144,8 +144,11 @@ export default function Overlay() {
         <Caption>Loupes zoom ×1 → ×1000 · the Y keeps its corner</Caption>
         <Deeper>
           <p>
-            Near the crotch the drawn surface is <Eq tex={String.raw`ct \approx 5.327 + 1.522\,x^2 - 0.482\,y^2`} />: a saddle with a level tangent plane.
-            The gradient of Φ never vanishes there, so the surface is perfectly smooth.
+            The drawn pants are the level set Φ = 0.25 of a smooth function Φ (two Gaussian tubes drifting apart). Its gradient never vanishes at the crotch,
+            so the surface is perfectly smooth there: a saddle with a level tangent plane,{' '}
+            <span className="ws-nobr">
+              <Eq tex={String.raw`ct \approx 5.327 + 1.522\,x^2 - 0.482\,y^2`} />.
+            </span>
           </p>
         </Deeper>
         <MobileToggle />

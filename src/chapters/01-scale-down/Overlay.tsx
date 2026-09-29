@@ -26,6 +26,9 @@ import {
 } from './model'
 import './styles.css'
 
+/** Past this probe energy, Chapter 10's black-hole-floor chip appears (content/10-scale-problem.md, Lab Model 7). */
+const BH_CHIP_GEV = 1e18
+
 const BRIDGE = 'One kind of string. So why does the world contain so many different particles?'
 const BRIDGE_CAP = 'Open or closed? That depends on the version of string theory. We start with the simplest picture.'
 
@@ -200,7 +203,7 @@ function PointOrString() {
         <>
           <span className="sd-lab__note">
             <Status kind="analogy" compact />
-            <span>Thickness, glow and speed drawn for visibility. Real strings have no thickness.</span>
+            <span>Drawn for visibility. Real strings have no thickness or fixed shape; the blur stands in for collisions.</span>
           </span>
           <GoDeeper title="How do you measure the size of something you can’t see?">
             <p>
@@ -312,6 +315,12 @@ function PointOrString() {
         {mode === 'string' && <Readout label="Shown" value={`~10${superscript(slowdownOf(Math.pow(10, ls)))}× slower`} tone="filament" />}
         <p className="sd-lab__energy">
           Seeing smaller takes more energy: about <span className="t-mono">ħc</span> divided by the distance.
+          {E > BH_CHIP_GEV && (
+            <span className="sd-lab__floor">
+              {' '}
+              <Status kind="conjectured" compact /> Near 10¹⁹ GeV this rule is expected to fail: collisions that hard should form black holes (Ch.&nbsp;10).
+            </span>
+          )}
         </p>
       </div>
     </Lab>

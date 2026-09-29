@@ -1,111 +1,274 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { Button, GoDeeper, Lab, Readout, Segmented, Slider, Toggle } from '@/ui'
 import { DeeperContent } from './DeeperContent'
 import { STEP_LEN } from './layout'
-import { createSlicer, pantsField, signed, sliceY, T_VERTEX } from './model'
+import { signed, sliceY, T_VERTEX } from './model'
+import { sliceNow } from './nowSlice'
 import { THETA_MAX, T0_MAX, T0_MIN, useWorldsheet, type History, type ViewPreset } from './store'
 
 const DEG = Math.PI / 180
 const PLAY_SECONDS = 8
 const SWEEP_SECONDS = 6
 const SWEEP_CYCLES = 12
+/** Inset: baseline (CSS px from the top) for the y label, just below the caption's first line (styles.css). */
+const CAPTION_CLEAR = 29
 
 /* ───────────────────────── inset: this observer's movie (top-down x–y view of the slice) ───────────────────────── */
 
+/**
+ * Drawn imperatively, with no React render: a store subscription queues one redraw (a microtask, so several
+ * changes in one task draw once, in the same frame) whenever the slicing changes; ▶ play moves "now" every
+ * frame. The size comes from a ResizeObserver, so drawing never reads layout, and the slice is shared with
+ * the Scene (sliceNow): whichever draws first computes it, so it is computed once per frame.
+ */
 function Inset() {
-  const { t0, thetaDeg, phiDeg, history, split } = useWorldsheet()
   const canvas = useRef<HTMLCanvasElement>(null)
-  const slicer = useMemo(() => createSlicer(), [])
-  const yOut = useMemo(() => new Float64Array(4), [])
   useEffect(() => {
     const cv = canvas.current
-    if (!cv) return
-    // the CSS decides the size (smaller on phones); draw at that size × DPR
-    const INSET = Math.max(60, Math.round(cv.getBoundingClientRect().width) || 132)
-    const dpr = Math.min(2, window.devicePixelRatio || 1)
-    if (cv.width !== INSET * dpr) {
-      cv.width = INSET * dpr
-      cv.height = INSET * dpr
-    }
-    const g = cv.getContext('2d')
-    if (!g) return
-    g.setTransform(dpr, 0, 0, dpr, 0, 0)
-    g.clearRect(0, 0, INSET, INSET)
-    const S = INSET / 8.6 // px per ℓ; x ∈ [−4.3, 4.3]
-    const X = (x: number) => INSET / 2 + x * S
-    const Y = (y: number) => INSET / 2 - y * S
-    // grid (1 ℓ) + axes
-    g.lineWidth = 1
-    g.strokeStyle = 'rgba(134,168,216,0.10)'
-    for (let i = -4; i <= 4; i++) {
-      g.beginPath()
-      g.moveTo(X(i) + 0.5, 0)
-      g.lineTo(X(i) + 0.5, INSET)
-      g.stroke()
-    }
-    for (let j = -4; j <= 4; j++) {
-      g.beginPath()
-      g.moveTo(0, Y(j) + 0.5)
-      g.lineTo(INSET, Y(j) + 0.5)
-      g.stroke()
-    }
-    g.strokeStyle = 'rgba(134,168,216,0.32)'
-    g.beginPath()
-    g.moveTo(X(-4.2), Y(0) + 0.5)
-    g.lineTo(X(4.2), Y(0) + 0.5)
-    g.moveTo(X(0) + 0.5, Y(-3.6))
-    g.lineTo(X(0) + 0.5, Y(3.6))
-    g.stroke()
-    g.fillStyle = 'rgba(134,168,216,0.6)'
-    g.font = '9px "IBM Plex Mono", monospace'
-    g.fillText('x', X(4.05), Y(0) - 4)
-    g.fillText('y', X(0) + 4, Y(3.3))
-    const th = thetaDeg * DEG
-    const ph = phiDeg * DEG
-    // strings: the analytic slice of the pants on this "now"
-    if (history !== 'particles') {
-      const r = slicer.slice(pantsField, t0, th, ph)
-      g.strokeStyle = '#FFC98A'
-      g.shadowColor = 'rgba(255,201,138,0.8)'
-      g.shadowBlur = 6
-      g.lineWidth = 1.4
-      for (let c = 0; c < r.n; c++) {
-        const s0 = r.start[c]
-        const n = r.count[c]
+    const g = cv?.getContext('2d')
+    if (!cv || !g) return
+    const yOut = new Float64Array(4)
+    let size = 0 // CSS px of the drawing area (the CSS decides it: smaller on phones)
+    let queued = false
+    let alive = true
+    const draw = () => {
+      queued = false
+      if (!alive || !size) return
+      const { t0, thetaDeg, phiDeg, history, split } = useWorldsheet.getState()
+      const INSET = size
+      const dpr = Math.min(2, window.devicePixelRatio || 1)
+      if (cv.width !== Math.round(INSET * dpr)) {
+        cv.width = Math.round(INSET * dpr)
+        cv.height = Math.round(INSET * dpr)
+      }
+      g.setTransform(dpr, 0, 0, dpr, 0, 0)
+      g.clearRect(0, 0, INSET, INSET)
+      const S = INSET / 8.6 // px per ℓ; x ∈ [−4.3, 4.3]
+      const X = (x: number) => INSET / 2 + x * S
+      const Y = (y: number) => INSET / 2 - y * S
+      // grid (1 ℓ) + axes
+      g.lineWidth = 1
+      g.strokeStyle = 'rgba(134,168,216,0.10)'
+      for (let i = -4; i <= 4; i++) {
         g.beginPath()
-        for (let i = 0; i < n; i++) {
-          const x = r.pts[(s0 + i) * 3]
-          const y = r.pts[(s0 + i) * 3 + 1]
-          if (i === 0) g.moveTo(X(x), Y(y))
-          else g.lineTo(X(x), Y(y))
-        }
-        if (r.closed[c]) g.closePath()
+        g.moveTo(X(i) + 0.5, 0)
+        g.lineTo(X(i) + 0.5, INSET)
         g.stroke()
       }
-      g.shadowBlur = 0
-      // this slicing's split point
-      g.strokeStyle = 'rgba(134,168,216,0.9)'
-      g.lineWidth = 1
-      g.beginPath()
-      g.arc(X(split.x), Y(split.y), 4, 0, Math.PI * 2)
-      g.stroke()
-    }
-    // particles: dots (drawn along the x axis, their direction of motion)
-    if (history !== 'strings') {
-      const n = sliceY(t0, th, ph, yOut)
-      g.fillStyle = '#ECE6D9'
-      g.shadowColor = 'rgba(236,230,217,0.9)'
-      g.shadowBlur = 6
-      const yy = history === 'both' ? -2.7 : 0
-      for (let i = 0; i < n; i++) {
+      for (let j = -4; j <= 4; j++) {
         g.beginPath()
-        g.arc(X(yOut[i * 2]), Y(yy), 2.2, 0, Math.PI * 2)
-        g.fill()
+        g.moveTo(0, Y(j) + 0.5)
+        g.lineTo(INSET, Y(j) + 0.5)
+        g.stroke()
       }
-      g.shadowBlur = 0
+      // the y axis and its label start below the caption's first line (the plate label overlays the top)
+      const yTop = Math.max(Y(3.6), CAPTION_CLEAR - 7)
+      g.strokeStyle = 'rgba(134,168,216,0.32)'
+      g.beginPath()
+      g.moveTo(X(-4.2), Y(0) + 0.5)
+      g.lineTo(X(4.2), Y(0) + 0.5)
+      g.moveTo(X(0) + 0.5, Y(-3.6))
+      g.lineTo(X(0) + 0.5, yTop)
+      g.stroke()
+      g.fillStyle = 'rgba(134,168,216,0.6)'
+      g.font = '9px "IBM Plex Mono", monospace'
+      g.fillText('x', X(4.05), Y(0) - 4)
+      g.fillText('y', X(0) + 4, Math.max(Y(3.3), CAPTION_CLEAR))
+      const th = thetaDeg * DEG
+      const ph = phiDeg * DEG
+      // strings: the analytic slice of the pants on this "now"
+      if (history !== 'particles') {
+        const r = sliceNow(t0, th, ph)
+        g.strokeStyle = '#FFC98A'
+        g.shadowColor = 'rgba(255,201,138,0.8)'
+        g.shadowBlur = 6
+        g.lineWidth = 1.4
+        for (let c = 0; c < r.n; c++) {
+          const s0 = r.start[c]
+          const n = r.count[c]
+          g.beginPath()
+          for (let i = 0; i < n; i++) {
+            const x = r.pts[(s0 + i) * 3]
+            const y = r.pts[(s0 + i) * 3 + 1]
+            if (i === 0) g.moveTo(X(x), Y(y))
+            else g.lineTo(X(x), Y(y))
+          }
+          if (r.closed[c]) g.closePath()
+          g.stroke()
+        }
+        g.shadowBlur = 0
+        // this slicing's split point
+        g.strokeStyle = 'rgba(134,168,216,0.9)'
+        g.lineWidth = 1
+        g.beginPath()
+        g.arc(X(split.x), Y(split.y), 4, 0, Math.PI * 2)
+        g.stroke()
+      }
+      // particles: dots (drawn along the x axis, their direction of motion)
+      if (history !== 'strings') {
+        const n = sliceY(t0, th, ph, yOut)
+        g.fillStyle = '#ECE6D9'
+        g.shadowColor = 'rgba(236,230,217,0.9)'
+        g.shadowBlur = 6
+        const yy = history === 'both' ? -2.7 : 0
+        for (let i = 0; i < n; i++) {
+          g.beginPath()
+          g.arc(X(yOut[i * 2]), Y(yy), 2.2, 0, Math.PI * 2)
+          g.fill()
+        }
+        g.shadowBlur = 0
+      }
     }
-  }, [t0, thetaDeg, phiDeg, history, split, slicer, yOut])
+    const schedule = () => {
+      if (queued) return
+      queued = true
+      queueMicrotask(draw)
+    }
+    const unsub = useWorldsheet.subscribe((s, p) => {
+      if (s.t0 !== p.t0 || s.thetaDeg !== p.thetaDeg || s.phiDeg !== p.phiDeg || s.history !== p.history || s.split !== p.split) schedule()
+    })
+    const ro =
+      typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver((entries) => {
+            const w = Math.round(entries[entries.length - 1].contentRect.width)
+            if (w !== size) {
+              size = w
+              schedule()
+            }
+          })
+    if (ro) ro.observe(cv)
+    else {
+      size = cv.clientWidth
+      schedule()
+    }
+    return () => {
+      alive = false
+      unsub()
+      ro?.disconnect()
+    }
+  }, [])
   return <canvas ref={canvas} className="ws-inset__canvas" aria-hidden="true" />
+}
+
+/** What this "now" sees and where it saw the split: re-renders only when the text changes. */
+function Readouts() {
+  const sees = useWorldsheet((s) => {
+    const pinching = Math.abs(s.t0 - s.split.t0) < 0.03
+    const loops = pinching ? 'PINCHING' : s.t0 < s.split.t0 ? '1 LOOP' : '2 LOOPS'
+    const parts = s.t0 < T_VERTEX ? '1 PARTICLE' : '2 PARTICLES'
+    return s.history === 'strings' ? loops : s.history === 'particles' ? parts : `${loops} · ${parts}`
+  })
+  const splitText = useWorldsheet((s) =>
+    s.history === 'particles' ? `x 0.00 · y 0.00 · ct ${T_VERTEX.toFixed(2)}` : `x ${signed(s.split.x)} · y ${signed(s.split.y)} · ct ${s.split.t.toFixed(2)}`,
+  )
+  return (
+    <div className="ws-lab-read">
+      <Readout label="This “now” sees" value={sees} tone="filament" />
+      <Readout label="Split seen at" value={splitText} tone="field" />
+    </div>
+  )
+}
+
+/** "Now" slider + ▶ play. The only part of the panel that re-renders on every tick of play. */
+function NowControl() {
+  const t0 = useWorldsheet((s) => s.t0)
+  const playing = useWorldsheet((s) => s.playing)
+  const { setT0, setPlaying } = useWorldsheet.getState()
+
+  // ▶ play: sweep "now" 1 → 9 in 8 s, looping until paused
+  useEffect(() => {
+    if (!playing) return
+    let raf = 0
+    let last = performance.now()
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop)
+      const dt = Math.min(0.05, (now - last) / 1000)
+      last = now
+      const st = useWorldsheet.getState()
+      let v = st.t0 + ((T0_MAX - T0_MIN) / PLAY_SECONDS) * dt
+      if (v > T0_MAX) v = T0_MIN
+      st.setT0(v)
+    }
+    raf = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(raf)
+  }, [playing])
+
+  return (
+    <div className="ws-lab-row">
+      <div className="ws-lab-grow">
+        <Slider
+          label={
+            <>
+              Now · <span className="ws-nc">t₀</span>
+            </>
+          }
+          value={t0}
+          min={T0_MIN}
+          max={T0_MAX}
+          step={0.05}
+          onChange={(x) => {
+            if (playing) setPlaying(false)
+            setT0(x)
+          }}
+          format={(x) => `ct ${x.toFixed(2)} ℓ`}
+          describe="Where this observer's present cuts through the whole history."
+        />
+      </div>
+      <button type="button" className={`ws-play${playing ? ' is-on' : ''}`} aria-pressed={playing} aria-label={playing ? 'Pause the sweep of now' : 'Play: sweep now upward'} onClick={() => setPlaying(!playing)}>
+        {playing ? (
+          <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
+            <path d="M2 1.5h2v7H2zM6 1.5h2v7H6z" fill="currentColor" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
+            <path d="M2.5 1.2l6 3.8-6 3.8z" fill="currentColor" />
+          </svg>
+        )}
+      </button>
+    </div>
+  )
+}
+
+/**
+ * Screen-reader live region: announces the loop count and the split point once the slicing has rested for
+ * 350 ms. Driven by a store subscription, so play's per-frame "now" never re-renders it.
+ */
+function LiveRegion() {
+  const [live, setLive] = useState('')
+  useEffect(() => {
+    const L = { loops: '', split: '' }
+    let id = 0
+    const announce = () => {
+      const { t0, split, history, thetaDeg } = useWorldsheet.getState()
+      const l = t0 < split.t0 ? 'This “now” sees one loop.' : 'This “now” sees two loops.'
+      const sp = `Split point moved to x ${split.x.toFixed(2)}, y ${split.y.toFixed(2)}.`
+      if (history !== 'particles' && l !== L.loops) {
+        L.loops = l
+        setLive(l)
+      } else if (history !== 'particles' && sp !== L.split && thetaDeg > 0) {
+        L.split = sp
+        setLive(sp)
+      }
+    }
+    const later = () => {
+      window.clearTimeout(id)
+      id = window.setTimeout(announce, 350)
+    }
+    later()
+    const unsub = useWorldsheet.subscribe((s, p) => {
+      if (s.t0 !== p.t0 || s.split !== p.split || s.history !== p.history || s.thetaDeg !== p.thetaDeg) later()
+    })
+    return () => {
+      unsub()
+      window.clearTimeout(id)
+    }
+  }, [])
+  return (
+    <div className="sr-only" aria-live="polite">
+      {live}
+    </div>
+  )
 }
 
 /* ───────────────────────── direction dial (φ from +x toward +y) ───────────────────────── */
@@ -178,26 +341,14 @@ function Dial({ value, onChange }: { value: number; onChange: (deg: number) => v
 /* ───────────────────────── the lab ───────────────────────── */
 
 export function LabPanel() {
-  const s = useWorldsheet()
-  const { history, t0, thetaDeg, phiDeg, marks, playing, sweeping, swept, view, split } = s
-
-  // ▶ play: sweep "now" 1 → 9 in 8 s, looping until paused
-  useEffect(() => {
-    if (!playing) return
-    let raf = 0
-    let last = performance.now()
-    const loop = (now: number) => {
-      raf = requestAnimationFrame(loop)
-      const dt = Math.min(0.05, (now - last) / 1000)
-      last = now
-      const st = useWorldsheet.getState()
-      let v = st.t0 + ((T0_MAX - T0_MIN) / PLAY_SECONDS) * dt
-      if (v > T0_MAX) v = T0_MIN
-      st.setT0(v)
-    }
-    raf = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(raf)
-  }, [playing])
+  const history = useWorldsheet((s) => s.history)
+  const thetaDeg = useWorldsheet((s) => s.thetaDeg)
+  const phiDeg = useWorldsheet((s) => s.phiDeg)
+  const marks = useWorldsheet((s) => s.marks)
+  const sweeping = useWorldsheet((s) => s.sweeping)
+  const swept = useWorldsheet((s) => s.swept)
+  const view = useWorldsheet((s) => s.view)
+  const { setHistory, setTheta, setPhi, setMarks, clearMarks, setSweeping, setView } = useWorldsheet.getState()
 
   // try every direction: φ through a full turn in 6 s with quick mini-sweeps of "now" around each split
   useEffect(() => {
@@ -218,31 +369,7 @@ export function LabPanel() {
 
   const th = thetaDeg * DEG
   const v = Math.tan(th)
-  const pinching = Math.abs(t0 - split.t0) < 0.03
-  const loops = pinching ? 'PINCHING' : t0 < split.t0 ? '1 LOOP' : '2 LOOPS'
-  const parts = t0 < T_VERTEX ? '1 PARTICLE' : '2 PARTICLES'
-  const sees = history === 'strings' ? loops : history === 'particles' ? parts : `${loops} · ${parts}`
-  const splitText = history === 'particles' ? `x 0.00 · y 0.00 · ct ${T_VERTEX.toFixed(2)}` : `x ${signed(split.x)} · y ${signed(split.y)} · ct ${split.t.toFixed(2)}`
   const atLimit = thetaDeg >= THETA_MAX - 0.05
-
-  // screen-reader live region
-  const [live, setLive] = useState('')
-  const lastLive = useRef({ loops: '', split: '' })
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      const L = lastLive.current
-      const l = t0 < split.t0 ? 'This “now” sees one loop.' : 'This “now” sees two loops.'
-      const sp = `Split point moved to x ${split.x.toFixed(2)}, y ${split.y.toFixed(2)}.`
-      if (history !== 'particles' && l !== L.loops) {
-        L.loops = l
-        setLive(l)
-      } else if (history !== 'particles' && sp !== L.split && thetaDeg > 0) {
-        L.split = sp
-        setLive(sp)
-      }
-    }, 350)
-    return () => window.clearTimeout(id)
-  }, [t0, split, history, thetaDeg])
 
   let caption: string[]
   if (atLimit) caption = ['Tilts stop below 45°: no observer outruns light.']
@@ -272,10 +399,7 @@ export function LabPanel() {
           <figcaption className="t-label">This observer’s movie</figcaption>
           <Inset />
         </figure>
-        <div className="ws-lab-read">
-          <Readout label="This “now” sees" value={sees} tone="filament" />
-          <Readout label="Split seen at" value={splitText} tone="field" />
-        </div>
+        <Readouts />
       </div>
 
       <div className="ws-quiet-label">
@@ -287,42 +411,11 @@ export function LabPanel() {
           { value: 'strings', label: 'Strings' },
           { value: 'both', label: 'Both' },
         ]}
-        onChange={s.setHistory}
+        onChange={setHistory}
       />
       </div>
 
-      <div className="ws-lab-row">
-        <div className="ws-lab-grow">
-          <Slider
-            label={
-              <>
-                Now · <span className="ws-nc">t₀</span>
-              </>
-            }
-            value={t0}
-            min={T0_MIN}
-            max={T0_MAX}
-            step={0.05}
-            onChange={(x) => {
-              if (playing) s.setPlaying(false)
-              s.setT0(x)
-            }}
-            format={(x) => `ct ${x.toFixed(2)} ℓ`}
-            describe="Where this observer's present cuts through the whole history."
-          />
-        </div>
-        <button type="button" className={`ws-play${playing ? ' is-on' : ''}`} aria-pressed={playing} aria-label={playing ? 'Pause the sweep of now' : 'Play: sweep now upward'} onClick={() => s.setPlaying(!playing)}>
-          {playing ? (
-            <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
-              <path d="M2 1.5h2v7H2zM6 1.5h2v7H6z" fill="currentColor" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
-              <path d="M2.5 1.2l6 3.8-6 3.8z" fill="currentColor" />
-            </svg>
-          )}
-        </button>
-      </div>
+      <NowControl />
 
       <div>
         <Slider
@@ -335,7 +428,7 @@ export function LabPanel() {
           min={0}
           max={THETA_MAX}
           step={0.5}
-          onChange={s.setTheta}
+          onChange={setTheta}
           format={(x) => `${x.toFixed(1)}° · v/c = tan θ = ${Math.tan(x * DEG).toFixed(2)}`}
           describe="Motion tilts an observer's 'now'. In a spacetime diagram, the slope is v/c."
         />
@@ -343,20 +436,20 @@ export function LabPanel() {
       </div>
 
       <div className="ws-lab-dir">
-        <Dial value={phiDeg} onChange={s.setPhi} />
+        <Dial value={phiDeg} onChange={setPhi} />
         <div className="ws-lab-dir__txt">
           <span className="t-label">Direction</span>
           <span className="ws-lab-dir__val t-mono">φ = {Math.round(phiDeg)}°</span>
           <span className="ws-lab-dir__hint">Which way this observer moves.</span>
         </div>
-        <Button onClick={() => s.setSweeping(!sweeping)} pressed={sweeping} title="Set a 30° tilt and turn φ through every direction, sweeping “now” around each split">
+        <Button onClick={() => setSweeping(!sweeping)} pressed={sweeping} title="Set a 30° tilt and turn φ through every direction, sweeping “now” around each split">
           {sweeping ? 'Stop' : 'Try every direction'}
         </Button>
       </div>
 
       <div className="ws-lab-marks">
-        <Toggle label="Mark splits" checked={marks} onChange={s.setMarks} describe="Leave a dot at each split point you witness." />
-        <button type="button" className="ws-clear" onClick={s.clearMarks}>
+        <Toggle label="Mark splits" checked={marks} onChange={setMarks} describe="Leave a dot at each split point you witness." />
+        <button type="button" className="ws-clear" onClick={clearMarks}>
           Clear
         </button>
         <div className="ws-lab-view">
@@ -368,7 +461,7 @@ export function LabPanel() {
               { value: 'side', label: 'Side' },
               { value: 'top', label: 'Top' },
             ]}
-            onChange={s.setView}
+            onChange={setView}
             sound={false}
           />
         </div>
@@ -381,9 +474,7 @@ export function LabPanel() {
           </p>
         ))}
       </div>
-      <div className="sr-only" aria-live="polite">
-        {live}
-      </div>
+      <LiveRegion />
     </Lab>
   )
 }

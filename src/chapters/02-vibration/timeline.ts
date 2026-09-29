@@ -91,6 +91,7 @@ export function pullDecades(u: number): number {
 
 const L_H1 = Math.log10(1.5e-34) // chapter 1 hands over at this gauge reading
 const L_S = Math.log10(2e-34) // assumed ℓ_s = ħc/M_s for M_s = 10¹⁸ GeV
+const L_GUITAR = Math.log10(0.65) // a guitar's scale length: the Lab's PINNED (guitar) string
 
 /** Characteristic length on screen (m), for the left scale gauge. */
 export function vibScale(h: ChapterHandle): number | null {
@@ -101,7 +102,7 @@ export function vibScale(h: ChapterHandle): number | null {
   else if (B < 8) e = L_S + pullDecades(1 - range(B, 7.0, 7.1)) // Beat 6 pushes back into rung 0
   else {
     const lab = useVib.getState()
-    const labE = L_S + (lab.ends === 'pinned' ? 0 : Math.log10(Math.max(1, lab.dist)))
+    const labE = lab.ends === 'pinned' ? L_GUITAR : L_S + Math.log10(Math.max(1, lab.dist))
     if (B < 9) e = L_S + (labE - L_S) * smoothstep(8.0, 8.12, B)
     else e = labE + (L_S - labE) * smoothstep(9.0, 9.16, B) + pullDecades(exitU(B))
   }

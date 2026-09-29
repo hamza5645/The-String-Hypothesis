@@ -38,6 +38,34 @@ function create(): boolean {
   }
 }
 
+let suspendTimer = 0
+
+/**
+ * Fade the bench voice out and suspend its context. Called when the chapter leaves the screen or
+ * unmounts, and when sound is switched off, since benchTone() only runs while the chapter is visible.
+ * Cheap when already silent (the Scene may call it every frame).
+ */
+export function silenceBench() {
+  if (!ctx || !master) return
+  if (lastMaster !== 0) {
+    master.gain.setTargetAtTime(0, ctx.currentTime, 0.04)
+    lastMaster = 0
+    last.fill(-1)
+    silentSince = performance.now() // benchTone's own suspend waits for the fade too
+  }
+  // suspend once the short fade has run, unless benchTone() has turned the voice back up meanwhile
+  if (ctx.state === 'running' && !suspendTimer) {
+    suspendTimer = window.setTimeout(() => {
+      suspendTimer = 0
+      if (ctx && lastMaster === 0 && ctx.state === 'running') ctx.suspend().catch(() => {})
+    }, 250)
+  }
+}
+
+useSettings.subscribe((s) => {
+  if (!s.sound) silenceBench()
+})
+
 /**
  * Call every frame from the Scene. `amps` in units of L (the drawn amplitudes Aₙ); `on` = the bench is
  * on screen, FREE, and not far away. Target gains gₙ = 0.18·Aₙ/A_q, renormalized so Σgₙ ≤ 0.6.

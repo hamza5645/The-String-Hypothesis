@@ -337,7 +337,7 @@ function DeeperMass() {
       </p>
       <p className="dim-fine">
         Simplifications in the lab: the circle is drawn at a constant size (not to scale); only one hidden circle is shown, where string theory needs six hidden
-        dimensions; winding strings are left for Chapter 08; the rungs are for a free particle. The echo laps are a picture of the single-valuedness rule, not literal
+        dimensions; winding strings are left for Chapter 8; the rungs are for a free particle. The echo laps are a picture of the single-valuedness rule, not literal
         dynamics.
       </p>
     </GoDeeper>

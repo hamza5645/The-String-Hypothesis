@@ -150,7 +150,7 @@ function Wide() {
 /** Portrait (phones): branes on top, matrix and plot side by side below. */
 function Tall() {
   return (
-    <svg className="brn-fb brn-fb--tall" viewBox="0 0 360 400" role="img" aria-label="Two parallel D-branes with a string stretched between them: mass m equals T times d. A closed loop roams the bulk. The string matrix has two massless and two massive entries.">
+    <svg className="brn-fb brn-fb--tall" viewBox="0 0 360 400" role="img" aria-label="A sketch, not to scale: two parallel D-branes drawn as sheets, with a string stretched between them: mass m equals T times d. A closed loop roams the bulk. The string matrix has two massless and two massive entries.">
       <Defs />
       <Sheet x0={10} y={92} w={250} dx={90} dy={40} />
       <Sheet x0={10} y={232} w={250} dx={90} dy={40} />
@@ -170,6 +170,10 @@ function Tall() {
       <ellipse cx="88" cy="140" rx="18" ry="13" stroke={CORE} strokeWidth="1.3" fill="none" />
       <text x="40" y="172" fill={WARM} fontFamily={MONO} fontSize="9" letterSpacing="0.8">
         CLOSED · IN THE BULK
+      </text>
+      {/* the drawing's caveat, right under it (still clear of the beat text on short phones) */}
+      <text x="10" y="256" fill={DIM} fontFamily={MONO} fontSize="9">
+        ≈ 2D sheet = a Dp-brane · not to scale · ◑ derived, untested
       </text>
       <Matrix x={20} y={290} s={0.8} />
       <Plot x={190} y={284} s={1} />

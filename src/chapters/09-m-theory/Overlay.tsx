@@ -1,9 +1,30 @@
-import { Beat, Caption, ChapterTitle, Deeper, Step, Term } from '@/ui'
+import { useEffect } from 'react'
+import { useChapter } from '@/core/chapter'
+import { journey, onJourney } from '@/core/journey'
+import { Beat, Caption, ChapterTitle, Deeper, Eq, Step, Term } from '@/ui'
 import { LEN } from './director'
 import { LabPanel } from './LabPanel'
+import { startSdfBake } from './model'
 import './styles.css'
 
 export default function Overlay() {
+  const h = useChapter()
+  // The landmass's distance field is baked in idle time once the previous chapter (or a neighbour) is active, so
+  // the Scene's mount, on entering duality, never pays ~20 ms for it in one frame.
+  useEffect(() => {
+    const near = () => Math.abs(journey.active - h.index) <= 1
+    if (near()) {
+      startSdfBake()
+      return
+    }
+    const off = onJourney(() => {
+      if (!near()) return
+      off()
+      startSdfBake()
+    })
+    return off
+  }, [h])
+
   return (
     <>
       <ChapterTitle length={LEN.title} valign="bottom" status="conjectured" sub="Five versions of string theory, drawn as islands on one map.">
@@ -12,7 +33,7 @@ export default function Overlay() {
 
       <Step id="opening" length={LEN.opening}>
         <Beat status="derived" kicker="1985">
-          Chapter 08 found two pictures of one physics. Hold on to that. By 1985, string theory, hoped to be unique, came in five consistent versions, each in ten dimensions, each built differently. An embarrassment.
+          Chapter 8 found two pictures of one physics. Hold on to that. By 1985, string theory, hoped to be unique, came in five consistent versions, each in ten dimensions, each built differently. An embarrassment.
           Five theories, or one?
         </Beat>
       </Step>
@@ -35,24 +56,27 @@ export default function Overlay() {
           the approximation fails, and the map goes blank.
         </Beat>
         <Deeper>
-          <p>A closed-string worldsheet with h handles is weighted by g^(2h−2), so each extra handle costs a relative g². At g ≈ 1 no term in the sum can be dropped.</p>
+          <p>A closed-string worldsheet with h handles is weighted by g<sup>2h−2</sup>, so each extra handle costs a relative g². At g ≈ 1 no term in the sum can be dropped.</p>
         </Deeper>
       </Step>
 
       <Step id="bridges" length={LEN.bridges}>
         <Beat status={['conjectured', 'derived', 'analogy']} kicker="Bridges">
           Some masses are <Term id="bps-state">pinned exactly</Term> by supersymmetry, at any coupling. Follow them offshore and bridges appear. Strongly coupled Type I matches weakly coupled heterotic SO(32) in every test made:{' '}
-          <Term id="s-duality">S-duality</Term>. IIB maps onto itself. T-duality, Chapter 08’s circle swap, joins IIA–IIB and heterotic–heterotic.
+          <Term id="s-duality">S-duality</Term>. IIB maps onto itself. T-duality, Chapter 8’s circle swap, joins IIA–IIB and heterotic–heterotic.
         </Beat>
         <Caption>Solid causeway = derived · dashed arch = conjectured</Caption>
       </Step>
 
       <Step id="aha" length={LEN.aha}>
         <Beat status={['conjectured', 'analogy']} kicker="Strong coupling">
-          Turn up Type IIA’s coupling. A ladder of <Term id="d-particle">new particles</Term> descends, evenly spaced: Chapter 05’s signature of a hidden circle. The coupling was a size. An eleventh dimension opens, and the string
+          Turn up Type IIA’s coupling. A ladder of <Term id="d-particle">new particles</Term> descends, evenly spaced: Chapter 5’s signature of a hidden circle. The coupling was a size. An eleventh dimension opens, and the string
           turns out to be a <Term id="membrane">membrane</Term> wrapped around it.
         </Beat>
-        <Caption>R₁₁ = g ℓ_s · ℓ₁₁ = g^⅓ ℓ_s · not to scale</Caption>
+        <Caption>
+          <Eq className="mth-cap-eq" tex={String.raw`R_{11} = g\,\ell_s`} label="R eleven equals g times l s" /> ·{' '}
+          <Eq className="mth-cap-eq" tex={String.raw`\ell_{11} = g^{1/3}\,\ell_s`} label="l eleven equals g to the one third times l s" /> · not to scale
+        </Caption>
       </Step>
 
       <Step id="landmass" length={LEN.landmass}>

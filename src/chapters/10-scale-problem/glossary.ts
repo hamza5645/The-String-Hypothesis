@@ -1,16 +1,19 @@
 import type { GlossaryEntries } from '@/core/glossary'
 
-// content/10-scale-problem.md § Glossary
+// content/10-scale-problem.md § Glossary. Terms introduced elsewhere are referenced, not redefined
+// (content/glossary.md): 'string-scale' lives in Chapter 2, 'supersymmetry' in Chapter 6.
 export default {
   'logarithmic-scale': {
     term: 'Logarithmic scale',
     def: 'A scale where each equal step multiplies by the same factor, here ten. Atoms and galaxies get equal room. Enlarging everything simply slides the picture.',
     chapter: 'scale-problem',
   },
+  // canonical home: Chapter 1 (content/glossary.md). Defined here only because 01-scale-down has no entry
+  // yet; the link already points to Chapter 1. Move it there, and delete it here, when that folder adds it.
   electronvolt: {
     term: 'Electronvolt',
     def: 'The energy an electron gains crossing one volt: 1.6 × 10⁻¹⁹ J. A GeV is 10⁹ eV; a TeV is 10¹² eV.',
-    chapter: 'scale-problem',
+    chapter: 'scale-down',
   },
   'collision-energy': {
     term: 'Collision energy',
@@ -27,19 +30,9 @@ export default {
     def: 'A region where gravity traps even light. Energy E packed inside its horizon radius, 2GE/c⁴, would form one. For everyday energies this radius is absurdly tiny.',
     chapter: 'scale-problem',
   },
-  'string-scale': {
-    term: 'String scale',
-    def: 'The energy (or length ℓs = √α′) at which strings would reveal their extent. Unknown. Traditional estimates sit roughly ten to thirty times below the Planck energy; speculative models place it much lower.',
-    chapter: 'scale-problem',
-  },
   'indirect-test': {
     term: 'Indirect test',
     def: 'Checking a theory through consequences at accessible scales, such as the early universe or short-range gravity, instead of seeing its basic objects directly. Theoretical checks test consistency, not nature.',
-    chapter: 'scale-problem',
-  },
-  supersymmetry: {
-    term: 'Supersymmetry',
-    def: "A proposed symmetry pairing each known particle with a partner. It appears in many string models, but string theory does not fix the partners' masses. None have been found.",
     chapter: 'scale-problem',
   },
   'cosmic-superstring': {

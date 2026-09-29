@@ -638,7 +638,7 @@ export function onoff(f: Frame, u: number) {
   if (xk >= 0) XK.k = xk
   callout(f, 'cross', xx, 0, xz, -0.5, 0, 0.5, dots * window01(u, 0.12, 0.34, 0.05) * (xk >= 0 ? 1 : 0))
   // the slice's title is a fixed figure title at the top of the stage, not a label among the moving strings
-  f.hud.setTitle('On-brane view · you see only what touches the brane')
+  f.hud.setTitle('On-brane view · you see only what touches the brane', 'slice')
   f.hud.show('ftitle', window01(u, 0.1, 0.34, 0.05))
   f.hud.show('pin:slice', window01(u, 0.2, 0.4, 0.05))
   f.hud.show('pin:bulk', window01(u, 0.44, 1.2, 0.06))
@@ -1062,12 +1062,13 @@ export function world(f: Frame, u: number) {
   // at the tip of one of the flat (in-sheet) field lines, front right of the mass
   // the figure's labels arrive in turn (the relabelled strings, then the two kinds of field line, then the slab)
   tag(f, 'confined', 1.45, 0.02, 2.86, window01(u, 0.18, 0.36, 0.04))
-  tag(f, 'gspread', -1.3, 1.25, -0.6, window01(u, 0.14, 0.31, 0.04))
+  // (phones: lower, among the rising lines, so it clears the figure title under the pinned note)
+  tag(f, 'gspread', -1.3, f.mobile ? 0.75 : 1.25, -0.6, window01(u, 0.14, 0.31, 0.04))
   tag(f, 'slabtb', -1.3, 1.0, -5, window01(u, 0.29, 0.44, 0.04))
   // far from the mass the lines lie along the brane again (below the sheet, in front): the dilution, stated.
   // (it follows the proton card, which shares the bottom of the frame)
   callout(f, 'far', 0.6, -0.9, 2.0, 0, -0.3, 0.45, window01(u, 0.41, 0.55, 0.03))
-  f.hud.setTitle('Arkani-Hamed, Dimopoulos & Dvali, 1998 · large extra dimensions dilute gravity')
+  f.hud.setTitle('Arkani-Hamed, Dimopoulos & Dvali, 1998 · large extra dimensions dilute gravity', 'add')
   f.hud.show('ftitle', window01(u, 0.14, 0.4, 0.04))
   tag(f, 'amass', 0, -0.12, 0.2, window01(u, 0.1, 0.4, 0.05))
   f.hud.show('card:proton', window01(u, 0.24, 0.42, 0.04))

@@ -34,6 +34,9 @@ export function App() {
 
   return (
     <>
+      <a className="skip-link" href={`#${sections[0]?.id ?? 'prologue'}`}>
+        Skip to the story
+      </a>
       {webgl && (
         <StageBoundary label="stage" onError={() => useSettings.setState({ webgl: false })}>
           <Suspense fallback={<div className="stage" aria-hidden="true" />}>

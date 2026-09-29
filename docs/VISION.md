@@ -64,7 +64,7 @@ Single, deliberate dark world (deep space + mathematical light). No light theme.
 - **Void** `#05070B`: the ground (blue-biased near-black)
 - **Abyss** `#0B0F17`: raised panels (used translucent)
 - **Ink** `#ECE6D9`: primary text (warm paper-white)
-- **Ink-2** `#9AA0AE`: secondary text; **Ink-3** `#5C6270`: labels and hairlines
+- **Ink-2** `#9AA0AE`: secondary text; **Ink-3** `#707B92`: small labels, units, mono text (≥ 4.5:1 on Void); **Ink-4** `#5C6270`: hairlines, ticks and marks only (not text)
 - **Filament** `#FFC98A` (core `#FFF6E8`): strings only
 - **Field** `#86A8D8`: diagram lines, grids, geometry, spacetime
 - Status colors: OBSERVED `#ECE6D9`, DERIVED `#86A8D8`, CONJECTURED `#A99BD6`, SPECULATIVE `#7D8190`

@@ -1,27 +1,33 @@
 // Shaders and procedural textures for the map. All created once (module-level factories used in useMemo).
 import * as THREE from 'three'
 import { COLORS } from '@/gl'
-import { bakeSdf, tipDir } from './model'
+import { SDF_N, onSdfReady, startSdfBake, tipDir } from './model'
 
 const col = (hex: string) => new THREE.Color(hex)
 
 /* ───────────────────────── Textures ───────────────────────── */
 
 let sdfTex: THREE.DataTexture | null = null
-/** Signed distance to the landmass over [−8, 8]² (half-float, bilinear). Baked once per session. */
+/**
+ * Signed distance to the landmass over [−8, 8]² (half-float, bilinear). Baked once per session, in idle time
+ * (model.ts); the texture uploads when the bake completes. Terrain finishes it at once if it must draw first.
+ */
 export function getSdfTexture() {
   if (sdfTex) return sdfTex
-  const N = 256
-  const f = bakeSdf(N)
+  const N = SDF_N
   const h = new Uint16Array(N * N)
-  for (let i = 0; i < N * N; i++) h[i] = THREE.DataUtils.toHalfFloat(Math.max(-8, Math.min(8, f[i])))
-  sdfTex = new THREE.DataTexture(h, N, N, THREE.RedFormat, THREE.HalfFloatType)
-  sdfTex.minFilter = THREE.LinearFilter
-  sdfTex.magFilter = THREE.LinearFilter
-  sdfTex.wrapS = sdfTex.wrapT = THREE.ClampToEdgeWrapping
-  sdfTex.generateMipmaps = false
-  sdfTex.needsUpdate = true
-  return sdfTex
+  const tex = new THREE.DataTexture(h, N, N, THREE.RedFormat, THREE.HalfFloatType)
+  tex.minFilter = THREE.LinearFilter
+  tex.magFilter = THREE.LinearFilter
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping
+  tex.generateMipmaps = false
+  sdfTex = tex
+  startSdfBake()
+  onSdfReady((f) => {
+    for (let i = 0; i < N * N; i++) h[i] = THREE.DataUtils.toHalfFloat(Math.max(-8, Math.min(8, f[i])))
+    tex.needsUpdate = true
+  })
+  return tex
 }
 
 let noiseTex: THREE.DataTexture | null = null
@@ -93,6 +99,7 @@ export function createTerrainMaterial() {
       uDir: { value: dirs() },
       uCap: { value: Array.from({ length: N_CAPS }, () => new THREE.Vector4()) },
       uCapOn: { value: new Array(N_CAPS).fill(0) },
+      uCapN: { value: 0 },
       uMaskFull: { value: 0 },
       uReveal: { value: 0 },
       uTopo: { value: 1 },
@@ -137,6 +144,7 @@ export function createTerrainMaterial() {
       uniform vec2 uDir[6];
       uniform vec4 uCap[${N_CAPS}];
       uniform float uCapOn[${N_CAPS}];
+      uniform int uCapN;
       uniform float uMaskFull;
       uniform float uReveal;
       uniform float uTopo;
@@ -175,18 +183,30 @@ export function createTerrainMaterial() {
         }
         // the same height as the vertex stage, evaluated per pixel: contour lines stay smooth at any mesh density
         float hF = smoothstep(-0.55, 0.3, -sdf) * (0.12 + 0.9 * m) - (1.0 - inside) * 0.4;
-        float fh = fwidth(hF);
+        float hx = dFdx(hF), hy = dFdy(hF);
+        float fh = abs(hx) + abs(hy);
         float above = smoothstep(uSea - fh, uSea + fh, hF);
         float mask = smoothstep(0.08, 0.14, im);
-        for (int k = 0; k < ${N_CAPS}; k++) mask = max(mask, uCapOn[k] * (1.0 - smoothstep(0.2, 0.32, capD(xz, uCap[k]))));
+        for (int k = 0; k < ${N_CAPS}; k++) {
+          if (k >= uCapN) break;
+          mask = max(mask, uCapOn[k] * (1.0 - smoothstep(0.2, 0.32, capD(xz, uCap[k]))));
+        }
         mask = mix(mask, vInside, uMaskFull) * smoothstep(0.02, 0.2, vInside);
         // the submerged shelf only exists for the eye once the sea turns translucent (never in the opening's tilt)
         mask *= uReveal;
         float vis = max(above, mask);
         if (vis * uFade < 0.004) discard;
 
-        vec3 n = normalize(cross(dFdx(vW), dFdy(vW)));
+        // shading normal from the per-pixel height (smooth at any mesh density, no facets); the triangle's own
+        // normal where the map is seen nearly edge-on and the screen → map step degenerates
+        vec3 dWx = dFdx(vW), dWy = dFdy(vW);
+        vec3 n = normalize(cross(dWx, dWy));
         if (n.y < 0.0) n = -n;
+        float det = dWx.x * dWy.z - dWx.z * dWy.x;
+        if (abs(det) > 0.05 * length(dWx.xz) * length(dWy.xz)) {
+          vec2 gr = vec2(hx * dWy.z - hy * dWx.z, dWx.x * hy - dWy.x * hx) / det;
+          n = normalize(vec3(-gr.x, 1.0, -gr.y));
+        }
         vec3 V = normalize(cameraPosition - vW);
         float fres = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 3.0);
         float lam = clamp(dot(n, normalize(vec3(-0.45, 0.8, 0.4))), 0.0, 1.0);

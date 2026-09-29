@@ -8,10 +8,12 @@
 import * as THREE from 'three'
 import { rng } from '@/core/math'
 
-type Cap = { kind: 'cap'; a: THREE.Vector3; b: THREE.Vector3; ra: number; rb: number; w: number; part: number }
+/** Sampling frame of a capsule, built once per primitive (after its final transform). */
+type CapFrame = { axis: THREE.Vector3; L: number; u: THREE.Vector3; v: THREE.Vector3; lat: number; capA: number; capB: number }
+type Cap = { kind: 'cap'; a: THREE.Vector3; b: THREE.Vector3; ra: number; rb: number; w: number; part: number; frame?: CapFrame }
 type Ell = { kind: 'ell'; c: THREE.Vector3; r: THREE.Vector3; m: THREE.Matrix3; mi: THREE.Matrix3; w: number; part: number }
 /** A smooth lofted surface (torso): superellipse rings along y, Catmull-Rom radii, placed by M. */
-type Loft = { kind: 'loft'; rings: number[][]; p: number; M: THREE.Matrix4; Mi: THREE.Matrix4; w: number; part: number }
+type Loft = { kind: 'loft'; rings: number[][]; p: number; M: THREE.Matrix4; Mi: THREE.Matrix4; w: number; part: number; segA?: number[]; segTot?: number }
 type Prim = Cap | Ell | Loft
 
 /** part ids: 0 body, 1 hand, 2 index finger (the zoom target) */
@@ -291,18 +293,40 @@ function area(p: Prim) {
   return 4 * Math.PI * Math.pow((Math.pow(x * y, pp) + Math.pow(x * z, pp) + Math.pow(y * z, pp)) / 3, 1 / pp)
 }
 
+/** Per-segment lateral areas of a loft (computed once per primitive, not per sample). */
+function loftSegs(p: Loft) {
+  if (!p.segA) {
+    const R = p.rings
+    p.segA = []
+    p.segTot = 0
+    for (let i = 0; i < R.length - 1; i++) {
+      const a = Math.PI * (R[i][1] + R[i][2] + R[i + 1][1] + R[i + 1][2]) * 0.5 * Math.hypot(R[i + 1][0] - R[i][0], Math.max(R[i + 1][1], R[i + 1][2]) - Math.max(R[i][1], R[i][2]))
+      p.segA.push(a)
+      p.segTot += a
+    }
+  }
+  return p.segA
+}
+
+function capFrame(p: Cap): CapFrame {
+  if (!p.frame) {
+    const axis = new THREE.Vector3().subVectors(p.b, p.a)
+    const L = axis.length()
+    axis.divideScalar(L || 1)
+    const ux = Math.abs(axis.x) < 0.9 ? V(1, 0, 0) : V(0, 1, 0)
+    const u = ux.sub(axis.clone().multiplyScalar(ux.dot(axis))).normalize()
+    const v = axis.clone().cross(u)
+    p.frame = { axis, L, u, v, lat: Math.PI * (p.ra + p.rb) * L, capA: 2 * Math.PI * p.ra * p.ra, capB: 2 * Math.PI * p.rb * p.rb }
+  }
+  return p.frame
+}
+
 function samplePrim(p: Prim, r: () => number, out: THREE.Vector3, nrm: THREE.Vector3) {
   if (p.kind === 'loft') {
     // rejection-sample the lateral surface: segment by its area, then uniform (t, θ) weighted by perimeter
     const R = p.rings
-    const segA: number[] = []
-    let tot = 0
-    for (let i = 0; i < R.length - 1; i++) {
-      const a = Math.PI * (R[i][1] + R[i][2] + R[i + 1][1] + R[i + 1][2]) * 0.5 * Math.hypot(R[i + 1][0] - R[i][0], Math.max(R[i + 1][1], R[i + 1][2]) - Math.max(R[i][1], R[i][2]))
-      segA.push(a)
-      tot += a
-    }
-    let k = r() * tot
+    const segA = loftSegs(p)
+    let k = r() * p.segTot!
     let i = 0
     while (i < segA.length - 1 && k > segA[i]) k -= segA[i++]
     for (let tries = 0; tries < 8; tries++) {
@@ -329,15 +353,7 @@ function samplePrim(p: Prim, r: () => number, out: THREE.Vector3, nrm: THREE.Vec
     nrm.set((s * Math.cos(a)) / p.r.x, (s * Math.sin(a)) / p.r.y, z / p.r.z).applyMatrix3(p.m).normalize()
     return
   }
-  const axis = tmp.subVectors(p.b, p.a)
-  const L = axis.length()
-  axis.divideScalar(L || 1)
-  const ux = Math.abs(axis.x) < 0.9 ? V(1, 0, 0) : V(0, 1, 0)
-  const u = ux.sub(axis.clone().multiplyScalar(ux.dot(axis))).normalize()
-  const v = axis.clone().cross(u)
-  const lat = Math.PI * (p.ra + p.rb) * L
-  const capA = 2 * Math.PI * p.ra * p.ra
-  const capB = 2 * Math.PI * p.rb * p.rb
+  const { axis, L, u, v, lat, capA, capB } = capFrame(p)
   const k = r() * (lat + capA + capB)
   const th = 2 * Math.PI * r()
   if (k < lat) {
@@ -364,11 +380,21 @@ function samplePrim(p: Prim, r: () => number, out: THREE.Vector3, nrm: THREE.Vec
   }
 }
 
+/** What to sample: plain data, so it can be posted to the worker (figure.worker.ts). */
+export interface FigureSpec {
+  withBody: boolean
+  count: number
+  seed: number
+  /** centre and radius of the loose sphere the points assemble from */
+  swirl: { x: number; y: number; z: number; r: number }
+}
+
 /**
- * Sample `count` surface points. `swirl` = centre and radius of the loose sphere the points
- * assemble from. rands: x = assembly delay, y = shimmer phase, z = size, w = brightness.
+ * Sample `count` surface points. rands: x = assembly delay, y = shimmer phase, z = size, w = brightness.
+ * Resumable: `run(until)` works until performance.now() passes `until` and returns the cloud once it is
+ * complete (null before), so a main-thread fallback can spread the work over idle slices.
  */
-export function sampleFigure(withBody: boolean, count: number, seed: number, swirl: { c: THREE.Vector3; r: number }): Cloud {
+export function createSampler({ withBody, count, seed, swirl }: FigureSpec) {
   const P = buildPrims(withBody)
   const r = rng(seed)
   const weights = P.map((p) => area(p) * (withBody ? 1 : p.w))
@@ -384,34 +410,38 @@ export function sampleFigure(withBody: boolean, count: number, seed: number, swi
   const nv = new THREE.Vector3()
   let n = 0
   let guard = 0
-  while (n < count && guard < count * 8) {
-    guard++
-    const x = r()
-    let i = 0
-    while (i < cdf.length - 1 && cdf[i] < x) i++
-    samplePrim(P[i], r, p, nv)
-    if (insideOther(p, P, i)) continue
-    positions[n * 3] = p.x
-    positions[n * 3 + 1] = p.y
-    positions[n * 3 + 2] = p.z
-    normals[n * 3] = nv.x
-    normals[n * 3 + 1] = nv.y
-    normals[n * 3 + 2] = nv.z
-    // loose sphere
-    const z = 2 * r() - 1
-    const a = 2 * Math.PI * r()
-    const s = Math.sqrt(1 - z * z)
-    const rad = swirl.r * (0.75 + 0.5 * r())
-    starts[n * 3] = swirl.c.x + s * Math.cos(a) * rad
-    starts[n * 3 + 1] = swirl.c.y + z * rad
-    starts[n * 3 + 2] = swirl.c.z + s * Math.sin(a) * rad
-    // assemble from the fingertip outward: points near the target arrive first
-    const dist = Math.min(1, p.length() / 1.9)
-    rands[n * 4] = Math.min(1, 0.55 * dist + 0.45 * r())
-    rands[n * 4 + 1] = r()
-    rands[n * 4 + 2] = r()
-    rands[n * 4 + 3] = 0.55 + 0.45 * r()
-    n++
+  const run = (until: number): Cloud | null => {
+    while (n < count && guard < count * 8) {
+      if ((guard & 255) === 0 && performance.now() > until) return null
+      guard++
+      const x = r()
+      let i = 0
+      while (i < cdf.length - 1 && cdf[i] < x) i++
+      samplePrim(P[i], r, p, nv)
+      if (insideOther(p, P, i)) continue
+      positions[n * 3] = p.x
+      positions[n * 3 + 1] = p.y
+      positions[n * 3 + 2] = p.z
+      normals[n * 3] = nv.x
+      normals[n * 3 + 1] = nv.y
+      normals[n * 3 + 2] = nv.z
+      // loose sphere
+      const z = 2 * r() - 1
+      const a = 2 * Math.PI * r()
+      const s = Math.sqrt(1 - z * z)
+      const rad = swirl.r * (0.75 + 0.5 * r())
+      starts[n * 3] = swirl.x + s * Math.cos(a) * rad
+      starts[n * 3 + 1] = swirl.y + z * rad
+      starts[n * 3 + 2] = swirl.z + s * Math.sin(a) * rad
+      // assemble from the fingertip outward: points near the target arrive first
+      const dist = Math.min(1, p.length() / 1.9)
+      rands[n * 4] = Math.min(1, 0.55 * dist + 0.45 * r())
+      rands[n * 4 + 1] = r()
+      rands[n * 4 + 2] = r()
+      rands[n * 4 + 3] = 0.55 + 0.45 * r()
+      n++
+    }
+    return { positions, normals, starts, rands, count: n }
   }
-  return { positions, normals, starts, rands, count: n }
+  return { run }
 }

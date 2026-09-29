@@ -214,9 +214,9 @@ export const PINNED = [
   '“Twist” stands for each mover’s chirality. Counting supersymmetric theories in flat 10D; non-supersymmetric strings exist too.',
   'The sea marks where approximation fails. Nothing physical happens at the shore.',
   'A 2D cartoon of a many-dimensional space of possible backgrounds.',
-  'The eleventh direction is drawn as a tube in 3D. The rule R₁₁ = g ℓ_s is the real content.',
+  'The eleventh direction is drawn as a tube in 3D. The rule R₁₁ = g ℓs is the real content.',
   'A 2D cartoon of a many-dimensional space. Tips are limits; real paths can change the hidden shape.',
-  'Not to scale. The string length ℓ_s itself is unknown.',
+  'Not to scale. The string length ℓs itself is unknown.',
 ]
 
 /* ───────────────────────── Internal persistent (time-damped) lab state ───────────────────────── */
@@ -266,9 +266,9 @@ export const RIG_VIEW: Record<RigKind, { d: number; pol: number }> = {
   tension: { d: 15.5, pol: 86 * DEG },
 }
 export const theoryRig = (t: Theory): RigKind => (t === 'IIA' ? 'thread' : t === 'HE' ? 'walls' : 'tension')
-/** Rig camera distance (rig units); portrait phones stand further back so the apparatus fits the width, and
- *  further still in the Lab, where the rig must fit the top ~half above the bottom sheet. */
-export const rigD = (k: RigKind) => RIG_VIEW[k].d * (S.portrait ? lerp(1.65, 2.25, S.dialW) : 1)
+/** Rig camera distance (rig units); portrait phones stand further back so the apparatus and its gauge's tick
+ *  labels fit the width, and further still in the Lab, where the rig must fit the top ~half above the bottom sheet. */
+export const rigD = (k: RigKind) => RIG_VIEW[k].d * (S.portrait ? lerp(1.9, 2.25, S.dialW) : 1)
 
 /* ───────────────────────── direct() ───────────────────────── */
 
@@ -558,14 +558,15 @@ export function direct(h: ChapterHandle, t: number, dt: number, aspect: number, 
       S.probe.x = rho * ux
       S.probe.y = y
       S.probe.z = rho * uz
-      // phones: aim a little to the stack's right so its h-labels and weights both fit the width
+      // phones stand back so the stack, the probe and the horn below it all sit above the text (upper ~55% of
+      // the screen), with room left of the horn for the shore label
       const az1 = outwardAzimuth(1)
-      const off = S.portrait ? 0.32 : 0
-      set(P1, rho * ux + Math.cos(az1) * off, y + 0.95, rho * uz - Math.sin(az1) * off, S.portrait ? 10 : 5.2, 60 * DEG, az1)
+      set(P1, rho * ux, y + 0.95, rho * uz, S.portrait ? 14.5 : 5.2, 60 * DEG, az1)
       OV(P0)
-      mixPose(cam, P0, P1, smootherstep(0, 0.14, p2) * (1 - smootherstep(0.88, 1, p2)))
+      const k2 = smootherstep(0, 0.14, p2) * (1 - smootherstep(0.88, 1, p2))
+      mixPose(cam, P0, P1, k2)
       S.mapDim = 1
-      shift = S.portrait ? [0, 0.1] : textShift
+      shift = S.portrait ? [0, textShift[1] + 0.025 * k2] : textShift
       S.pin = 1
       S.pinOp = smoothstep(0.08, 0.16, p2) * (1 - smoothstep(0.9, 0.98, p2))
       break

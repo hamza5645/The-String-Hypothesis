@@ -8,25 +8,20 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Filament, GlowPoint, GlowPoints, COLORS, openStringFn, useChapterFrame, type FilamentApi, type GlowPointApi, type GlowPointsApi } from '@/gl'
 import { HANDOFF } from '@/core/handoff'
-import { particleScale } from '@/core/settings'
 import { ambient } from '@/core/time'
 import { clamp01, smoothstep } from '@/core/math'
 import { GAL_X, GAL_Y, mapX, mapY, type StageState } from '../choreo'
 import { wx, wy } from '../layout'
 import { LY } from '../model'
 import { B4, SI, local } from '../timeline'
-import { starField, type Cloud } from './clouds'
+import type { CloudSet } from './cloudSet'
 
 const RING_N = 512
 const ARC_N = 256
 const RING_CORE = '#AFC6EA'
 
-export function MapGL({ S, galaxy }: { S: StageState; galaxy: Cloud }) {
-  const ps = particleScale()
-  // soft-edged fields (no disc outline): the near field fades out over its outer 40%; the far field
-  // reaches 8,000 ly so it merges into the galaxy as the camera pulls back
-  const near = useMemo(() => starField(Math.round(18000 * ps), 180, 31, 1, 0.4), [ps])
-  const far = useMemo(() => starField(Math.round(22000 * ps), 8000, 37, 0.35, 0.4), [ps])
+/** The star fields and the galaxy draw once their clouds have arrived from the worker (cloudSet.ts). */
+export function MapGL({ S, clouds }: { S: StageState; clouds: CloudSet | null }) {
   const ringPts = useMemo(() => new Float32Array(RING_N * 3), [])
   const arcPts = useMemo(() => new Float32Array(ARC_N * 3), [])
   const armPts = useMemo(() => new Float32Array(32 * 3), [])
@@ -188,13 +183,19 @@ export function MapGL({ S, galaxy }: { S: StageState; galaxy: Cloud }) {
   return (
     <>
       <group ref={farG} visible={false}>
-        <GlowPoints ref={farP} positions={far.positions} sizes={far.sizes} alphas={far.alphas} color={COLORS.ink} intensity={0} minPixels={0.9} maxPixels={1.5} sharpness={0.5} />
+        {clouds && (
+          <GlowPoints ref={farP} positions={clouds.far.positions} sizes={clouds.far.sizes} alphas={clouds.far.alphas} color={COLORS.ink} intensity={0} minPixels={0.9} maxPixels={1.5} sharpness={0.5} />
+        )}
       </group>
       <group ref={nearG} visible={false}>
-        <GlowPoints ref={nearP} positions={near.positions} sizes={near.sizes} alphas={near.alphas} color={COLORS.ink} intensity={0} minPixels={0.8} maxPixels={1.7} sharpness={0.5} />
+        {clouds && (
+          <GlowPoints ref={nearP} positions={clouds.near.positions} sizes={clouds.near.sizes} alphas={clouds.near.alphas} color={COLORS.ink} intensity={0} minPixels={0.8} maxPixels={1.7} sharpness={0.5} />
+        )}
       </group>
       <group ref={galG} visible={false}>
-        <GlowPoints ref={galP} positions={galaxy.positions} sizes={galaxy.sizes} alphas={galaxy.alphas} color={COLORS.ink} intensity={0} minPixels={0.7} maxPixels={1.35} sharpness={0.4} />
+        {clouds && (
+          <GlowPoints ref={galP} positions={clouds.galaxy.positions} sizes={clouds.galaxy.sizes} alphas={clouds.galaxy.alphas} color={COLORS.ink} intensity={0} minPixels={0.7} maxPixels={1.35} sharpness={0.4} />
+        )}
       </group>
       <Filament ref={ring} points={ringPts} count={RING_N} closed width={0.04} minPixels={0.75} color={COLORS.field} coreColor={RING_CORE} intensity={0.9} coreFraction={0.16} />
       <Filament ref={arc} points={arcPts} count={ARC_N} width={0.04} minPixels={0.75} color={COLORS.field} coreColor={RING_CORE} intensity={0.9} coreFraction={0.16} taper={0.08} />

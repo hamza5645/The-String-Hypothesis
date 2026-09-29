@@ -103,7 +103,10 @@ export function MapLines({ S, layer }: { S: Stage; layer: LabelLayer | null }) {
         false,
         [0.97, 1, 0.97],
       )
-      for (const y of [0, ...RING_Y.slice(1)])
+      for (const y of [0, ...RING_Y.slice(1)]) {
+        // the ground tick waits for the axis to start drawing (at reveal 0 a t = 0 tick would still pass the
+        // shader's clip, leaving a stray dash beside the H0 handoff point)
+        const t = Math.max(y / 6.4, 0.01)
         L.add(
           [
             [ax, y, az],
@@ -111,8 +114,9 @@ export function MapLines({ S, layer }: { S: Stage; layer: LabelLayer | null }) {
           ],
           { color: INK2, alpha: 0.7, width: 1, group: grp, yref: 'none' },
           false,
-          [y / 6.4, y / 6.4],
+          [t, t],
         )
+      }
     }
     // anchors: string theory is built on tested principles (QM, SR) — but never stands on the ground
     for (const id of ['G1', 'G2']) L.add([pos(id), T0], { color: FIELD, alpha: 0.55, width: 1, group: G.anchors, yref: 'max' })

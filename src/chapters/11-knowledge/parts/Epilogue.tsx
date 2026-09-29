@@ -138,7 +138,7 @@ export function Epilogue({ S, layer }: { S: Stage; layer: LabelLayer | null }) {
       if (k === 3) svg('circle', { r: 4.5, fill: 'none', stroke: color, 'stroke-width': 1 }, g)
       return g
     })
-    const e1 = layer.add(el('span', 'kn-tag', [el('span', 'kn-tag__chip', '≈ ANALOGY'), el('span', '', 'FROM HERE, EVERY CLAIM ABOVE IS ONE POINT OF LIGHT')]), [0, 0, 0], {
+    const e1 = layer.add(el('span', 'kn-tag kn-tag--e1', [el('span', 'kn-tag__chip', '≈ ANALOGY'), el('span', '', 'FROM HERE, EVERY CLAIM ABOVE IS ONE POINT OF LIGHT')]), [0, 0, 0], {
       screen: true,
       safe: false,
       clamp: false,
@@ -150,6 +150,38 @@ export function Epilogue({ S, layer }: { S: Stage; layer: LabelLayer | null }) {
     return { root, arrows, gapG, gapLine, gapT1, gapT2, g1, g2, ring, glyphs, e1, caption, hint }
   }, [layer])
   useLayoutEffect(() => () => dom?.root.remove(), [dom])
+
+  // The pluck beat scrolls up through the Thread's captions: until the beat has all but faded out, a
+  // caption fades by how much of its line box the beat's block covers (so one of the two is always legible).
+  const beat = useMemo(() => ({ step: null as HTMLElement | null, box: null as Element | null, on: 0, x0: 0, y0: 0, x1: 0, y1: 0 }), [])
+  const measureBeat = () => {
+    beat.on = 0
+    const p = S.sp.pluck
+    if (p <= 0 || p >= 1) return
+    if (!beat.step) {
+      beat.step = document.querySelector<HTMLElement>('#knowledge .step[data-step="pluck"]')
+      beat.box = beat.step?.querySelector('.step__content') ?? null
+    }
+    if (!beat.step || !beat.box) return
+    const r = beat.box.getBoundingClientRect()
+    if (r.height <= 0) return
+    const sv = beat.step.style.getPropertyValue('--sv')
+    beat.on = smoothstep(0.02, 0.15, sv ? parseFloat(sv) : 1)
+    beat.x0 = r.left
+    beat.y0 = r.top
+    beat.x1 = r.right
+    beat.y1 = r.bottom
+  }
+  /** 1 − (covered fraction of a centred label's line box) × the beat's legibility */
+  const clearOfBeat = (l: Lbl, wFallback: number, hFallback: number) => {
+    if (beat.on <= 0) return 1
+    const w = l.w || wFallback
+    const h = l.h || hFallback
+    if (beat.x1 <= l.x - w / 2 || beat.x0 >= l.x + w / 2) return 1
+    const pad = 24
+    const cover = clamp((Math.min(l.y + h / 2, beat.y1 + pad) - Math.max(l.y - h / 2, beat.y0 - pad)) / h)
+    return 1 - cover * beat.on
+  }
 
   // release → project the released shape onto the free-end modes and ring
   const release = (t: number) => {
@@ -398,12 +430,14 @@ export function Epilogue({ S, layer }: { S: Stage; layer: LabelLayer | null }) {
       dom.e1.target = S.e1
       const ringingOn = t - st.tPluck < 3.4
       const cap = (S.sp.pluck > 0.5 ? smoothstep(0.5, 0.62, S.sp.pluck) : 0) * (ringingOn ? 0 : 1)
+      measureBeat()
       dom.caption.x = px
       dom.caption.y = py + (S.mobile ? 58 : 74)
-      dom.caption.target = Math.max(cap, S.rest > 0 ? 1 : 0)
+      dom.caption.target = Math.max(cap, S.rest > 0 ? 1 : 0) * clearOfBeat(dom.caption, 0.5 * S.vw, 32)
       dom.hint.x = px
       dom.hint.y = py - (S.mobile ? 60 : 78)
-      dom.hint.target = smoothstep(0.36, 0.44, S.sp.pluck) * (1 - smoothstep(0.85, 0.98, S.sp.pluck)) * (S.rest > 0 ? 0 : 1) * (t - st.tPluck < 14 ? 0 : 1)
+      dom.hint.target =
+        smoothstep(0.36, 0.44, S.sp.pluck) * (1 - smoothstep(0.85, 0.98, S.sp.pluck)) * (S.rest > 0 ? 0 : 1) * (t - st.tPluck < 14 ? 0 : 1) * clearOfBeat(dom.hint, 220, 16)
     },
     { priority: -1.4 },
   )

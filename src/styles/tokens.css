@@ -12,7 +12,11 @@
   /* Ink */
   --ink: #ece6d9;
   --ink-2: #9aa0ae;
-  --ink-3: #5c6270;
+  /* ink-3 is TEXT (small mono labels, units, captions): ≥ 4.5:1 on the void and on raised glass, and a
+     slightly blue grey so plain labels never read as the SPECULATIVE chip colour (#7d8190).
+     ink-4 is the old dim tone, for non-text marks only (ticks, hairline marks, knobs): 3.3:1 on the void. */
+  --ink-3: #707b92;
+  --ink-4: #5c6270;
   --hairline: rgba(154, 160, 174, 0.18);
   --hairline-strong: rgba(154, 160, 174, 0.34);
 
@@ -36,7 +40,8 @@
 
   /* Type scale (fluid) */
   --fs-hero: clamp(3.2rem, 9.2vw, 9.5rem);
-  --fs-question: clamp(2.3rem, 5.6vw, 5.4rem);
+  /* one scale for every chapter card: a left-aligned two-line question stays clear of the centred handoff object */
+  --fs-question: clamp(2.2rem, 4.1vw, 4.3rem);
   --fs-h3: clamp(1.35rem, 2vw, 1.75rem);
   --fs-lead: clamp(1.12rem, 1.35vw, 1.32rem);
   --fs-body: 1.0625rem;

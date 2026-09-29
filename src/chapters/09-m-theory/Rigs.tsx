@@ -1,11 +1,11 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { useThree } from '@react-three/fiber'
 import { Filament, GlowPoint, GlowPoints, useChapterFrame, COLORS, type FilamentApi, type FilamentFn, type GlowPointApi } from '@/gl'
 import { clamp, smoothstep } from '@/core/math'
 import { prefersReducedMotion } from '@/core/time'
 import { Status } from '@/ui'
-import { RIG_VIEW, S, THREAD_L, rigD, type Frame } from './director'
+import { RIG_VIEW, S, THREAD_L, rigD, type Frame, type RigKind } from './director'
 import { DynLabel, SafeLabel } from './labels'
 import { createLadderMaterial, createPanelMaterial, createRingPointsMaterial, createTubeMaterial } from './materials'
 import { L11, R11, T_F1, T_pq, e8Projection, fmtG, fmtT, ratio11, tubeRadius, wallSep } from './model'
@@ -35,11 +35,21 @@ function screenX(frac: number, dRel: number, fovDeg: number, aspect: number, shi
   return (2 * (frac - shiftX) - 1) * halfW
 }
 
+/**
+ * Portrait phones: rig-local x of a gauge axis placed just far enough in that its tick labels (right-aligned,
+ * 0.3 units + 10 px left of the axis, "0.1" ≈ 22 px wide) keep the 16 px page gutter.
+ */
+function portraitGaugeX(kind: RigKind, width: number, height: number) {
+  const d = rigD(kind)
+  const pxPerUnit = height / (2 * d * Math.tan((17.5 * Math.PI) / 180))
+  return screenX((48 + 0.3 * pxPerUnit) / width, d, 35, S.aspect, S.shift[0])
+}
+
 const gy = (g: number) => -2.2 + (4.4 * (Math.log10(g) + 1.301)) / 2.602
 const GAUGE_TICKS = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]
 
 /** The coupling gauge: a vertical log axis, g = 0.05 … 20, with a marker. */
-function Gauge({ g, vis, x, sub }: { g: () => number; vis: () => number; x: () => number; sub?: () => string }) {
+function Gauge({ g, vis, x, sub }: { g: () => number; vis: () => number; x: () => number; sub?: { prefix: ReactNode; text: () => string } }) {
   const group = useRef<THREE.Group>(null)
   const marker = useRef<THREE.Group>(null)
   const axis = useRef<RibbonApi>(null)
@@ -95,7 +105,7 @@ function Gauge({ g, vis, x, sub }: { g: () => number; vis: () => number; x: () =
         prefix={<span className="mth-hide-m">COUPLING </span>}
         text={() => `g = ${fmtG(g())}`}
       />
-      {sub && <DynLabel position={[-0.12, 2.74, 0]} align="left" tone="field" className="mth-mini" opacity={vis} text={sub} />}
+      {sub && <DynLabel position={[-0.12, 2.74, 0]} align="left" tone="field" className="mth-mini" opacity={vis} prefix={sub.prefix} text={sub.text} />}
       <group ref={marker}>
         <Ribbon ref={tick} count={2} width={0.03} minPx={0.8} color={COLORS.ink} renderOrder={9} depthTest={false} init={(i, P) => P.set([i === 0 ? -0.26 : 0.26, 0, 0], i * 3)} />
         <GlowPoint ref={dot} size={0.16} minPixels={2.2} color={COLORS.ink} coreColor="#ffffff" intensity={1} renderOrder={9} />
@@ -292,7 +302,7 @@ function ThreadRig() {
     const pxPerUnit = size.height / (2 * rigD('thread') * Math.tan((17.5 * Math.PI) / 180))
     return smoothstep(3.8, 2.6, (0.44 / T.g) * pxPerUnit)
   }
-  const gaugeX = () => (S.portrait ? screenX(0.08, rigD('thread'), 35, S.aspect, S.shift[0]) : -3.4)
+  const gaugeX = () => (S.portrait ? portraitGaugeX('thread', size.width, size.height) : -3.4)
   return (
     <group ref={group}>
       <Filament ref={thread} count={NT} fn={fn} width={0.12} minPixels={1.1} taper={0.09} intensity={1.15} coreFraction={0.14} renderOrder={7} />
@@ -317,7 +327,7 @@ function ThreadRig() {
           <planeGeometry args={[1, 0.09]} />
         </mesh>
         <SafeLabel position={[-2.64, -2.52, 0]} align="left" tone="field" opacity={ex}>
-          <span className="mth-mini">R₁₁ = g ℓ_s</span>
+          <span className="mth-mini">R₁₁ = g ℓs</span>
         </SafeLabel>
         {/* past the clamp the bar stops and an arrow carries the true value */}
         <DynLabel
@@ -326,7 +336,7 @@ function ThreadRig() {
           tone="field"
           className="mth-mini"
           opacity={() => T.extra * smoothstep(R_BAR_MAX - 0.02, R_BAR_MAX + 0.05, 0.35 * T.g)}
-          text={() => `→ R₁₁ = ${T.g < 10 ? T.g.toFixed(1) : T.g.toFixed(0)} ℓ_s`}
+          text={() => `→ R₁₁ = ${T.g < 10 ? T.g.toFixed(1) : T.g.toFixed(0)} ℓs`}
         />
       </group>
       <group ref={rowL}>
@@ -335,7 +345,7 @@ function ThreadRig() {
         </mesh>
         <SafeLabel position={[-2.64, -3.2, 0]} align="left" tone="dim" opacity={ex}>
           <span className="mth-mini">
-            ℓ₁₁ = g^⅓ ℓ_s<span className="mth-hide-m"> · 11D PLANCK LENGTH</span>
+            ℓ₁₁ = g<sup>1/3</sup> ℓs<span className="mth-hide-m"> · 11D PLANCK LENGTH</span>
           </span>
         </SafeLabel>
       </group>
@@ -353,9 +363,9 @@ function ThreadRig() {
       <group ref={ladderBottom} position={[3.8, -2.62, 0]}>
         <SafeLabel position={[0, 0, 0]} align="right" tone="dim" opacity={() => ex() * plab()}>
           <span className="mth-mini mth-stack">
-            MASS 0 → 10/ℓ_s
+            MASS 0 → 10/ℓs
             <br />
-            <span className="mth-hide-m">DASHED: </span>STRING SCALE<span className="mth-hide-m"> 1/ℓ_s</span>
+            <span className="mth-hide-m">DASHED: </span>STRING SCALE<span className="mth-hide-m"> 1/ℓs</span>
           </span>
         </SafeLabel>
         {/* one line under the two-line legend (offset in type units, so it never overlaps at any rig scale) */}
@@ -389,7 +399,17 @@ function ThreadRig() {
 
 /* ───────────────────────── HE: two walls, one E8 on each ───────────────────────── */
 
+const W_SUB = {
+  prefix: (
+    <>
+      INTERVAL / ℓ₁₁ = g<sup>2/3</sup> ={' '}
+    </>
+  ),
+  text: () => ratio11(S.walls.g).toFixed(2),
+}
+
 function WallsRig() {
+  const size = useThree((s) => s.size)
   const W = S.walls
   const group = useRigGroup(
     () => W.frame,
@@ -480,7 +500,7 @@ function WallsRig() {
       <Filament ref={thread} count={120} fn={fnC} width={0.12} minPixels={1.1} taper={0.09} renderOrder={7} />
       <Filament ref={edgeT} count={120} fn={fnT} width={0.1} minPixels={1} taper={0.09} renderOrder={7} />
       <Filament ref={edgeB} count={120} fn={fnB} width={0.1} minPixels={1} taper={0.09} renderOrder={7} />
-      <Gauge g={() => W.g} vis={vis} x={() => -4.1} sub={() => `INTERVAL / ℓ₁₁ = g^⅔ = ${ratio11(W.g).toFixed(2)}`} />
+      <Gauge g={() => W.g} vis={vis} x={() => (S.portrait ? portraitGaugeX('walls', size.width, size.height) : -4.1)} sub={W_SUB} />
       <group ref={capRow}>
         <SafeLabel position={[0, 0, 1.5]} align="below" tone="field" opacity={() => W.extra * smoothstep(0.85, 1.25, ratio11(W.g))}>
           <span className="mth-mini mth-stack mth-stack--c">
@@ -498,6 +518,7 @@ function WallsRig() {
 const ty = (T: number) => -2 + 4 * clamp((Math.log10(T) + 3) / 4, 0, 1)
 
 function TensionRig() {
+  const size = useThree((s) => s.size)
   const X = S.tension
   const group = useRigGroup(
     () => X.frame,
@@ -653,7 +674,7 @@ function TensionRig() {
       ))}
       <SafeLabel position={[2.7, 2.2, 0]} align="above" tone="dim" opacity={ex}>
         <span className="mth-mini">
-          TENSION · LOG<span className="mth-hide-m"> · 1/ℓ_s²</span>
+          TENSION · LOG<span className="mth-hide-m"> · 1/ℓs²</span>
         </span>
       </SafeLabel>
       {/* string labels */}
@@ -694,10 +715,18 @@ function TensionRig() {
         <span className="mth-mini">D-STRING (0,1) · NOW THE LIGHTER</span>
       </SafeLabel>
       <SafeLabel position={[-0.6, 2.5, 0]} align="above" tone="ink" opacity={is('I', strongL)}>
-        <span className="mth-readout">NOW: HETEROTIC SO(32) AT g = 1/g_I</span>
+        <span className="mth-readout">
+          <span>
+            NOW: HETEROTIC SO(32) AT g = 1/g<sub>I</sub>
+          </span>
+        </span>
       </SafeLabel>
       <SafeLabel position={[-0.6, 2.5, 0]} align="above" tone="ink" opacity={is('HO', strongL)}>
-        <span className="mth-readout">NOW: TYPE I AT g = 1/g_H</span>
+        <span className="mth-readout">
+          <span>
+            NOW: TYPE I AT g = 1/g<sub>H</sub>
+          </span>
+        </span>
       </SafeLabel>
       <SafeLabel position={[-0.6, 2.5, 0]} align="above" tone="ink" opacity={is('IIB', strongL)}>
         <span className="mth-readout">SAME THEORY AT 1/g · NAMES SWAPPED</span>
@@ -711,7 +740,7 @@ function TensionRig() {
         const Tl = X.theory === 'IIB' ? T_pq(0, 1, g) : 1 / (2 * Math.PI * g)
         return `${fmtT(Tu)} · ${fmtT(Tl)}`
       }} />
-      <Gauge g={() => X.g} vis={ex} x={() => -3.95} />
+      <Gauge g={() => X.g} vis={ex} x={() => (S.portrait ? portraitGaugeX('tension', size.width, size.height) : -3.95)} />
     </group>
   )
 }

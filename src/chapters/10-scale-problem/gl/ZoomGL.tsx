@@ -6,14 +6,14 @@
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { GlowPoints, COLORS, useChapterFrame, type GlowPointsApi } from '@/gl'
-import { particleScale } from '@/core/settings'
 import { smoothstep } from '@/core/math'
 import { zoomHz, type StageState } from '../choreo'
 import { layerVis, universeCircle } from '../dom/ZoomView'
 import { wx, wy } from '../layout'
 import { LY } from '../model'
 import { SI, ZOOM_END, local } from '../timeline'
-import { cosmicWeb, electronHaze, humanFigure, protonFog, starField, universeMottle, type Cloud } from './clouds'
+import type { Cloud } from './clouds'
+import type { CloudSet } from './cloudSet'
 import { ZOOM_LAYERS as Z } from '../zoomLayers'
 
 interface LayerDef {
@@ -32,21 +32,22 @@ interface LayerDef {
   sharp: number
 }
 
-export function ZoomGL({ S, galaxy }: { S: StageState; galaxy: Cloud }) {
-  const ps = particleScale()
+/** The layers draw once their clouds have arrived from the worker (well before Beat 1 needs them). */
+export function ZoomGL({ S, clouds }: { S: StageState; clouds: CloudSet | null }) {
   const defs = useMemo<LayerDef[]>(
-    () => [
-      { cloud: protonFog(Math.round(6000 * ps)), ...Z.proton, unit: 1.7e-15, color: COLORS.field, intensity: 1.0, minPx: 0.8, maxPx: 12, sharp: 0 },
-      { cloud: electronHaze(Math.round(7000 * ps)), ...Z.atom, unit: 3.4e-10, color: COLORS.ink, intensity: 1.0, minPx: 0.8, maxPx: 7, sharp: 0 },
-      { cloud: humanFigure(Math.round(2600 * ps)), ...Z.you, unit: 1.7, color: COLORS.ink, intensity: 0.9, minPx: 1, maxPx: 1.6, sharp: 0.6 },
-      // nearest stars: uniform at roughly the local density inside a 120-ly sphere (positions random)
-      { cloud: starField(Math.round(2400 * ps), 0.5, 41), ...Z.stars, unit: Z.stars.D, color: COLORS.ink, intensity: 0.95, minPx: 0.9, maxPx: 1.7, sharp: 0.5 },
-      { cloud: galaxy, ...Z.galaxy, unit: LY, color: COLORS.ink, intensity: 0.85, minPx: 0.8, maxPx: 1.4, sharp: 0.4 },
-      { cloud: cosmicWeb(Math.round(14000 * ps)), ...Z.web, unit: 3e25, color: COLORS.ink, intensity: 0.8, minPx: 0.8, maxPx: 1.4, sharp: 0.3 },
-      { cloud: universeMottle(Math.round(5000 * ps)), ...Z.universe, unit: 8.8e26, color: COLORS.field, intensity: 0.7, minPx: 0.8, maxPx: 16, sharp: 0 },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [galaxy],
+    () =>
+      clouds
+        ? [
+            { cloud: clouds.proton, ...Z.proton, unit: 1.7e-15, color: COLORS.field, intensity: 1.0, minPx: 0.8, maxPx: 12, sharp: 0 },
+            { cloud: clouds.atom, ...Z.atom, unit: 3.4e-10, color: COLORS.ink, intensity: 1.0, minPx: 0.8, maxPx: 7, sharp: 0 },
+            { cloud: clouds.you, ...Z.you, unit: 1.7, color: COLORS.ink, intensity: 0.9, minPx: 1, maxPx: 1.6, sharp: 0.6 },
+            { cloud: clouds.stars, ...Z.stars, unit: Z.stars.D, color: COLORS.ink, intensity: 0.95, minPx: 0.9, maxPx: 1.7, sharp: 0.5 },
+            { cloud: clouds.galaxy, ...Z.galaxy, unit: LY, color: COLORS.ink, intensity: 0.85, minPx: 0.8, maxPx: 1.4, sharp: 0.4 },
+            { cloud: clouds.web, ...Z.web, unit: 3e25, color: COLORS.ink, intensity: 0.8, minPx: 0.8, maxPx: 1.4, sharp: 0.3 },
+            { cloud: clouds.universe, ...Z.universe, unit: 8.8e26, color: COLORS.field, intensity: 0.7, minPx: 0.8, maxPx: 16, sharp: 0 },
+          ]
+        : [],
+    [clouds],
   )
   const groups = useRef<(THREE.Group | null)[]>([])
   const pts = useRef<(GlowPointsApi | null)[]>([])

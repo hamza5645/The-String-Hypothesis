@@ -49,7 +49,7 @@ export default {
   },
   'string-length': {
     term: 'String length',
-    def: 'ℓs = √α′, string theory’s single adjustable scale. Unknown: experiments require it below about 10⁻¹⁹ m; traditional estimates sit within a few powers of ten of the Planck length.',
+    def: 'ℓs = √α′, string theory’s single adjustable length. Unknown: experiments require it below about 10⁻¹⁹ m; traditional estimates: roughly 10⁻³⁵–10⁻³³ m, just above the Planck length.',
     chapter: 'scale-down',
   },
 } satisfies GlossaryEntries

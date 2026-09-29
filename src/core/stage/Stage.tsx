@@ -1,6 +1,6 @@
 // colorspace MUST be the first import of the stage chunk (disables colour management before any THREE.Color exists)
 import '../colorspace'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, events as createPointerEvents } from '@react-three/fiber'
 import type { EventManager, RootState } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
@@ -60,6 +60,10 @@ export default function Stage({ chapters }: { chapters: ChapterMeta[] }) {
   const root = document.getElementById('root')!
   const stageRef = useRef<HTMLDivElement>(null)
   useEffect(() => (stageRef.current ? guardTouchPan(stageRef.current) : undefined), [])
+  // MSAA is decided once, when the context is created (it can't change later). At an effective DPR of 2 the
+  // image is antialiased enough without it (as the Compositor's dissolve targets already assume), and 4× MSAA
+  // costs ~3 ms of GPU per frame there. At DPR 1.5 it stays: raw GL hairlines stair-step without it.
+  const [antialias] = useState(() => quality !== 'low' && Math.min(window.devicePixelRatio || 1, DPR[quality][1]) < 2)
   return (
     <div ref={stageRef} className="stage" aria-hidden="true">
       <Canvas
@@ -69,7 +73,7 @@ export default function Stage({ chapters }: { chapters: ChapterMeta[] }) {
         flat
         linear
         legacy
-        gl={{ antialias: quality !== 'low', alpha: false, stencil: false, powerPreference: 'high-performance' }}
+        gl={{ antialias, alpha: false, stencil: false, powerPreference: 'high-performance' }}
         camera={{ fov: HANDOFF.camera.fov, position: HANDOFF.camera.position, near: HANDOFF.camera.near, far: HANDOFF.camera.far }}
         style={{ position: 'fixed', inset: 0 }}
       >

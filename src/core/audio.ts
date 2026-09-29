@@ -5,6 +5,7 @@ import { useSettings } from './settings'
 
 let ctx: AudioContext | null = null
 let master: GainNode | null = null
+const MASTER_GAIN = 0.22
 
 function ensure(): AudioContext | null {
   if (!useSettings.getState().sound) return null
@@ -13,7 +14,7 @@ function ensure(): AudioContext | null {
       const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
       ctx = new AC()
       master = ctx.createGain()
-      master.gain.value = 0.22
+      master.gain.value = MASTER_GAIN
       const comp = ctx.createDynamicsCompressor()
       comp.threshold.value = -18
       comp.ratio.value = 4
@@ -26,6 +27,25 @@ function ensure(): AudioContext | null {
   if (ctx.state === 'suspended') ctx.resume().catch(() => {})
   return ctx
 }
+
+// "Sound off" silences everything already playing (sustained hums included), not just new sounds:
+// ramp the master down and suspend the context. Switching back on restores the master (ensure() resumes).
+useSettings.subscribe((s, prev) => {
+  if (s.sound === prev.sound || !ctx || !master) return
+  const t = ctx.currentTime
+  master.gain.cancelScheduledValues(t)
+  master.gain.setValueAtTime(master.gain.value, t)
+  if (s.sound) {
+    master.gain.linearRampToValueAtTime(MASTER_GAIN, t + 0.05)
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+  } else {
+    master.gain.linearRampToValueAtTime(0, t + 0.08)
+    const c = ctx
+    window.setTimeout(() => {
+      if (!useSettings.getState().sound && c.state === 'running') c.suspend().catch(() => {})
+    }, 120)
+  }
+})
 
 /** Call from the sound toggle's click handler. */
 export function unlockAudio() {

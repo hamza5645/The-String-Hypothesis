@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 import { tick } from '../core/audio'
 
 /**
@@ -100,6 +100,26 @@ export function Segmented<T extends string | number>({
   sound?: boolean
 }) {
   const gid = useId()
+  const row = useRef<HTMLDivElement>(null)
+  const pick = (i: number) => {
+    if (sound) tick(660 + i * 110)
+    onChange(options[i].value)
+  }
+  // radio-group pattern: one tab stop (the checked option), arrows move + select, Home/End jump
+  const checkedIdx = options.findIndex((o) => o.value === value)
+  const tabIdx = checkedIdx >= 0 ? checkedIdx : 0
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
+    const n = options.length
+    let j = -1
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % n
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') j = (i - 1 + n) % n
+    else if (e.key === 'Home') j = 0
+    else if (e.key === 'End') j = n - 1
+    if (j < 0) return
+    e.preventDefault()
+    row.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[j]?.focus()
+    if (options[j].value !== value) pick(j)
+  }
   return (
     <div className="ctl ctl-seg" role="radiogroup" aria-labelledby={label ? gid : undefined}>
       {label && (
@@ -109,19 +129,18 @@ export function Segmented<T extends string | number>({
           </span>
         </div>
       )}
-      <div className="ctl-seg__row">
-        {options.map((o) => (
+      <div ref={row} className="ctl-seg__row">
+        {options.map((o, i) => (
           <button
             key={String(o.value)}
             type="button"
             role="radio"
             aria-checked={o.value === value}
+            tabIndex={i === tabIdx ? 0 : -1}
             title={o.hint}
             className={`ctl-seg__opt${o.value === value ? ' is-on' : ''}`}
-            onClick={() => {
-              if (sound) tick(660 + options.indexOf(o) * 110)
-              onChange(o.value)
-            }}
+            onClick={() => pick(i)}
+            onKeyDown={(e) => onKeyDown(e, i)}
           >
             {o.label}
           </button>

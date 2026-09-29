@@ -82,6 +82,16 @@
   letter-spacing: 0.1em;
   text-shadow: 0 0 10px rgba(5, 7, 11, 1);
 }
+/* real sub/superscripts in mono labels and the Lab (g<sup>1/3</sup>, T<sub>M2</sub>): small, and never taller lines */
+:is(.mth-mini, .mth-readout, [data-chapter='m-theory']) :is(sub, sup) {
+  font-size: 0.72em;
+  line-height: 0;
+  letter-spacing: 0.02em;
+}
+/* KaTeX in the Beat 4 caption: sized to the mono caption, not to body text */
+.mth-cap-eq .katex {
+  font-size: 1.08em;
+}
 .mth-backed {
   display: inline-block;
   padding: 0.18rem 0.45rem;

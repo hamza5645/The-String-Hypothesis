@@ -41,7 +41,18 @@ export interface ChapterMeta {
   Fallback?: LazyExoticComponent<ComponentType>
   /** Characteristic length scale of what's on screen, in meters (drives the scale gauge). null hides the marker. */
   scale?: (h: ChapterHandle) => number | null
+  /**
+   * Epistemic status of the gauge reading (evaluated every frame, right after `scale`: keep it pure and
+   * allocation-free). 'speculative' draws a hollow-ring marker flagged HYPOTHETICAL; null draws a plain reading.
+   * Omit it to use the default rule: readings below ~10⁻³² m (the hypothetical string scale, ℓs ~10⁻³⁴ m by
+   * traditional estimates) are speculative, and readings at that fiducial also get the line
+   * "ℓs unknown · ~10⁻³⁴ m if traditional estimates hold".
+   */
+  scaleStatus?: (h: ChapterHandle, scale: number) => ScaleStatus
 }
+
+/** How the scale gauge marks its reading. */
+export type ScaleStatus = 'speculative' | null
 
 export const defineChapter = (m: ChapterMeta) => m
 

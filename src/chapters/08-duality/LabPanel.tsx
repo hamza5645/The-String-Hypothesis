@@ -157,10 +157,10 @@ const DEEP_TEX =
 // ───────────────────────────── paired bar chart ─────────────────────────────
 
 const CW = 324
-const CH = 118
-const PADL = 18
+const CH = 120
+const PADL = 22
 const PADT = 12
-const PADB = 24
+const PADB = 26
 const YMAX = 10.5
 const pitch = (CW - PADL - 2) / 16
 const colW = 7
@@ -225,7 +225,7 @@ export function PairChart({ rows, mode }: { rows: PairRow[]; mode: 'string' | 'p
         {[0, 2, 4, 6, 8, 10].map((v) => (
           <g key={v}>
             <line className={v === 0 ? 'du-chart__base' : 'du-chart__grid'} x1={PADL} x2={CW} y1={Y(v)} y2={Y(v)} />
-            <text className="du-chart__tick" x={PADL - 5} y={Y(v) + 2.5} textAnchor="end">
+            <text className="du-chart__tick" x={PADL - 4} y={Y(v) + 3.3} textAnchor="end">
               {v}
             </text>
           </g>
@@ -250,17 +250,16 @@ export function PairChart({ rows, mode }: { rows: PairRow[]; mode: 'string' | 'p
               {on && <rect className="du-pair__sel" x={x0 - 2.5} y={PADT - 4} width={2 * colW + 6} height={plotH + 8} />}
               {col(x0, row.segA, row.yA, 'a')}
               {col(x0 + colW + 1, row.segB, row.yB, 'b')}
-              <text className="du-chart__nw" x={x0 + colW + 0.5} y={CH - PADB + 11} textAnchor="middle">
+              {/* staggered in two rows, so every pair keeps a readable label */}
+              <text className="du-chart__nw" x={x0 + colW + 0.5} y={CH - PADB + 11 + (i % 2) * 10.5} textAnchor="middle">
                 {mode === 'point' ? `${row.a}` : `${row.a}·${row.b}`}
               </text>
             </g>
           )
         })}
-        <text className="du-chart__axis" x={PADL} y={CH - 2}>
-          {mode === 'point' ? 'n (POINT)' : 'n·w'} · 0 = MASSLESS · GRAVITON &amp; PARTNERS
-        </text>
-        <text className="du-chart__axis" x={0} y={PADT - 5}>
-          MASS² · STRING UNITS
+        {/* the label rows' title, in the left margin under the mass axis */}
+        <text className="du-chart__tick" x={PADL - 4} y={CH - PADB + 21.5} textAnchor="end">
+          {mode === 'point' ? 'n' : 'n·w'}
         </text>
         {tag && (
           <text className="du-chart__tag" x={CW - 2} y={PADT + 6} textAnchor="end">
@@ -268,7 +267,10 @@ export function PairChart({ rows, mode }: { rows: PairRow[]; mode: 'string' | 'p
           </text>
         )}
       </svg>
-      <figcaption className="du-chart__key">Each pair: World A left, World B right. Equal height means equal mass.</figcaption>
+      <figcaption className="du-chart__key">
+        <span className="du-chart__axes t-mono">MASS² · STRING UNITS · 0 = MASSLESS · GRAVITON &amp; PARTNERS</span>
+        Each pair: World A left, World B right. Equal height means equal mass.
+      </figcaption>
     </figure>
   )
 }

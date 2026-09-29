@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react'
 import { Step } from './Chapter'
 import { Status, type StatusKind } from './Status'
 
@@ -31,6 +31,8 @@ export function Lab({
   side?: 'right' | 'left'
 }) {
   const statuses = status ? (Array.isArray(status) ? status : [status]) : []
+  const scroller = useRef<HTMLDivElement>(null)
+  useMoreCue(scroller)
   return (
     <Step id={id} length={length} align="wide" valign="bottom" fade className={`step--lab step--lab-${side}`}>
       {hint && (
@@ -40,7 +42,7 @@ export function Lab({
         </div>
       )}
       <aside className={`lab lab--${side}`} data-ui aria-label={typeof title === 'string' ? title : 'Lab'}>
-        <div className="lab__scroll">
+        <div ref={scroller} className="lab__scroll">
         <header className="lab__head">
           <span className="t-label lab__eyebrow">Lab</span>
           <h3 className="lab__title">{title}</h3>
@@ -56,9 +58,41 @@ export function Lab({
         <div className="lab__body">{children}</div>
         {footer && <footer className="lab__foot">{footer}</footer>}
         </div>
+        <span className="lab__more t-label" aria-hidden="true">
+          ↓ more
+        </span>
       </aside>
     </Step>
   )
+}
+
+/**
+ * While the panel has more below its fold (phones: a 46svh sheet; iOS hides scrollbars), mark the .lab with
+ * data-more: CSS fades the bottom edge and shows a small "↓ more" cue. DOM only, no React renders.
+ */
+function useMoreCue(ref: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const el = ref.current
+    const lab = el?.parentElement
+    if (!el || !lab) return
+    let on = false
+    const upd = () => {
+      const more = el.scrollHeight - el.scrollTop - el.clientHeight > 8
+      if (more !== on) {
+        on = more
+        lab.toggleAttribute('data-more', more)
+      }
+    }
+    upd()
+    el.addEventListener('scroll', upd, { passive: true })
+    const ro = new ResizeObserver(upd)
+    ro.observe(el)
+    for (const child of Array.from(el.children)) ro.observe(child)
+    return () => {
+      el.removeEventListener('scroll', upd)
+      ro.disconnect()
+    }
+  }, [ref])
 }
 
 /** A labelled group of controls inside a Lab. */

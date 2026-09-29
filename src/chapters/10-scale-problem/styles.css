@@ -957,12 +957,13 @@
 /*
  * Shared-chrome workaround (reported upstream): the chapter rail's hidden labels keep full-width hit
  * boxes, so while this chapter's Lab is docked the rail would swallow clicks meant for the panel.
- * Scoped to this chapter's Lab only: the rail stops taking pointer events and its labels step aside.
+ * Scoped to this chapter's Lab only (Overlay.tsx toggles .sp-lab-on): the rail stops taking pointer
+ * events and its labels step aside.
  */
-body:has(#scale-problem .step--lab[data-hidden='0']) .rail {
+.sp-lab-on .rail {
   pointer-events: none;
 }
-body:has(#scale-problem .step--lab[data-hidden='0']) .rail__label {
+.sp-lab-on .rail__label {
   opacity: 0;
 }
 .sp-disp--q .sp-disp__s,
@@ -994,4 +995,12 @@ body:has(#scale-problem .step--lab[data-hidden='0']) .rail__label {
     align-items: start;
     padding-top: 11svh;
   }
+}
+/* closing frame: the tag under the point (the assumed string length) */
+.sp-pt-tag {
+  text-align: center;
+}
+/* a variable keeps its case inside uppercase mono labels (d, not D) */
+.sp-nocase {
+  text-transform: none;
 }

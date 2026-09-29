@@ -1,3 +1,6 @@
+import { useEffect } from 'react'
+import { useChapter } from '@/core/chapter'
+import { onJourney } from '@/core/journey'
 import { Beat, Caption, ChapterTitle, Deeper, Lab, Step, Term } from '@/ui'
 import { Pinned } from './Pinned'
 import { ROUTES } from './routes'
@@ -5,7 +8,32 @@ import { LabDeeper, LabPanel } from './LabPanel'
 import { STEP_LEN } from './timeline'
 import './styles.css'
 
+/**
+ * While this chapter's Lab is docked, <html> carries .sp-lab-on (styles.css: the chapter rail steps aside).
+ * A class toggled twice per visit, instead of a body:has() rule that re-matched on every scroll frame.
+ */
+function useLabClass() {
+  const h = useChapter()
+  useEffect(() => {
+    const root = document.documentElement
+    let on = false
+    const run = () => {
+      const v = h.inStep('lab')
+      if (v === on) return
+      on = v
+      root.classList.toggle('sp-lab-on', v)
+    }
+    run()
+    const off = onJourney(run)
+    return () => {
+      off()
+      root.classList.remove('sp-lab-on')
+    }
+  }, [h])
+}
+
 export default function Overlay() {
+  useLabClass()
   return (
     <>
       <ChapterTitle status="observed" sub="No experiment has ever detected one." valign="top" length={STEP_LEN.title}>

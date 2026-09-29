@@ -13,7 +13,7 @@ export default {
   },
   's-duality': {
     term: 'S-duality',
-    def: 'A proposed exact equivalence swapping strong and weak coupling, g ↔ 1/g. It maps Type I to heterotic SO(32), and Type IIB to itself. Conjectured and heavily tested.',
+    def: 'A proposed exact equivalence swapping strong and weak coupling, g ↔ 1/g. It maps Type I to heterotic SO(32), and Type IIB to itself. Conjectured; passed many theoretical checks, none experimental.',
     chapter: 'm-theory',
   },
   'bps-state': {
@@ -23,7 +23,7 @@ export default {
   },
   'd-particle': {
     term: 'D-particle',
-    def: 'A D0-brane: Type IIA’s pointlike D-brane, with mass 1/(g ℓ_s). Heavy at weak coupling, light at strong coupling.',
+    def: 'A D0-brane: Type IIA’s pointlike D-brane, with mass 1/(g ℓs). Heavy at weak coupling, light at strong coupling.',
     chapter: 'm-theory',
   },
   membrane: {

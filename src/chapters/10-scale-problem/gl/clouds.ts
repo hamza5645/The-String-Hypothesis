@@ -22,6 +22,13 @@ const gauss = (r: () => number) => {
 function alloc(n: number): Cloud {
   return { positions: new Float32Array(n * 3), sizes: new Float32Array(n), alphas: new Float32Array(n) }
 }
+/** write point i (no per-point array allocation) */
+function put(c: Cloud, i: number, x: number, y: number, z: number) {
+  const p = c.positions
+  p[i * 3] = x
+  p[i * 3 + 1] = y
+  p[i * 3 + 2] = z
+}
 
 /** Proton: a soft fog with three denser valence lumps (a cartoon of quarks in a sea of gluons). */
 export function protonFog(n: number): Cloud {
@@ -39,7 +46,7 @@ export function protonFog(n: number): Cloud {
       x = gauss(r) * 0.17
       y = gauss(r) * 0.17
     }
-    c.positions.set([x, y, (r() - 0.5) * 0.2], i * 3)
+    put(c, i, x, y, (r() - 0.5) * 0.2)
     c.sizes[i] = 0.012 + r() * 0.012
     c.alphas[i] = (i % 4 === 0 ? 0.55 : 0.28) * (0.6 + 0.4 * r())
   }
@@ -65,13 +72,13 @@ export function electronHaze(n: number): Cloud {
       x *= 1.35
       y *= 0.8
     }
-    c.positions.set([x, y, rad * ct], i * 3)
+    put(c, i, x, y, rad * ct)
     c.sizes[i] = 0.006 + r() * 0.006
     c.alphas[i] = 0.26 * (0.5 + 0.5 * r())
   }
   // nucleus: a handful of bright points at the centre
   for (let i = 0; i < 40; i++) {
-    c.positions.set([gauss(r) * 0.002, gauss(r) * 0.002, 0], i * 3)
+    put(c, i, gauss(r) * 0.002, gauss(r) * 0.002, 0)
     c.sizes[i] = 0.004
     c.alphas[i] = 1
   }
@@ -110,7 +117,7 @@ export function humanFigure(n: number): Cloud {
       const rr = k[4] * (0.82 + 0.18 * r())
       const x = k[0] + (k[2] - k[0]) * t + Math.cos(ang) * rr
       const y = k[1] + (k[3] - k[1]) * t + Math.sin(ang) * rr * 0.6
-      c.positions.set([x, y, Math.sin(ang) * rr], i * 3)
+      put(c, i, x, y, Math.sin(ang) * rr)
       c.sizes[i] = 1e4
       c.alphas[i] = 0.55 + 0.45 * r()
     }
@@ -159,7 +166,7 @@ export function cosmicWeb(n: number): Cloud {
       x *= 0.95
       y *= 0.95
     }
-    c.positions.set([x, y, 0], i * 3)
+    put(c, i, x, y, 0)
     c.sizes[i] = 1e4
     c.alphas[i] = (i % 5 === 0 ? 0.7 : 0.32) * (0.5 + 0.5 * r())
   }
@@ -176,7 +183,7 @@ export function universeMottle(n: number): Cloud {
     const x = Math.cos(a) * d
     const y = Math.sin(a) * d
     const m = Math.sin(x * 31 + Math.sin(y * 17) * 2) * Math.sin(y * 27 - Math.cos(x * 13) * 2)
-    c.positions.set([x, y, 0], i * 3)
+    put(c, i, x, y, 0)
     c.sizes[i] = 0.016
     c.alphas[i] = Math.max(0, 0.12 + 0.2 * m) * (0.6 + 0.4 * r())
   }
@@ -222,7 +229,7 @@ export function galaxy(n: number): Cloud {
       y = gauss(r) * 2300
       a = 0.95
     }
-    c.positions.set([x, y, gauss(r) * 400], i * 3)
+    put(c, i, x, y, gauss(r) * 400)
     c.sizes[i] = 1e12
     c.alphas[i] = a * (0.55 + 0.45 * r())
   }
@@ -245,7 +252,7 @@ export function starField(n: number, R: number, seed: number, flat = 1, fall = 0
       y = 2 * r() - 1
       z = 2 * r() - 1
     } while (x * x + y * y + z * z > 1)
-    c.positions.set([x * R, y * R, z * R * flat], i * 3)
+    put(c, i, x * R, y * R, z * R * flat)
     c.sizes[i] = 1e12
     const bright = r()
     const rho = Math.hypot(x, y)

@@ -309,7 +309,7 @@ export function Ring() {
         <SceneLabel position={[0, 0, 0]} align="below" tone="dim" opacity={() => (D.mobile ? 0 : D.ringVis * D.labLbl)} className="gr-subcap">
           <span className="gr-subcap__scale">Ring ~ LIGO arm · 4 × 10³ <span className="gr-nc">m</span> · not to scale</span>
           <span>Strain exaggerated ~10²⁰× · real ≈ 10⁻²¹</span>
-          <span className="gr-subcap__dim">24 free test particles · dashed = ψ = 0 ghost</span>
+          <span className="gr-subcap__dim">24 free test particles · dashed = <span className="gr-nc">ψ</span> = 0 ghost</span>
         </SceneLabel>
       </group>
       <group ref={glyph}>

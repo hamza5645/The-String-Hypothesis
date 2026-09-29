@@ -138,7 +138,12 @@ export default function Overlay() {
       <Lab
         title="The Circle Swap"
         status={['derived', 'analogy']}
-        hint="Drag R through √α′ · tap a bar pair · jump worlds"
+        hint={
+          // one span: .lab-hint is a flex row, and the symbol must not split the text into separate items
+          <span>
+            Drag R through <span className="du-sym">√α′</span> · tap a bar pair · jump worlds
+          </span>
+        }
         length={stepLen('lab')}
         intro={<p>Set the circle’s size. Compare the sixteen lightest string states in both worlds.</p>}
         footer={

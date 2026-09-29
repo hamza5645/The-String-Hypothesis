@@ -82,14 +82,15 @@ const padFrag = /* glsl */ `
     float band = (1.0 - smoothstep(0.12, 0.3, abs(fract(ph + 0.5) - 0.5))) * brk;
     // ridges denser than ~4 px fade out (no moiré)
     float lod = 1.0 - smoothstep(0.14, 0.28, fw);
-    // sweat pores sit on the ridges
-    vec2 cell = floor(p / 430.0);
-    vec2 pc = (cell + 0.5 + 0.4 * (h22(cell) - 0.5)) * 430.0;
-    float onRidge = 1.0 - smoothstep(0.08, 0.2, abs(fract(ridgePhase(pc) + 0.5) - 0.5));
-    float pr = length(p - pc);
-    float pore = (1.0 - smoothstep(0.0, 1.2 * px, abs(pr - 34.0))) * onRidge * step(0.3, h21(cell + 3.1)) * smoothstep(1.5, 5.0, 34.0 / px);
     // the cut: the part below the cutting line (z > 0) is lifted away
     float keep = p.y > 0.0 ? 1.0 - uCut : 1.0;
+    // sweat pores sit on the ridges; the on-ridge test costs a second ridgePhase (two vnoise and an
+    // atan), so it runs only on the few pixels where a visible pore's rim can light
+    vec2 cell = floor(p / 430.0);
+    vec2 pc = (cell + 0.5 + 0.4 * (h22(cell) - 0.5)) * 430.0;
+    float pr = length(p - pc);
+    float pore = (1.0 - smoothstep(0.0, 1.2 * px, abs(pr - 34.0))) * step(0.3, h21(cell + 3.1)) * smoothstep(1.5, 5.0, 34.0 / px);
+    if (pore * lod * mask * keep > 0.0) pore *= 1.0 - smoothstep(0.08, 0.2, abs(fract(ridgePhase(pc) + 0.5) - 0.5));
     float edge = (1.0 - smoothstep(0.0, 1.3 * px, abs(p.y))) * uCut;
     vec3 col = uInk3 * line * lod * 0.9 * mask * keep;
     col += uInk3 * band * 0.09 * mask * keep;

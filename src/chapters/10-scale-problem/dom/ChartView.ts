@@ -82,8 +82,9 @@ export class ChartView implements View {
       path(this.g, { fill: 'none', stroke: '#ECE6D9', 'stroke-width': 2 }),
       path(this.g, { fill: 'none', stroke: '#86A8D8', 'stroke-opacity': 0.85, 'stroke-width': 1.3, 'stroke-dasharray': '0.5 4', 'stroke-linecap': 'round' }),
     ]
-    this.redraw()
-    for (const p of this.curves) this.lens.push(p.getTotalLength?.() ?? 2000)
+    // the curves' drawn lengths (px) for the dash reveal: summed from their own segments, since
+    // getTotalLength() would force a synchronous layout while the Scene mounts
+    this.lens = this.redraw()
     this.l1 = label(this.box, 'sp-curve-lbl sp-field', ['QUANTUM BLUR', 'ħc / E'])
     this.l2 = label(this.box, 'sp-curve-lbl sp-field', ['BLACK-HOLE SIZE', '2GE / c⁴'])
     this.lMin = label(this.box, 'sp-curve-lbl', ['FLOOR ≈ 3 ℓP', `at ${sci(E_STAR, 1, true)} GeV`])
@@ -129,11 +130,14 @@ export class ChartView implements View {
     const L = this.L
     return L.c0y + ((this.d0 - ld) / (this.d0 - this.d1)) * (L.c1y - L.c0y)
   }
-  /** rebuild the curve paths for the current window (clipped to the chart rectangle) */
+  /** rebuild the curve paths for the current window (clipped to the chart rectangle); returns their lengths */
   private redraw() {
-    CURVES.forEach((f, k) => {
+    return CURVES.map((f, k) => {
       let d = ''
       let pen = false
+      let len = 0
+      let px = 0
+      let py = 0
       for (let i = 0; i <= N; i++) {
         const le = this.e0 + ((this.e1 - this.e0) * i) / N
         const ld = Math.log10(f(Math.pow(10, le)))
@@ -141,10 +145,16 @@ export class ChartView implements View {
           pen = false
           continue
         }
-        d += `${pen ? 'L' : 'M'}${this.x(le).toFixed(1)},${this.y(ld).toFixed(1)}`
+        const x = Number(this.x(le).toFixed(1))
+        const y = Number(this.y(ld).toFixed(1))
+        if (pen) len += Math.hypot(x - px, y - py)
+        d += `${pen ? 'L' : 'M'}${x},${y}`
+        px = x
+        py = y
         pen = true
       }
       sa(this.curves[k], 'd', d || 'M0,0')
+      return len
     })
   }
 

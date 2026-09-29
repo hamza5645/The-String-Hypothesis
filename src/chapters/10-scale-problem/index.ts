@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 import { defineChapter } from '@/core/chapter'
 import Overlay from './Overlay'
-import { gaugeScale } from './timeline'
+import { gaugeScale, gaugeStatus } from './timeline'
 
 const load = () => import('./Scene')
 
@@ -15,4 +15,5 @@ export default defineChapter({
   Overlay,
   Fallback: lazy(() => import('./Fallback')),
   scale: gaugeScale,
+  scaleStatus: gaugeStatus,
 })
